@@ -145,6 +145,9 @@ typedef struct {
     MoveMode mode;
 } Axis_t;
 
+
+
+
 typedef union {
     struct {
 
@@ -161,22 +164,63 @@ typedef union {
 } Control_motor_t;
 typedef union {
     struct {
-
-        uint8_t glass_1		: 1;
-        uint8_t glass_2		: 1;
-        uint8_t glass_3		: 1;
-        uint8_t Cover_1		: 1;
-        uint8_t Cover_2		: 1;
-        uint8_t Cover_3		: 1;
-        uint8_t save_glass	: 1;
-        uint8_t Save_Cover	: 1;
+        uint8_t pick_handler1		: 1;
+        uint8_t release_handler1		: 1;
+        uint8_t pick_handler2		: 1;
+        uint8_t release_handler2		: 1;
+        uint8_t save1		: 1;
+        uint8_t save2		: 1;
+        uint8_t save3	: 1;
+        uint8_t load	: 1;
     } bits;
     uint8_t all;
-}Save_Tray_t;
+}Cylinder_and_save_t;
+
+typedef union {
+    struct {
+        uint16_t x;
+        uint16_t y;
+    };
+    uint32_t raw;
+} Point2D;
+
+typedef union {
+    struct {
+        uint8_t tray_rubber_p1		: 1;
+        uint8_t tray_rubber_p2		: 1;
+        uint8_t tray_rubber_p3		: 1;
+        uint8_t tray1_p1			: 1;
+        uint8_t tray1_p2			: 1;
+        uint8_t tray1_p3			: 1;
+        uint8_t tray2_p1			: 1;
+        uint8_t tray2_p2			: 1;
+        uint8_t tray2_p3			: 1;
+    } bits;
+    uint16_t all;
+}Rubber_and_tray_t;
+
+typedef union {
+    struct {
+        uint8_t tray_rubber_p1		: 1;
+        uint8_t tray_rubber_p2		: 1;
+        uint8_t tray_rubber_p3		: 1;
+        uint8_t tray1_p1			: 1;
+        uint8_t tray1_p2			: 1;
+        uint8_t tray1_p3			: 1;
+        uint8_t tray2_p1			: 1;
+        uint8_t tray2_p2			: 1;
+        uint8_t tray2_p3			: 1;
+        uint8_t load				:1;
+    } bits;
+    uint16_t all;
+}Rubber_and_tray_indicator_t;
+
+
 
 
 extern uint8_t Coils_Database[25];
 extern uint16_t Holding_Registers_Database[300];
+extern uint8_t Inputs_Database[25];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
@@ -215,7 +259,23 @@ void Handle_Z_Up(void);
 void Handle_Z_Down(void);
 void Handle_Set(void);
 void Handle_Home(void);
-
+void Handle_pick_handler1(void);
+void Handle_release_handler1(void);
+void Handle_pick_handler2(void);
+void Handle_release_handler2(void);
+void Handle_save1(void);
+void Handle_save2(void);
+void Handle_save3(void);
+void Handle_load(void);
+void Handle_tray_rubber_p1(void);
+void Handle_tray_rubber_p2(void);
+void Handle_tray_rubber_p3(void);
+void Handle_tray1_p1(void);
+void Handle_tray1_p2(void);
+void Handle_tray1_p3(void);
+void Handle_tray2_p1(void);
+void Handle_tray2_p2(void);
+void Handle_tray2_p3(void);
 
 
 

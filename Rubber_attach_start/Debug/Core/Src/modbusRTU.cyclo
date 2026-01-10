@@ -9,4 +9,4 @@
 ../Core/Src/modbusRTU.c:369:9:writeSingleReg	2
 ../Core/Src/modbusRTU.c:401:9:writeSingleCoil	6
 ../Core/Src/modbusRTU.c:448:9:writeMultiCoils	8
-../Core/Src/modbusRTU.c:524:6:HAL_UARTEx_RxEventCallback	10
+../Core/Src/modbusRTU.c:524:6:HAL_UARTEx_RxEventCallback	11

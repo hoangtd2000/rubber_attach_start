@@ -9,7 +9,9 @@
 #define INC_MOTOR_CONTROL_H_
 
 #include "modbusRTU.h"
+#include "flash.h"
 #include "main.h"
+
 
 #define output_x_sig_tog()			HAL_GPIO_TogglePin(output_x_sig_GPIO_Port, output_x_sig_Pin)
 #define output_y_sig_tog()			HAL_GPIO_TogglePin(output_y_sig_GPIO_Port, output_y_sig_Pin)
@@ -107,6 +109,9 @@
 
 #define DIR_POS   1
 #define DIR_NEG  -1
+
+#define pick (1U)
+#define release (0U)
 
 typedef enum {
     DIR_STOP = 0,
@@ -217,6 +222,7 @@ typedef union {
 
 
 
+typedef void (*ActionHandler_t)(void);
 
 extern uint8_t Coils_Database[25];
 extern uint16_t Holding_Registers_Database[300];
@@ -277,7 +283,15 @@ void Handle_tray2_p1(void);
 void Handle_tray2_p2(void);
 void Handle_tray2_p3(void);
 
-
+void Move_tray_rubber_p1(void);
+void Move_tray_rubber_p2(void);
+void Move_tray_rubber_p3(void);
+void Move_tray1_p1(void);
+void Move_tray1_p2(void);
+void Move_tray1_p3(void);
+void Move_tray2_p1(void);
+void Move_tray2_p2(void);
+void Move_tray2_p3(void);
 
 void Control_motor_x(void);
 void Control_motor_y(void);

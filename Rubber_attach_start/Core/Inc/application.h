@@ -15,7 +15,8 @@ void application_init(void);
 void application_run(void);
 void application_run_main(void);
 void task_timer6(void);
-typedef void (*ActionHandler_t)(void);
+
+
 
 typedef union {
     struct {

@@ -16,10 +16,22 @@ Point2D Tray1_Mark[3];
 Point2D Tray2_Mark[3];
 
 uint16_t* Mark = &Holding_Registers_Database[6];
+const uint32_t FlashStart = 0x0800C000;
+
+ActionHandler_t motormoveTable1[] =  {
+		 Move_tray_rubber_p1,
+		 Move_tray_rubber_p2,
+		 Move_tray_rubber_p3,
+		 Move_tray1_p1,
+		 Move_tray1_p2,
+		 Move_tray1_p3,
+		 Move_tray2_p1,
+		 Move_tray2_p2,
+		 Move_tray2_p3,
+};
 
 Axis_t AxisX = {
 		.dir =  DIR_POS,
-		.is_moving = 0 ,
 		.mode = STOP,
 		.pulse_count = 0 ,
 		.stop_request = 0 ,
@@ -31,7 +43,6 @@ Axis_t AxisX = {
 
 Axis_t AxisY = {
 		.dir =  DIR_POS,
-		.is_moving = 0 ,
 		.mode = STOP,
 		.pulse_count = 0 ,
 		.stop_request = 0 ,
@@ -41,7 +52,6 @@ Axis_t AxisY = {
 };
 Axis_t AxisZ = {
 		.dir =  DIR_POS,
-		.is_moving = 0 ,
 		.mode = STOP,
 		.pulse_count = 0 ,
 		.stop_request = 0 ,
@@ -55,22 +65,16 @@ void Set_Speed_Motor_x(uint16_t f, uint16_t f_max){
 	if(f > f_max) f = f_max;
 	set_speed_x(2000000/f);
 	set_pulse_x(2000000/f/2);
-//	htim8.Instance->ARR = 2000000/f;
-//	htim8.Instance->CCR1 = htim8.Instance->ARR / 2;
 }
 void Set_Speed_Motor_y(uint16_t f, uint16_t f_max){
 	if(f > f_max) f = f_max;
 	set_speed_y(2000000/f);
 	set_pulse_y(2000000/f/2);
-//	htim3.Instance->ARR = 2000000/f;
-//	htim3.Instance->CCR3 =  htim3.Instance->ARR / 2;
 }
 void Set_Speed_Motor_z(uint16_t f, uint16_t f_max){
 	if(f > f_max) f = f_max;
 	set_speed_z(1000000/f);
 	set_pulse_z(1000000/f/2);
-//	htim1.Instance->ARR = 2000000/f;
-//	htim1.Instance->CCR1 =htim1.Instance->ARR / 2;
 }
 
 
@@ -102,36 +106,21 @@ void excute_move_z_down(void){
 
 void move_x_left(uint16_t d){
 	AxisX.dir = DIR_NEG;
-	//AxisX.is_moving = 1 ;
-//	AxisX.pulse_count = 1 ;
-//	AxisX.target_pulse = (d)  ;
-//	set_x_counter(0);
 	reset_counter_timer_x();
-//	reset_counter_timer_slave_x();
 	set_x_target_pull(d-1);
-//	reset_counter_timer_x();
 	excute_move_x_left();
 }
 
 
 void move_x_right(uint16_t d){
 	AxisX.dir = DIR_POS;
-	//AxisX.is_moving = 1 ;
-//	AxisX.pulse_count = 1 ;
-//	AxisX.target_pulse =  (d) ;
-//	set_x_counter(0);
 	reset_counter_timer_x();
-	//reset_counter_timer_slave_x();
 	set_x_target_pull(d-1);
-//	reset_counter_timer_x();
 	excute_move_x_right();
 }
 
 void move_y_forward(uint16_t d){
 	AxisY.dir = DIR_POS;
-//	AxisY.is_moving = 1 ;
-//	AxisY.pulse_count = 1 ;
-//	AxisY.target_pulse = (d)  ;
 	reset_counter_timer_y();
 	set_y_target_pull(d-1);
 	excute_move_y_forward();
@@ -139,9 +128,6 @@ void move_y_forward(uint16_t d){
 
 void move_y_backward(uint16_t d){
 	AxisY.dir = DIR_NEG;
-//	AxisY.is_moving = 1 ;
-//	AxisY.pulse_count = 1 ;
-//	AxisY.target_pulse = (d)  ;
 	reset_counter_timer_y();
 	set_y_target_pull(d-1);
 	excute_move_y_backward();
@@ -149,9 +135,6 @@ void move_y_backward(uint16_t d){
 
 void move_z_up(uint16_t d){
 	AxisZ.dir = DIR_NEG;
-//	AxisZ.is_moving = 1 ;
-//	AxisZ.pulse_count = 1 ;
-//	AxisZ.target_pulse = (d)  ;
 	reset_counter_timer_z();
 	set_z_target_pull(d-1);
 	excute_move_z_up();
@@ -159,9 +142,6 @@ void move_z_up(uint16_t d){
 
 void move_z_down(uint16_t d){
 	AxisZ.dir = DIR_POS;
-//	AxisZ.is_moving = 1 ;
-//	AxisZ.pulse_count = 1 ;
-//	AxisZ.target_pulse = (d)  ;
 	reset_counter_timer_z();
 	set_z_target_pull(d-1);
 	excute_move_z_down();
@@ -486,182 +466,238 @@ void Handle_Home(void){
 
 //Cylinder_and_save
 void Handle_pick_handler1(void){
-	//HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
+	HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, pick);
 }
 void Handle_release_handler1(void){
-//	 HAL_GPIO_TogglePin(O4_GPIO_Port, O4_Pin);
+	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, release);
 }
 void Handle_pick_handler2(void){
-	//HAL_GPIO_TogglePin(O5_GPIO_Port, O5_Pin);
+	HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, pick);
 }
 void Handle_release_handler2(void){
-	//HAL_GPIO_TogglePin(O6_GPIO_Port, O6_Pin);
+	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, release);
 }
 void Handle_save1(void){
 //	HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);
-	Rubber_and_tray_indicator->bits.tray_rubber_p1 = 0;
-	Rubber_and_tray_indicator->bits.tray_rubber_p2 = 0;
-	Rubber_and_tray_indicator->bits.tray_rubber_p3 = 0;
+	uint32_t data[10];
+	Flash_Read_Data( FlashStart, data, 10);
+	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
+	case 1:
+		Rubber_Mark[0].x = AxisX.current_pos;
+		Rubber_Mark[0].y = AxisY.current_pos;
+		Mark[0] =  Rubber_Mark[0].x;
+		Mark[1] =  Rubber_Mark[0].y;
+		Rubber_and_tray_indicator->bits.tray_rubber_p1 = 0;
+		// test
+		data[0] =  Rubber_Mark[0].raw;
+		Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+
+
+		break;
+	case 2:
+		Rubber_Mark[1].x = AxisX.current_pos;
+		Rubber_Mark[1].y = AxisY.current_pos;
+		Mark[2] =  Rubber_Mark[1].x;
+		Mark[3] =  Rubber_Mark[1].y;
+		Rubber_and_tray_indicator->bits.tray_rubber_p2 = 0;
+
+		//test
+		data[1] =  Rubber_Mark[1].raw;
+		Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+		break;
+	case 3:
+		Rubber_Mark[2].x = AxisX.current_pos;
+		Rubber_Mark[2].y = AxisY.current_pos;
+		Mark[4] =  Rubber_Mark[2].x;
+		Mark[5] =  Rubber_Mark[2].y;
+		Rubber_and_tray_indicator->bits.tray_rubber_p3 = 0;
+
+		//test
+		data[2] =  Rubber_Mark[2].raw;
+		Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+		break;
+	}
 }
 void Handle_save2(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
-	Rubber_and_tray_indicator->bits.tray1_p1 = 0 ;
-	Rubber_and_tray_indicator->bits.tray1_p2 = 0 ;
-	Rubber_and_tray_indicator->bits.tray1_p3 = 0 ;
+	uint32_t data[10];
+	Flash_Read_Data( FlashStart, data, 10);
+	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
+	case 4:
+
+				Tray1_Mark[0].x = AxisX.current_pos;
+				Tray1_Mark[0].y = AxisY.current_pos;
+				Mark[6] =  Tray1_Mark[0].x;
+				Mark[7] =  Tray1_Mark[0].y;
+
+				data[3] =  Tray1_Mark[0].raw;
+				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+				Rubber_and_tray_indicator->bits.tray1_p1 = 0 ;
+
+		break;
+	case 5:
+				Tray1_Mark[1].x = AxisX.current_pos;
+				Tray1_Mark[1].y = AxisY.current_pos;
+				Mark[8] =  Tray1_Mark[1].x;
+				Mark[9] =  Tray1_Mark[1].y;
+
+				data[4] =  Tray1_Mark[1].raw;
+				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+				Rubber_and_tray_indicator->bits.tray1_p2 = 0 ;
+		break;
+	case 6:
+				Tray1_Mark[2].x = AxisX.current_pos;
+				Tray1_Mark[2].y = AxisY.current_pos;
+				Mark[10] =  Tray1_Mark[2].x;
+				Mark[11] =  Tray1_Mark[2].y;
+
+				data[5] =  Tray1_Mark[0].raw;
+				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+				Rubber_and_tray_indicator->bits.tray1_p3 = 0 ;
+		break;
+	}
 }
 void Handle_save3(void){
 	// HAL_GPIO_TogglePin(O9_GPIO_Port, O9_Pin);
-	Rubber_and_tray_indicator->bits.tray2_p1 = 0 ;
-	Rubber_and_tray_indicator->bits.tray2_p2 = 0 ;
-	Rubber_and_tray_indicator->bits.tray2_p3 = 0 ;
+	uint32_t data[10];
+	Flash_Read_Data( FlashStart, data, 10);
+	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
+	case 7:
+				Tray2_Mark[0].x = AxisX.current_pos;
+				Tray2_Mark[0].y = AxisY.current_pos;
+				Mark[12] =  Tray2_Mark[0].x;
+				Mark[13] =  Tray2_Mark[0].y;
+
+				data[6] =  Tray2_Mark[0].raw;
+				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+				Rubber_and_tray_indicator->bits.tray2_p1 = 0 ;
+		break;
+	case 8:
+				Tray2_Mark[1].x = AxisX.current_pos;
+				Tray2_Mark[1].y = AxisY.current_pos;
+				Mark[14] =  Tray2_Mark[1].x;
+				Mark[15] =  Tray2_Mark[1].y;
+				data[7] =  Tray2_Mark[1].raw;
+				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+				Rubber_and_tray_indicator->bits.tray2_p2 = 0 ;
+		break;
+	case 9:
+				Tray2_Mark[2].x = AxisX.current_pos;
+				Tray2_Mark[2].y = AxisY.current_pos;
+				Mark[16] =  Tray2_Mark[2].x;
+				Mark[17] =  Tray2_Mark[2].y;
+				data[8] =  Tray2_Mark[2].raw;
+				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+				Rubber_and_tray_indicator->bits.tray2_p3 = 0 ;
+		break;
+	}
 }
 void Handle_load(void){
 //	HAL_GPIO_TogglePin(O10_GPIO_Port, O10_Pin);
-	if(AxisX.mode == STOP && AxisY.mode == STOP && AxisZ.mode == STOP ){
-	Cylinder_and_save->bits.load = 0;
-	Rubber_and_tray_indicator->bits.load = 1;
-	}
+
+	int test_builtin1 = __builtin_ffs(Rubber_and_tray_indicator->all);
+		if (test_builtin1 > 0) {
+		    test_builtin1 -= 1;
+		    if (test_builtin1 < (int)(sizeof(motormoveTable1) / sizeof(motormoveTable1[0]))) {
+		    	if(AxisX.mode == STOP && AxisY.mode == STOP && AxisZ.mode == STOP ){
+		    		motormoveTable1[test_builtin1]();
+		        	Cylinder_and_save->bits.load = 0;
+				}
+		    }
+		}
+		Cylinder_and_save->bits.load = 0;
 }
-
-
 
 //Rubber_and_tray
 void Handle_tray_rubber_p1(void){
-//	HAL_GPIO_TogglePin(O9_GPIO_Port, O9_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-	Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
-	Rubber_Mark[0].x = AxisX.current_pos;
-	Rubber_Mark[0].y = AxisY.current_pos;
-	Mark[0] =  Rubber_Mark[0].x;
-	Mark[1] =  Rubber_Mark[0].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray_rubber_p1 = 1;
-	}else{
-		Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
-		Rubber_and_tray_indicator->bits.load = 0;
-		move_axis(Mark[0], Mark[1], AxisZ.current_pos);
-	}
+	Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
 }
 void Handle_tray_rubber_p2(void){
-	//HAL_GPIO_TogglePin(O10_GPIO_Port, O10_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-	Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
-	Rubber_Mark[1].x = AxisX.current_pos;
-	Rubber_Mark[1].y = AxisY.current_pos;
-	Mark[2] =  Rubber_Mark[1].x;
-	Mark[3] =  Rubber_Mark[1].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray_rubber_p2 = 1;
-}else{
 	Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
-	Rubber_and_tray_indicator->bits.load = 0;
-	move_axis(Mark[2], Mark[3], AxisZ.current_pos);
-}
 }
 void Handle_tray_rubber_p3(void){
-//	HAL_GPIO_TogglePin(O11_GPIO_Port, O11_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-	Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
-	Rubber_Mark[2].x = AxisX.current_pos;
-	Rubber_Mark[2].y = AxisY.current_pos;
-	Mark[4] =  Rubber_Mark[2].x;
-	Mark[5] =  Rubber_Mark[2].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray_rubber_p3 = 1;
-
-	}else{
 	Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
-	Rubber_and_tray_indicator->bits.load = 0;
-	move_axis(Mark[4], Mark[5], AxisZ.current_pos);
-	}
 }
 void Handle_tray1_p1(void){
-//	HAL_GPIO_TogglePin(O12_GPIO_Port, O12_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-	Rubber_and_tray->bits.tray1_p1 = 0 ;
-	Tray1_Mark[0].x = AxisX.current_pos;
-	Tray1_Mark[0].y = AxisY.current_pos;
-	Mark[6] =  Tray1_Mark[0].x;
-	Mark[7] =  Tray1_Mark[0].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray1_p1 = 1;
-	}else{
 	Rubber_and_tray->bits.tray1_p1 = 0 ;
-	Rubber_and_tray_indicator->bits.load = 0;
-	move_axis(Mark[6], Mark[7], AxisZ.current_pos);
-	}
 }
 void Handle_tray1_p2(void){
-//	HAL_GPIO_TogglePin(O13_GPIO_Port, O13_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-	Rubber_and_tray->bits.tray1_p2 = 0 ;
-	Tray1_Mark[1].x = AxisX.current_pos;
-	Tray1_Mark[1].y = AxisY.current_pos;
-	Mark[8] =  Tray1_Mark[1].x;
-	Mark[9] =  Tray1_Mark[1].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray1_p2 = 1;
-	}else{
 	Rubber_and_tray->bits.tray1_p2 = 0 ;
-	Rubber_and_tray_indicator->bits.load = 0;
-	move_axis(Mark[8], Mark[9], AxisZ.current_pos);
-	}
 }
 void Handle_tray1_p3(void){
-//	HAL_GPIO_TogglePin(O14_GPIO_Port, O14_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-	Rubber_and_tray->bits.tray1_p3 = 0 ;
-	Tray1_Mark[2].x = AxisX.current_pos;
-	Tray1_Mark[2].y = AxisY.current_pos;
-	Mark[10] =  Tray1_Mark[2].x;
-	Mark[11] =  Tray1_Mark[2].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray1_p3 = 1;
-	}else{
 	Rubber_and_tray->bits.tray1_p3 = 0 ;
-	Rubber_and_tray_indicator->bits.load = 0;
-	move_axis(Mark[10], Mark[11], AxisZ.current_pos);
-	}
 }
 void Handle_tray2_p1(void){
-//	HAL_GPIO_TogglePin(O14_GPIO_Port, O14_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-	Rubber_and_tray->bits.tray2_p1 = 0 ;
-	Tray2_Mark[0].x = AxisX.current_pos;
-	Tray2_Mark[0].y = AxisY.current_pos;
-	Mark[12] =  Tray2_Mark[0].x;
-	Mark[13] =  Tray2_Mark[0].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray2_p1 = 1;
-	}else{
 	Rubber_and_tray->bits.tray2_p1 = 0 ;
-	Rubber_and_tray_indicator->bits.load = 0;
-	move_axis(Mark[12], Mark[13], AxisZ.current_pos);
-	}
 }
 void Handle_tray2_p2(void){
-//	HAL_GPIO_TogglePin(O15_GPIO_Port, O15_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-	Rubber_and_tray->bits.tray2_p2 = 0 ;
-	Tray2_Mark[1].x = AxisX.current_pos;
-	Tray2_Mark[1].y = AxisY.current_pos;
-	Mark[14] =  Tray2_Mark[1].x;
-	Mark[15] =  Tray2_Mark[1].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray2_p2 = 1;
-	}else{
 	Rubber_and_tray->bits.tray2_p2 = 0 ;
-	Rubber_and_tray_indicator->bits.load = 0;
-	move_axis(Mark[14], Mark[15], AxisZ.current_pos);
-	}
 }
 void Handle_tray2_p3(void){
-//	HAL_GPIO_TogglePin(O16_GPIO_Port, O16_Pin);
-	if(Rubber_and_tray_indicator->bits.load == 0){
-		Rubber_and_tray->bits.tray2_p3 = 0 ;
-	Tray2_Mark[2].x = AxisX.current_pos;
-	Tray2_Mark[2].y = AxisY.current_pos;
-	Mark[16] =  Tray2_Mark[2].x;
-	Mark[17] =  Tray2_Mark[2].y;
+	Rubber_and_tray_indicator->all &= (~0x3ff);
 	Rubber_and_tray_indicator->bits.tray2_p3 = 1;
-	}else{
 	Rubber_and_tray->bits.tray2_p3 = 0 ;
-	Rubber_and_tray_indicator->bits.load = 0;
-	move_axis(Mark[16], Mark[17], AxisZ.current_pos);
-	}
 }
 
-
+void Move_tray_rubber_p1(void){
+		Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
+		move_axis(Mark[0], Mark[1], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray_rubber_p1 = 0 ;
+}
+void Move_tray_rubber_p2(void){
+		Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
+		move_axis(Mark[2], Mark[3], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray_rubber_p2 = 0 ;
+}
+void Move_tray_rubber_p3(void){
+		Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
+		move_axis(Mark[4], Mark[5], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray_rubber_p3 = 0 ;
+}
+void Move_tray1_p1(void){
+		Rubber_and_tray->bits.tray1_p1 = 0 ;
+		move_axis(Mark[6], Mark[7], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray1_p1 = 0 ;
+}
+void Move_tray1_p2(void){
+		Rubber_and_tray->bits.tray1_p2 = 0 ;
+		move_axis(Mark[8], Mark[9], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray1_p2 = 0 ;
+}
+void Move_tray1_p3(void){
+		Rubber_and_tray->bits.tray1_p3 = 0 ;
+		move_axis(Mark[10], Mark[11], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray1_p3 = 0 ;
+}
+void Move_tray2_p1(void){
+		Rubber_and_tray->bits.tray2_p1 = 0 ;
+		move_axis(Mark[12], Mark[13], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray2_p1 = 0 ;
+}
+void Move_tray2_p2(void){
+		Rubber_and_tray->bits.tray2_p2 = 0 ;
+		move_axis(Mark[14], Mark[15], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray2_p2 = 0 ;
+}
+void Move_tray2_p3(void){
+		Rubber_and_tray->bits.tray2_p3 = 0 ;
+		move_axis(Mark[16], Mark[17], AxisZ.current_pos);
+		Rubber_and_tray_indicator->bits.tray2_p3 = 0 ;
+}
 

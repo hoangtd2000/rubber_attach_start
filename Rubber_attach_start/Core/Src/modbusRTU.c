@@ -523,6 +523,8 @@ uint8_t writeMultiCoils (void)
 }
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
+
+	if(huart-> Instance == USART2){
 	if (RxData[0] == SLAVE_ID)
 		{
 			switch (RxData[1]){
@@ -555,5 +557,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 				break;
 			}
 		}
-	HAL_UARTEx_ReceiveToIdle_IT(&huart2, RxData, 256);
+	//HAL_UARTEx_ReceiveToIdle_IT(&huart2, RxData, 256);
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
+	}
 }

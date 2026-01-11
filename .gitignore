@@ -1,0 +1,10 @@
+*.bin 
+*.hex
+*.map
+*.elf
+*.list
+*xml
+*.o
+*.mk
+*.list
+.settings/

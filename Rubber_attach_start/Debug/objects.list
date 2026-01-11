@@ -1,4 +1,3 @@
-"./Core/Src/ScanMap.o"
 "./Core/Src/application.o"
 "./Core/Src/flash.o"
 "./Core/Src/main.o"

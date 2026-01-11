@@ -3,4 +3,4 @@
 ../Core/Src/ScanMap.c:104:6:Calculate_Tray1_Point	72	static
 ../Core/Src/ScanMap.c:127:6:Calculate_Tray2_Point	72	static
 ../Core/Src/ScanMap.c:149:6:Handle	24	static
-../Core/Src/ScanMap.c:181:9:Pick_Item	24	static
+../Core/Src/ScanMap.c:178:9:Pick_Item	24	static

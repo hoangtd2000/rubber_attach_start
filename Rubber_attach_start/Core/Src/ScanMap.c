@@ -171,7 +171,6 @@ void Handle(uint8_t end_cover){
 			//Pick_Item(2);
 			move_axis(Tray_1[Rubber_Index].x, Rubber[Rubber_Index].y, AxisZ.current_pos);
 			HAL_Delay(200);
-
 		}
 	}
 }

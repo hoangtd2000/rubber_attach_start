@@ -43,4 +43,5 @@ void Calculate_TrayRubber_Point(Item* tray, const Point2D* point, uint8_t row, u
 void Calculate_Tray1_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
 void Calculate_Tray2_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
 uint8_t Pick_Item(uint8_t No);
+
 #endif /* INC_SCANMAP_H_ */

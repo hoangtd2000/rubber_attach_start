@@ -1,4 +1,0 @@
-../Core/Src/application.c:52:6:application_init	8	static
-../Core/Src/application.c:90:6:application_run	8	static
-../Core/Src/application.c:95:6:task_timer6	8	static
-../Core/Src/application.c:106:6:application_run_main	4	static

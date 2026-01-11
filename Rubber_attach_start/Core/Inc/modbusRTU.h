@@ -22,10 +22,6 @@ uint16_t crc16(uint8_t *buffer, uint16_t buffer_length);
 #define Min_NumRegs 			(1U)
 #define Max_NumRegs 			(299U)
 
-
-
-
-
 uint8_t readHoldingRegs (void);
 uint8_t readInputRegs (void);
 uint8_t readCoils (void);

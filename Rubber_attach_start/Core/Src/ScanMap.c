@@ -30,6 +30,55 @@ const Item* Rubber = Rubber_Tray;
 const Item* Tray_1 = Tray1;
 const Item* Tray_2 = Tray2;
 
+extern Point2D Rubber_Mark[3];
+extern Point2D Tray1_Mark[3];
+extern Point2D Tray2_Mark[3];
+// cho vào file Flash
+void Save_Rubber_Mark(uint8_t isglass1,uint8_t isglass2, uint8_t isglass3,uint8_t ispos){
+	uint32_t data[20];
+	//Flash_Read_Data( FlashStart, data, 20);
+	if(isglass1 == 1)
+		data[0] = Rubber_Mark[0].raw;
+	if(isglass2 == 1)
+		data[1] = Rubber_Mark[1].raw;
+	if(isglass3 == 1)
+		data[2] = Rubber_Mark[2].raw;
+	if(ispos == 1)
+		data[3] = Rubber_TrayPos_Write.raw;
+
+	//Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+}
+
+void Save_Tray1_Mark(uint8_t iscover1,uint8_t iscover2, uint8_t iscover3,uint8_t ispos){
+	uint32_t data[20];
+	//Flash_Read_Data( FlashStart, data, 20);
+
+	if(iscover1 == 1)
+		data[4] = Tray1_Mark[0].raw;
+	if(iscover2 == 1)
+		data[5] = Tray1_Mark[1].raw;
+	if(iscover3 == 1)
+		data[6] = Tray1_Mark[2].raw;
+	if(ispos == 1)
+		data[7] = Tray1Pos_Write.raw;
+	//Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+}
+
+void Save_Tray2_Mark(uint8_t iscover1,uint8_t iscover2, uint8_t iscover3,uint8_t ispos){
+	uint32_t data[20];
+	//Flash_Read_Data( FlashStart, data, 20);
+
+	if(iscover1 == 1)
+		data[4] = Tray2_Mark[0].raw;
+	if(iscover2 == 1)
+		data[5] = Tray2_Mark[1].raw;
+	if(iscover3 == 1)
+		data[6] = Tray2_Mark[2].raw;
+	if(ispos == 1)
+		data[7] = Tray2Pos_Write.raw;
+	//Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+}
+
 void Read_Tray_Data(){
 	Point2D Rubber_Mark[3];
 	uint32_t data[8];

@@ -20,7 +20,7 @@ Point2D Tray2_Mark[3];
 uint16_t* Mark = &Holding_Registers_Database[6];
 const uint32_t FlashStart = 0x0800C000;
 
-volatile uint32_t data[10];
+ uint32_t data[10] = {1,1,1,1,1,1,1,1,1,1};
 
 ActionHandler_t motormoveTable1[] =  {
 		 Move_tray_rubber_p1,
@@ -118,36 +118,21 @@ void excute_move_z_down(void){
 
 void move_x_left(uint16_t d){
 	AxisX.dir = DIR_NEG;
-	//AxisX.is_moving = 1 ;
-//	AxisX.pulse_count = 1 ;
-//	AxisX.target_pulse = (d)  ;
-//	set_x_counter(0);
 	reset_counter_timer_x();
-//	reset_counter_timer_slave_x();
 	set_x_target_pull(d-1);
-//	reset_counter_timer_x();
 	excute_move_x_left();
 }
 
 
 void move_x_right(uint16_t d){
 	AxisX.dir = DIR_POS;
-	//AxisX.is_moving = 1 ;
-//	AxisX.pulse_count = 1 ;
-//	AxisX.target_pulse =  (d) ;
-//	set_x_counter(0);
 	reset_counter_timer_x();
-	//reset_counter_timer_slave_x();
 	set_x_target_pull(d-1);
-//	reset_counter_timer_x();
 	excute_move_x_right();
 }
 
 void move_y_forward(uint16_t d){
 	AxisY.dir = DIR_POS;
-//	AxisY.is_moving = 1 ;
-//	AxisY.pulse_count = 1 ;
-//	AxisY.target_pulse = (d)  ;
 	reset_counter_timer_y();
 	set_y_target_pull(d-1);
 	excute_move_y_forward();
@@ -155,9 +140,6 @@ void move_y_forward(uint16_t d){
 
 void move_y_backward(uint16_t d){
 	AxisY.dir = DIR_NEG;
-//	AxisY.is_moving = 1 ;
-//	AxisY.pulse_count = 1 ;
-//	AxisY.target_pulse = (d)  ;
 	reset_counter_timer_y();
 	set_y_target_pull(d-1);
 	excute_move_y_backward();
@@ -165,9 +147,6 @@ void move_y_backward(uint16_t d){
 
 void move_z_up(uint16_t d){
 	AxisZ.dir = DIR_NEG;
-//	AxisZ.is_moving = 1 ;
-//	AxisZ.pulse_count = 1 ;
-//	AxisZ.target_pulse = (d)  ;
 	reset_counter_timer_z();
 	set_z_target_pull(d-1);
 	excute_move_z_up();
@@ -175,9 +154,6 @@ void move_z_up(uint16_t d){
 
 void move_z_down(uint16_t d){
 	AxisZ.dir = DIR_POS;
-//	AxisZ.is_moving = 1 ;
-//	AxisZ.pulse_count = 1 ;
-//	AxisZ.target_pulse = (d)  ;
 	reset_counter_timer_z();
 	set_z_target_pull(d-1);
 	excute_move_z_down();
@@ -516,7 +492,6 @@ void Handle_release_handler2(void){
 void Handle_save1(void){
 //	HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);
 
-	//Flash_Read_Data( FlashStart, data, 10);
 	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
 	case 1:
 		Rubber_Mark[0].x = AxisX.current_pos;
@@ -556,8 +531,6 @@ void Handle_save1(void){
 }
 void Handle_save2(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
-//	uint32_t data[10];
-//	Flash_Read_Data( FlashStart, data, 10);
 	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
 	case 4:
 
@@ -587,7 +560,7 @@ void Handle_save2(void){
 				Mark[10] =  Tray1_Mark[2].x;
 				Mark[11] =  Tray1_Mark[2].y;
 
-				data[5] =  Tray1_Mark[0].raw;
+				data[5] =  Tray1_Mark[2].raw;
 				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 				Rubber_and_tray_indicator->bits.tray1_p3 = 0 ;
 		break;
@@ -595,8 +568,6 @@ void Handle_save2(void){
 }
 void Handle_save3(void){
 	// HAL_GPIO_TogglePin(O9_GPIO_Port, O9_Pin);
-//	uint32_t data[10];
-//	Flash_Read_Data( FlashStart, data, 10);
 	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
 	case 7:
 				Tray2_Mark[0].x = AxisX.current_pos;

@@ -179,7 +179,7 @@ void Handle(uint8_t end_cover){
 			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, AxisZ.current_pos);
 	//		HAL_Delay(200);
 
-				Input_Registers_Database[1] =  Rubber_Index+1 ;
+				Input_Registers_Database[0] =  Rubber_Index+1 ;
 //			if(Pick_Item(1) == 1){	// pick item 1
 //				HAL_Delay(200);
 //				//SetBit(Lamp_glass_empty, Glass_Index % 196, 1); // set lamp glass
@@ -193,10 +193,12 @@ void Handle(uint8_t end_cover){
 			//Pick_Item(2);
 			wait_handler_stop();
 			move_axis(Tray_1[Rubber_Index].x, Tray_1[Rubber_Index].y, AxisZ.current_pos);
-			Input_Registers_Database[0] =  Rubber_Index + 1;
+			Input_Registers_Database[1] =  Rubber_Index + 1;
 		//	HAL_Delay(200);
 			Rubber_Index++;
 		}
+
+
 
 	}
 }

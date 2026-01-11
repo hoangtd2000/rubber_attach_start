@@ -36,7 +36,6 @@ uint32_t GetSector(uint32_t Address)
 }
 
 
-//__attribute__((section(".ramfunc")))
 uint32_t Flash_Write_Data(uint32_t StartAddress,
                           uint32_t *Data,
                           uint16_t NumberOfWords)

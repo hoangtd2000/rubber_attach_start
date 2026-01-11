@@ -1,10 +1,13 @@
-*.bin 
+# Build output
+*.bin
 *.hex
 *.map
 *.elf
 *.list
-*xml
+*.xml
 *.o
 *.mk
-*.list
+
+# IDE (Eclipse / STM32CubeIDE)
 .settings/
+Debug/

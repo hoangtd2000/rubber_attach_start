@@ -6,7 +6,7 @@
  */
 
 #include "ScanMap.h"
-
+#include "stdbool.h"
 
 // Screen Main
 extern Axis_t AxisX, AxisY, AxisZ;
@@ -23,8 +23,8 @@ TrayPos Tray2Pos;
 
 // Data write to Flash
 TrayPos Rubber_TrayPos_Write = {.row = 10,.col = 20};
-TrayPos Tray1Pos_Write 		 = {.row = 4,.col = 6};
-TrayPos Tray2Pos_Write 		 = {.row = 4,.col = 6};
+TrayPos Tray1Pos_Write 		 = {.row = 6,.col = 4};
+TrayPos Tray2Pos_Write 		 = {.row = 6,.col = 4};
 
 const Item* Rubber = Rubber_Tray;
 const Item* Tray_1 = Tray1;
@@ -33,100 +33,68 @@ const Item* Tray_2 = Tray2;
 extern Point2D Rubber_Mark[3];
 extern Point2D Tray1_Mark[3];
 extern Point2D Tray2_Mark[3];
-// cho vào file Flash
-void Save_Rubber_Mark(uint8_t isglass1,uint8_t isglass2, uint8_t isglass3,uint8_t ispos){
-	uint32_t data[20];
-	//Flash_Read_Data( FlashStart, data, 20);
-	if(isglass1 == 1)
-		data[0] = Rubber_Mark[0].raw;
-	if(isglass2 == 1)
-		data[1] = Rubber_Mark[1].raw;
-	if(isglass3 == 1)
-		data[2] = Rubber_Mark[2].raw;
-	if(ispos == 1)
-		data[3] = Rubber_TrayPos_Write.raw;
+uint16_t Rubber_Index = 0;
+uint8_t end_Cover = 25;
+extern const uint32_t FlashStart;
 
-	//Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+extern uint16_t Input_Registers_Database[50];
+extern uint32_t data[10];
+static inline bool AllAxisStop(void)
+{
+    return (AxisX.mode == STOP &&
+            AxisY.mode == STOP &&
+            AxisZ.mode == STOP);
 }
 
-void Save_Tray1_Mark(uint8_t iscover1,uint8_t iscover2, uint8_t iscover3,uint8_t ispos){
-	uint32_t data[20];
-	//Flash_Read_Data( FlashStart, data, 20);
+void wait_handler_stop(){
+	while (!AllAxisStop())
+	{
 
-	if(iscover1 == 1)
-		data[4] = Tray1_Mark[0].raw;
-	if(iscover2 == 1)
-		data[5] = Tray1_Mark[1].raw;
-	if(iscover3 == 1)
-		data[6] = Tray1_Mark[2].raw;
-	if(ispos == 1)
-		data[7] = Tray1Pos_Write.raw;
-	//Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
-}
-
-void Save_Tray2_Mark(uint8_t iscover1,uint8_t iscover2, uint8_t iscover3,uint8_t ispos){
-	uint32_t data[20];
-	//Flash_Read_Data( FlashStart, data, 20);
-
-	if(iscover1 == 1)
-		data[4] = Tray2_Mark[0].raw;
-	if(iscover2 == 1)
-		data[5] = Tray2_Mark[1].raw;
-	if(iscover3 == 1)
-		data[6] = Tray2_Mark[2].raw;
-	if(ispos == 1)
-		data[7] = Tray2Pos_Write.raw;
-	//Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+	}
 }
 
 void Read_Tray_Data(){
-	Point2D Rubber_Mark[3];
-	uint32_t data[8];
-	//Flash_Read_Data( FlashStart, data, 8);
-	if((data[0] + data[1] + data[2] + data[3]) == 0
-			|| data[0] == 0xffffffff || data[1] == 0xffffffff || data[2] == 0xffffffff || data[3] == 0xffffffff) return;
-	if((data[4] + data [5] + data[6] + data[7]) == 0
-			|| data[4] == 0xffffffff || data[5] == 0xffffffff || data[6] == 0xffffffff || data[7] == 0xffffffff) return;
+	//uint32_t data[10];
+	Flash_Read_Data( FlashStart, data, 10);
+
 	Rubber_Mark[0].raw = data[0];
 	Rubber_Mark[1].raw = data[1];
 	Rubber_Mark[2].raw = data[2];
-	Rubber_TrayPos.raw = data[3];
-	*(Mark) = Rubber_Mark[0].x;
-	*(Mark + 1) = Rubber_Mark[0].y;
-	*(Mark + 2) = Rubber_Mark[1].x;
-	*(Mark + 3) = Rubber_Mark[1].y;
-	*(Mark + 4) = Rubber_Mark[2].x;
-	*(Mark + 5) = Rubber_Mark[2].y;
-	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, Rubber_TrayPos.row, Rubber_TrayPos.col);
+	Mark[0] = Rubber_Mark[0].x;
+	Mark[1] = Rubber_Mark[0].y;
+	Mark[2] = Rubber_Mark[1].x;
+	Mark[3] = Rubber_Mark[1].y;
+	Mark[4] = Rubber_Mark[2].x;
+	Mark[5] = Rubber_Mark[2].y;
 
-	Point2D Tray1_Mark[3];
+//	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, Rubber_TrayPos.row, Rubber_TrayPos.col);
+	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark,10, 20);
 
-	//Flash_Read_Data( FlashStart+4, data, 3);
-	Tray1_Mark[0].raw = data[4];
-	Tray1_Mark[1].raw = data[5];
-	Tray1_Mark[2].raw = data[6];
-	Tray1Pos.raw = data[7];
-	*(Mark + 6) = Tray1_Mark[0].x;
-	*(Mark + 7) = Tray1_Mark[0].y;
-	*(Mark + 8) = Tray1_Mark[1].x;
-	*(Mark + 9) = Tray1_Mark[1].y;
-	*(Mark + 10) = Tray1_Mark[2].x;
-	*(Mark + 11) = Tray1_Mark[2].y;
-	Calculate_Tray1_Point(Tray1, Tray1_Mark, Tray1Pos.row, Tray1Pos.col);
 
-	Point2D Tray2_Mark[3];
-	//Flash_Read_Data( FlashStart+4, data, 3);
-	Tray2_Mark[0].raw = data[4];
-	Tray2_Mark[1].raw = data[5];
-	Tray2_Mark[2].raw = data[6];
-	Tray2Pos.raw = data[7];
-	*(Mark + 6) = Tray2_Mark[0].x;
-	*(Mark + 7) = Tray2_Mark[0].y;
-	*(Mark + 8) = Tray2_Mark[1].x;
-	*(Mark + 9) = Tray2_Mark[1].y;
-	*(Mark + 10) = Tray2_Mark[2].x;
-	*(Mark + 11) = Tray2_Mark[2].y;
-	Calculate_Tray2_Point(Tray2, Tray2_Mark, Tray2Pos.row, Tray2Pos.col);
+	Tray1_Mark[0].raw = data[3];
+	Tray1_Mark[1].raw = data[4];
+	Tray1_Mark[2].raw = data[5];
+	Mark[6] = Tray1_Mark[0].x;
+	Mark[7] = Tray1_Mark[0].y;
+	Mark[8] = Tray1_Mark[1].x;
+	Mark[9] = Tray1_Mark[1].y;
+	Mark[10] = Tray1_Mark[2].x;
+	Mark[11] = Tray1_Mark[2].y;
+
+//	Calculate_Tray1_Point(Tray1, Tray1_Mark, Tray1Pos.row, Tray1Pos.col);
+	Calculate_Tray1_Point(Tray1, Tray1_Mark, 6, 4);
+
+	Tray2_Mark[0].raw = data[6];
+	Tray2_Mark[1].raw = data[7];
+	Tray2_Mark[2].raw = data[8];
+	Mark[12] = Tray2_Mark[0].x;
+	Mark[13] = Tray2_Mark[0].y;
+	Mark[14] = Tray2_Mark[1].x;
+	Mark[15] = Tray2_Mark[1].y;
+	Mark[16] = Tray2_Mark[2].x;
+	Mark[17] = Tray2_Mark[2].y;
+//	Calculate_Tray2_Point(Tray2, Tray2_Mark, Tray2Pos.row, Tray2Pos.col);
+	Calculate_Tray2_Point(Tray2, Tray2_Mark, 6, 4);
 }
 
 void Calculate_TrayRubber_Point(Item* tray, const Point2D* point,
@@ -198,29 +166,38 @@ void Calculate_Tray2_Point(Item* tray, const Point2D* point,
 void Handle(uint8_t end_cover){
 	if(ScreenMain->bits.START == 1){
 		ScreenMain->bits.START = 0;
-		Handle_tray_rubber_p1();
+
+		Rubber_Index = 0;
+	//	Handle_tray_rubber_p1();
 		uint8_t item_count = end_cover;
 		uint8_t count = 0;
 		while(count < item_count){
 
 			count++;
 			// Data Flash
+			wait_handler_stop();
 			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, AxisZ.current_pos);
-			HAL_Delay(200);
-			if(Pick_Item(1) == 1){	// pick item 1
-				HAL_Delay(200);
-				//SetBit(Lamp_glass_empty, Glass_Index % 196, 1); // set lamp glass
-				//SetStateTrayRubber(Empty, Glass_Index);				// set TrayRubber state
-				Rubber_Index++;									        // increase tray rubber index
-			}
-			else{
-				//Red_on;
-				return;
-			}
+	//		HAL_Delay(200);
+
+				Input_Registers_Database[1] =  Rubber_Index+1 ;
+//			if(Pick_Item(1) == 1){	// pick item 1
+//				HAL_Delay(200);
+//				//SetBit(Lamp_glass_empty, Glass_Index % 196, 1); // set lamp glass
+//				//SetStateTrayRubber(Empty, Glass_Index);				// set TrayRubber state
+//				Rubber_Index++;									        // increase tray rubber index
+//			}
+//			else{
+//				//Red_on;
+//				return;
+//			}
 			//Pick_Item(2);
-			move_axis(Tray_1[Rubber_Index].x, Rubber[Rubber_Index].y, AxisZ.current_pos);
-			HAL_Delay(200);
+			wait_handler_stop();
+			move_axis(Tray_1[Rubber_Index].x, Tray_1[Rubber_Index].y, AxisZ.current_pos);
+			Input_Registers_Database[0] =  Rubber_Index + 1;
+		//	HAL_Delay(200);
+			Rubber_Index++;
 		}
+
 	}
 }
 

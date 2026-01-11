@@ -10,7 +10,7 @@
 
 #include "modbusRTU.h"
 #include "main.h"
-
+#include "flash.h"
 #define output_x_sig_tog()			HAL_GPIO_TogglePin(output_x_sig_GPIO_Port, output_x_sig_Pin)
 #define output_y_sig_tog()			HAL_GPIO_TogglePin(output_y_sig_GPIO_Port, output_y_sig_Pin)
 #define output_z_sig_tog()			HAL_GPIO_TogglePin(output_z_sig_GPIO_Port, output_z_sig_Pin)
@@ -71,14 +71,14 @@
 #define reset_counter_timer_slave_z() __HAL_TIM_SET_COUNTER(&htim9, 0)
 
 #define max_x 50000U
-#define max_y 25000U
+#define max_y 28000U
 #define max_z 10000U
 
 #define speed_x_max (40000U)
 #define speed_y_max (40000U)
 #define speed_z_max (5000U)
 #define speed_default (60U)
-#define speed_run     (17000U)
+#define speed_run     (30000U)
 #define speed_run_z 	(5000U)
 
 #define speed_home1 	(4000U)
@@ -107,7 +107,8 @@
 
 #define DIR_POS   1
 #define DIR_NEG  -1
-
+#define pick (1U)
+#define release (0U)
 typedef enum {
     DIR_STOP = 0,
     DIR_LEFT,
@@ -228,8 +229,7 @@ typedef union {
     	uint8_t HOME                : 1;
     	uint8_t MOTOR               : 1;
     	uint8_t SETTING             : 1;
-    	uint8_t RESERVER1           : 1;
-    	uint8_t RESERVER2           : 1;
+    	uint8_t RESERVER1           : 2;
         uint8_t RESET				: 1;
         uint8_t START				: 1;
         uint8_t STOP				: 1;
@@ -238,6 +238,7 @@ typedef union {
 }ScreenMain_t;
 
 
+typedef void (*ActionHandler_t)(void);
 extern uint8_t Coils_Database[25];
 extern uint16_t Holding_Registers_Database[300];
 extern uint8_t Inputs_Database[25];
@@ -297,7 +298,15 @@ void Handle_tray2_p1(void);
 void Handle_tray2_p2(void);
 void Handle_tray2_p3(void);
 
-
+void Move_tray_rubber_p1(void);
+void Move_tray_rubber_p2(void);
+void Move_tray_rubber_p3(void);
+void Move_tray1_p1(void);
+void Move_tray1_p2(void);
+void Move_tray1_p3(void);
+void Move_tray2_p1(void);
+void Move_tray2_p2(void);
+void Move_tray2_p3(void);
 
 void Control_motor_x(void);
 void Control_motor_y(void);

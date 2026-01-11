@@ -35,9 +35,23 @@
 //#define Is_Vacum1_Pick		HAL_GPIO_ReadPin(I4_GPIO_Port, I4_Pin)
 //#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(I5_GPIO_Port, I5_Pin)
 
-uint16_t Rubber_Index = 0;
-uint8_t end_Cover = 25;
 
+
+
+// Vị trí từng Rubber
+typedef enum {
+	Empty,
+	Not_Empty,
+} ItemState;
+
+typedef struct {
+	uint16_t x;
+	uint16_t y;
+	ItemState State;
+}Item;
+
+
+void wait_handler_stop();
 void Read_Tray_Data();
 void Calculate_TrayRubber_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
 void Calculate_Tray1_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);

@@ -75,6 +75,8 @@ static void MX_TIM7_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#define try_go_home
+
 /* USER CODE END 0 */
 
 /**
@@ -144,7 +146,7 @@ int main(void)
 //	  HAL_Delay(500);
 	//  application_run();
 //	  task_timer6();
-
+	  application_run_main();
 //  HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
 //	  HAL_GPIO_TogglePin(O2_GPIO_Port, O2_Pin);
 //	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);

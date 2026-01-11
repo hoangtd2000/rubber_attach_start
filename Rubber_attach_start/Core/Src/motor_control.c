@@ -6,11 +6,19 @@
  */
 
 #include "motor_control.h"
-Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[1];
-Save_Tray_t* Save_Tray = (Save_Tray_t*)&Coils_Database[4];
+ScreenMain_t* SreenMain = (ScreenMain_t*)&Coils_Database[0];
 
-//Position_t Current_t = {0,0,0};
-//Position_t Old_t = {0,0,0};
+Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[1];
+Cylinder_and_save_t* Cylinder_and_save = (Cylinder_and_save_t*)&Coils_Database[2];
+Rubber_and_tray_t* Rubber_and_tray  = (Rubber_and_tray_t*)&Coils_Database[3];
+Rubber_and_tray_indicator_t* Rubber_and_tray_indicator = (Rubber_and_tray_indicator_t*)&Inputs_Database[1];
+
+Point2D Rubber_Mark[3];
+Point2D Tray1_Mark[3];
+Point2D Tray2_Mark[3];
+
+uint16_t* Mark = &Holding_Registers_Database[6];
+
 Axis_t AxisX = {
 		.dir =  DIR_POS,
 		.is_moving = 0 ,
@@ -194,139 +202,6 @@ void move_axis(uint16_t xd, uint16_t yd, uint16_t zd){
     }
 }
 
-
-
- void Set_HMI_X_Axis(uint16_t value){
-	Holding_Registers_Database[0] = value;
-}
- void Set_HMI_Y_Axis(uint16_t value){
-	Holding_Registers_Database[1] = value;
-}
-void Set_HMI_Z_Axis(uint16_t value){
-	Holding_Registers_Database[2] = value;
-}
-
-uint16_t Get_HMI_X_Axis(void){
-	return Holding_Registers_Database[0];
-}
-uint16_t Get_HMI_Y_Axis(void){
-	return Holding_Registers_Database[1];
-}
-uint16_t Get_HMI_Z_Axis(void){
-	return Holding_Registers_Database[2];
-}
-
-
-uint8_t get_coil(uint16_t reg_addr)
-{
-    if (reg_addr == 0 || reg_addr > 200)
-        return 0;
-
-    uint16_t bit_index = reg_addr - 1;
-    uint16_t byte_index = bit_index / 8;
-    uint8_t  bit_pos    = bit_index % 8;
-
-    return (Coils_Database[byte_index] >> bit_pos) & 0x01;
-}
-
-
-void Handle_X_Left (void){
-//	HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
-	if(AxisX.current_pos <= 0) {
-		return;
-		}
-	if(AxisX.mode == STOP) {
-		AxisX.mode =  MOVE_MANUAL;
-		move_x_left(AxisX.current_pos);
-		}
-}
-void Handle_X_Right (void){
-	//  HAL_GPIO_TogglePin(O2_GPIO_Port, O2_Pin);
-	if(AxisX.current_pos >= max_x){
-		return;
-	}
-	if(AxisX.mode == STOP) {
-	  AxisX.mode =  MOVE_MANUAL;
-	  move_x_right(max_x - AxisX.current_pos);
-	}
-
-}
-void Handle_Y_Forward(void){
-//	HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
-	if(AxisY.current_pos >= max_y) {
-		return;
-		}
-	if(AxisY.mode == STOP){
-		AxisY.mode = MOVE_MANUAL;
-		move_y_forward(max_y- AxisY.current_pos);
-	}
-}
-void Handle_Y_Backward(void){
-//	 HAL_GPIO_TogglePin(O4_GPIO_Port, O4_Pin);
-	if(AxisY.current_pos <= 0  ){
-		return ;
-	}
-	if(AxisY.mode == STOP){
-		AxisY.mode = MOVE_MANUAL;
-		move_y_backward( AxisY.current_pos);
-	}
-}
-void Handle_Z_Up(void){
-//	 HAL_GPIO_TogglePin(O5_GPIO_Port, O5_Pin);
-	if(AxisZ.current_pos <=0  ){
-			return ;
-		}
-	if(AxisZ.mode == STOP) {
-		AxisZ.mode = MOVE_MANUAL;
-		move_z_up(AxisZ.current_pos);
-	}
-}
-void Handle_Z_Down(void){
-//	HAL_GPIO_TogglePin(O6_GPIO_Port, O6_Pin);
-	if(AxisZ.current_pos >=max_z  ){
-			return ;
-		}
-	if(AxisZ.mode == STOP) {
-		AxisZ.mode = MOVE_MANUAL;
-		move_z_down(max_z-AxisZ.current_pos);
-	}
-
-}
-
-void Handle_Set(void){
-	//HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);
-	if(AxisX.mode == STOP && AxisY.mode == STOP && AxisZ.mode == STOP ){
-	move_axis(Get_HMI_X_Axis(),Get_HMI_Y_Axis(), Get_HMI_Z_Axis());
-	}
-}
-void Handle_Home(void){
-	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
-	if(get_home_x() != home_x){
-		if(AxisX.mode == STOP ){
-			if(AxisX.current_pos >0){
-				AxisX.mode = MOVE_HOME1;
-				}
-			}
-	}
-	if(get_home_y() != home_y){
-		if(AxisY.mode == STOP ){
-			if(AxisY.current_pos > 0){
-			AxisY.mode = MOVE_HOME1;
-				}
-			}
-	}
-	if(get_home_z() != home_z){
-		if(AxisZ.mode == STOP ){
-			if(AxisZ.current_pos >0){
-			AxisZ.mode = MOVE_HOME1;
-				}
-			}
-	}
-}
-
-
-
-
 void Control_motor_x(){
 	switch(AxisX.mode) {
 	case MOVE_AUTO:
@@ -479,3 +354,313 @@ void Stop_motor_z(void){
 		AxisZ.mode = STOP;
 		AxisZ.old_pos = AxisZ.current_pos;
 }
+
+
+ void Set_HMI_X_Axis(uint16_t value){
+	Holding_Registers_Database[0] = value;
+}
+ void Set_HMI_Y_Axis(uint16_t value){
+	Holding_Registers_Database[1] = value;
+}
+void Set_HMI_Z_Axis(uint16_t value){
+	Holding_Registers_Database[2] = value;
+}
+
+uint16_t Get_HMI_X_Axis(void){
+	return Holding_Registers_Database[0];
+}
+uint16_t Get_HMI_Y_Axis(void){
+	return Holding_Registers_Database[1];
+}
+uint16_t Get_HMI_Z_Axis(void){
+	return Holding_Registers_Database[2];
+}
+
+
+uint8_t get_coil(uint16_t reg_addr)
+{
+    if (reg_addr == 0 || reg_addr > 200)
+        return 0;
+
+    uint16_t bit_index = reg_addr - 1;
+    uint16_t byte_index = bit_index / 8;
+    uint8_t  bit_pos    = bit_index % 8;
+
+    return (Coils_Database[byte_index] >> bit_pos) & 0x01;
+}
+
+
+void Handle_X_Left (void){
+//	HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
+	if(AxisX.current_pos <= 0) {
+		return;
+		}
+	if(AxisX.mode == STOP) {
+		AxisX.mode =  MOVE_MANUAL;
+		move_x_left(AxisX.current_pos);
+		}
+}
+void Handle_X_Right (void){
+	//  HAL_GPIO_TogglePin(O2_GPIO_Port, O2_Pin);
+	if(AxisX.current_pos >= max_x){
+		return;
+	}
+	if(AxisX.mode == STOP) {
+	  AxisX.mode =  MOVE_MANUAL;
+	  move_x_right(max_x - AxisX.current_pos);
+	}
+
+}
+void Handle_Y_Forward(void){
+//	HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
+	if(AxisY.current_pos >= max_y) {
+		return;
+		}
+	if(AxisY.mode == STOP){
+		AxisY.mode = MOVE_MANUAL;
+		move_y_forward(max_y- AxisY.current_pos);
+	}
+}
+void Handle_Y_Backward(void){
+//	 HAL_GPIO_TogglePin(O4_GPIO_Port, O4_Pin);
+	if(AxisY.current_pos <= 0  ){
+		return ;
+	}
+	if(AxisY.mode == STOP){
+		AxisY.mode = MOVE_MANUAL;
+		move_y_backward( AxisY.current_pos);
+	}
+}
+void Handle_Z_Up(void){
+//	 HAL_GPIO_TogglePin(O5_GPIO_Port, O5_Pin);
+	if(AxisZ.current_pos <=0  ){
+			return ;
+		}
+	if(AxisZ.mode == STOP) {
+		AxisZ.mode = MOVE_MANUAL;
+		move_z_up(AxisZ.current_pos);
+	}
+}
+void Handle_Z_Down(void){
+//	HAL_GPIO_TogglePin(O6_GPIO_Port, O6_Pin);
+	if(AxisZ.current_pos >=max_z  ){
+			return ;
+		}
+	if(AxisZ.mode == STOP) {
+		AxisZ.mode = MOVE_MANUAL;
+		move_z_down(max_z-AxisZ.current_pos);
+	}
+
+}
+
+void Handle_Set(void){
+	//HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);
+	if(AxisX.mode == STOP && AxisY.mode == STOP && AxisZ.mode == STOP ){
+	move_axis(Get_HMI_X_Axis(),Get_HMI_Y_Axis(), Get_HMI_Z_Axis());
+	}
+}
+void Handle_Home(void){
+	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
+	if(get_home_x() != home_x){
+		if(AxisX.mode == STOP ){
+			if(AxisX.current_pos >0){
+				AxisX.mode = MOVE_HOME1;
+				}
+			}
+	}
+	if(get_home_y() != home_y){
+		if(AxisY.mode == STOP ){
+			if(AxisY.current_pos > 0){
+			AxisY.mode = MOVE_HOME1;
+				}
+			}
+	}
+	if(get_home_z() != home_z){
+		if(AxisZ.mode == STOP ){
+			if(AxisZ.current_pos >0){
+			AxisZ.mode = MOVE_HOME1;
+				}
+			}
+	}
+}
+
+//uint8_t test_bitload = 0 ;
+
+//Cylinder_and_save
+void Handle_pick_handler1(void){
+	//HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
+}
+void Handle_release_handler1(void){
+//	 HAL_GPIO_TogglePin(O4_GPIO_Port, O4_Pin);
+}
+void Handle_pick_handler2(void){
+	//HAL_GPIO_TogglePin(O5_GPIO_Port, O5_Pin);
+}
+void Handle_release_handler2(void){
+	//HAL_GPIO_TogglePin(O6_GPIO_Port, O6_Pin);
+}
+void Handle_save1(void){
+//	HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);
+	Rubber_and_tray_indicator->bits.tray_rubber_p1 = 0;
+	Rubber_and_tray_indicator->bits.tray_rubber_p2 = 0;
+	Rubber_and_tray_indicator->bits.tray_rubber_p3 = 0;
+}
+void Handle_save2(void){
+	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
+	Rubber_and_tray_indicator->bits.tray1_p1 = 0 ;
+	Rubber_and_tray_indicator->bits.tray1_p2 = 0 ;
+	Rubber_and_tray_indicator->bits.tray1_p3 = 0 ;
+}
+void Handle_save3(void){
+	// HAL_GPIO_TogglePin(O9_GPIO_Port, O9_Pin);
+	Rubber_and_tray_indicator->bits.tray2_p1 = 0 ;
+	Rubber_and_tray_indicator->bits.tray2_p2 = 0 ;
+	Rubber_and_tray_indicator->bits.tray2_p3 = 0 ;
+}
+void Handle_load(void){
+//	HAL_GPIO_TogglePin(O10_GPIO_Port, O10_Pin);
+	if(AxisX.mode == STOP && AxisY.mode == STOP && AxisZ.mode == STOP ){
+	Cylinder_and_save->bits.load = 0;
+	Rubber_and_tray_indicator->bits.load = 1;
+	}
+}
+
+//Rubber_and_tray
+void Handle_tray_rubber_p1(void){
+//	HAL_GPIO_TogglePin(O9_GPIO_Port, O9_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+	Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
+	Rubber_Mark[0].x = AxisX.current_pos;
+	Rubber_Mark[0].y = AxisY.current_pos;
+	Mark[0] =  Rubber_Mark[0].x;
+	Mark[1] =  Rubber_Mark[0].y;
+	Rubber_and_tray_indicator->bits.tray_rubber_p1 = 1;
+	}else{
+		Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
+		Rubber_and_tray_indicator->bits.load = 0;
+		move_axis(Mark[0], Mark[1], AxisZ.current_pos);
+	}
+}
+void Handle_tray_rubber_p2(void){
+	//HAL_GPIO_TogglePin(O10_GPIO_Port, O10_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+	Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
+	Rubber_Mark[1].x = AxisX.current_pos;
+	Rubber_Mark[1].y = AxisY.current_pos;
+	Mark[2] =  Rubber_Mark[1].x;
+	Mark[3] =  Rubber_Mark[1].y;
+	Rubber_and_tray_indicator->bits.tray_rubber_p2 = 1;
+}else{
+	Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
+	Rubber_and_tray_indicator->bits.load = 0;
+	move_axis(Mark[2], Mark[3], AxisZ.current_pos);
+}
+}
+void Handle_tray_rubber_p3(void){
+//	HAL_GPIO_TogglePin(O11_GPIO_Port, O11_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+	Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
+	Rubber_Mark[2].x = AxisX.current_pos;
+	Rubber_Mark[2].y = AxisY.current_pos;
+	Mark[4] =  Rubber_Mark[2].x;
+	Mark[5] =  Rubber_Mark[2].y;
+	Rubber_and_tray_indicator->bits.tray_rubber_p3 = 1;
+
+	}else{
+	Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
+	Rubber_and_tray_indicator->bits.load = 0;
+	move_axis(Mark[4], Mark[5], AxisZ.current_pos);
+	}
+}
+void Handle_tray1_p1(void){
+//	HAL_GPIO_TogglePin(O12_GPIO_Port, O12_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+	Rubber_and_tray->bits.tray1_p1 = 0 ;
+	Tray1_Mark[0].x = AxisX.current_pos;
+	Tray1_Mark[0].y = AxisY.current_pos;
+	Mark[6] =  Tray1_Mark[0].x;
+	Mark[7] =  Tray1_Mark[0].y;
+	Rubber_and_tray_indicator->bits.tray1_p1 = 1;
+	}else{
+	Rubber_and_tray->bits.tray1_p1 = 0 ;
+	Rubber_and_tray_indicator->bits.load = 0;
+	move_axis(Mark[6], Mark[7], AxisZ.current_pos);
+	}
+}
+void Handle_tray1_p2(void){
+//	HAL_GPIO_TogglePin(O13_GPIO_Port, O13_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+	Rubber_and_tray->bits.tray1_p2 = 0 ;
+	Tray1_Mark[1].x = AxisX.current_pos;
+	Tray1_Mark[1].y = AxisY.current_pos;
+	Mark[8] =  Tray1_Mark[1].x;
+	Mark[9] =  Tray1_Mark[1].y;
+	Rubber_and_tray_indicator->bits.tray1_p2 = 1;
+	}else{
+	Rubber_and_tray->bits.tray1_p2 = 0 ;
+	Rubber_and_tray_indicator->bits.load = 0;
+	move_axis(Mark[8], Mark[9], AxisZ.current_pos);
+	}
+}
+void Handle_tray1_p3(void){
+//	HAL_GPIO_TogglePin(O14_GPIO_Port, O14_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+	Rubber_and_tray->bits.tray1_p3 = 0 ;
+	Tray1_Mark[2].x = AxisX.current_pos;
+	Tray1_Mark[2].y = AxisY.current_pos;
+	Mark[10] =  Tray1_Mark[2].x;
+	Mark[11] =  Tray1_Mark[2].y;
+	Rubber_and_tray_indicator->bits.tray1_p3 = 1;
+	}else{
+	Rubber_and_tray->bits.tray1_p3 = 0 ;
+	Rubber_and_tray_indicator->bits.load = 0;
+	move_axis(Mark[10], Mark[11], AxisZ.current_pos);
+	}
+}
+void Handle_tray2_p1(void){
+//	HAL_GPIO_TogglePin(O14_GPIO_Port, O14_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+	Rubber_and_tray->bits.tray2_p1 = 0 ;
+	Tray2_Mark[0].x = AxisX.current_pos;
+	Tray2_Mark[0].y = AxisY.current_pos;
+	Mark[12] =  Tray2_Mark[0].x;
+	Mark[13] =  Tray2_Mark[0].y;
+	Rubber_and_tray_indicator->bits.tray2_p1 = 1;
+	}else{
+	Rubber_and_tray->bits.tray2_p1 = 0 ;
+	Rubber_and_tray_indicator->bits.load = 0;
+	move_axis(Mark[12], Mark[13], AxisZ.current_pos);
+	}
+}
+void Handle_tray2_p2(void){
+//	HAL_GPIO_TogglePin(O15_GPIO_Port, O15_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+	Rubber_and_tray->bits.tray2_p2 = 0 ;
+	Tray2_Mark[1].x = AxisX.current_pos;
+	Tray2_Mark[1].y = AxisY.current_pos;
+	Mark[14] =  Tray2_Mark[1].x;
+	Mark[15] =  Tray2_Mark[1].y;
+	Rubber_and_tray_indicator->bits.tray2_p2 = 1;
+	}else{
+	Rubber_and_tray->bits.tray2_p2 = 0 ;
+	Rubber_and_tray_indicator->bits.load = 0;
+	move_axis(Mark[14], Mark[15], AxisZ.current_pos);
+	}
+}
+void Handle_tray2_p3(void){
+//	HAL_GPIO_TogglePin(O16_GPIO_Port, O16_Pin);
+	if(Rubber_and_tray_indicator->bits.load == 0){
+		Rubber_and_tray->bits.tray2_p3 = 0 ;
+	Tray2_Mark[2].x = AxisX.current_pos;
+	Tray2_Mark[2].y = AxisY.current_pos;
+	Mark[16] =  Tray2_Mark[2].x;
+	Mark[17] =  Tray2_Mark[2].y;
+	Rubber_and_tray_indicator->bits.tray2_p3 = 1;
+	}else{
+	Rubber_and_tray->bits.tray2_p3 = 0 ;
+	Rubber_and_tray_indicator->bits.load = 0;
+	move_axis(Mark[16], Mark[17], AxisZ.current_pos);
+	}
+}
+
+

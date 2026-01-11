@@ -51,7 +51,6 @@ TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim9;
 
 UART_HandleTypeDef huart2;
-DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USER CODE BEGIN PV */
 
@@ -60,7 +59,6 @@ DMA_HandleTypeDef hdma_usart2_rx;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM8_Init(void);
@@ -77,6 +75,7 @@ static void MX_TIM7_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#define try_go_home
 
 /* USER CODE END 0 */
 
@@ -109,7 +108,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_TIM5_Init();
   MX_TIM8_Init();
@@ -444,7 +442,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 83;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 10000;
+  htim6.Init.Period = 5000;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -634,22 +632,6 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
 }
 

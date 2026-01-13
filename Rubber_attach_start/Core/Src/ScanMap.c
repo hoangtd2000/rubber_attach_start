@@ -129,7 +129,7 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 #define MAX_TRAYS       2
 #define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
-
+int tray_pair = 0;
 
 extern Tab_main_t* Tab_main;
 void Handle(void){
@@ -144,7 +144,7 @@ void Handle(void){
 
 		// ===== Tray mapping =====
 		int tray_id   = tray_index / PAIRS_PER_TRAY;
-		int tray_pair = tray_index % PAIRS_PER_TRAY;
+		tray_pair = tray_index % PAIRS_PER_TRAY;
 
 		int tx = tray_pair % TRAY_COLS;
 		int ty = (tray_pair / TRAY_COLS) * 2;

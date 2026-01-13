@@ -37,8 +37,8 @@
 //#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(I5_GPIO_Port, I5_Pin)
 
 
-#define RUBBER_COLS 5
-#define RUBBER_ROWS 7
+#define RUBBER_COLS 20
+#define RUBBER_ROWS 4
 
 #define TRAY_COLS   4
 #define TRAY_ROWS   4

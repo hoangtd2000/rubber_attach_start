@@ -131,12 +131,14 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 int tray_pair = 0;
 
+static uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
+static uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
+
 extern Tab_main_t* Tab_main;
 void Handle(void){
 	//ScreenMain->bits.START = 0;
 	Tab_main->bits.start = 0;
-	uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
-	uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
+
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
 	{
 		int rx = rubber_pair % RUBBER_COLS;
@@ -144,7 +146,7 @@ void Handle(void){
 
 		// ===== Tray mapping =====
 		int tray_id   = tray_index / PAIRS_PER_TRAY;
-		tray_pair = tray_index % PAIRS_PER_TRAY;
+		int tray_pair = tray_index % PAIRS_PER_TRAY;
 
 		int tx = tray_pair % TRAY_COLS;
 		int ty = (tray_pair / TRAY_COLS) * 2;
@@ -195,13 +197,24 @@ void Handle(void){
 			Input_Registers_Database[1] = Rubber_Index+1;
 			delay_us(1000);
 		}
-		rubber_pair++;    // quét tuần tự khuôn cao su
-		tray_index++;     // đếm số đã bỏ vào tray
+		rubber_pair++;
+		tray_index++;
 	}
 	wait_handler_stop();
 	move_axis(0, 0, 0);
 	Input_Registers_Database[0] =0 ;
 	Input_Registers_Database[1] = 0;
+    if (rubber_pair >= RUBBER_TOTAL_PAIRS)
+    {
+        // Cao su hết → reset toàn bộ
+        rubber_pair = 0;
+        tray_index  = 0;
+    }
+    else
+    {
+        // Chỉ đầy tray → chờ bấm START lần sau
+        tray_index = 0;
+    }
 }
 
 

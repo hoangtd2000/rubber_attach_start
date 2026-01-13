@@ -11,6 +11,9 @@
 #include "modbusRTU.h"
 #include "main.h"
 #include "flash.h"
+#include "stdbool.h"
+#include "cmsis_gcc.h"
+
 #define output_x_sig_tog()			HAL_GPIO_TogglePin(output_x_sig_GPIO_Port, output_x_sig_Pin)
 #define output_y_sig_tog()			HAL_GPIO_TogglePin(output_y_sig_GPIO_Port, output_y_sig_Pin)
 #define output_z_sig_tog()			HAL_GPIO_TogglePin(output_z_sig_GPIO_Port, output_z_sig_Pin)
@@ -72,13 +75,13 @@
 
 #define max_x 50000U
 #define max_y 28000U
-#define max_z 10000U
+#define max_z 15000U
 
-#define speed_x_max (40000U)
-#define speed_y_max (40000U)
+#define speed_x_max (30000U)
+#define speed_y_max (30000U)
 #define speed_z_max (5000U)
 #define speed_default (60U)
-#define speed_run     (30000U)
+#define speed_run     (10000U)
 #define speed_run_z 	(5000U)
 
 #define speed_home1 	(4000U)
@@ -96,14 +99,6 @@
 #define speed_home1_z 	(speed_home1- 3000)
 #define speed_home2_z 	(speed_home2 - 2000)
 #define speed_home3_z	(speed_home3- 500)
-
-#define coil_x_left 	4U
-#define coil_x_right 	5U
-#define coil_y_backward 6U
-#define coil_y_forward 	7U
-#define coil_z_up  		8U
-#define coil_z_down 	9U
-
 
 #define DIR_POS   1
 #define DIR_NEG  -1
@@ -138,11 +133,9 @@ typedef struct {
 	__IO int8_t dir;
     __IO uint16_t pulse_count;
     __IO uint16_t target_pulse;
-    __IO uint8_t is_moving;
     __IO uint16_t speed;
     __IO uint16_t current_pos;
     __IO uint16_t old_pos;
-     uint8_t  stop_request;
     MoveMode mode;
 } Axis_t;
 
@@ -165,14 +158,14 @@ typedef union {
 } Control_motor_t;
 typedef union {
     struct {
-        uint8_t pick_handler1		: 1;
+        uint8_t pick_handler1			: 1;
         uint8_t release_handler1		: 1;
-        uint8_t pick_handler2		: 1;
+        uint8_t pick_handler2			: 1;
         uint8_t release_handler2		: 1;
-        uint8_t save1		: 1;
-        uint8_t save2		: 1;
-        uint8_t save3	: 1;
-        uint8_t load	: 1;
+        uint8_t save1					: 1;
+        uint8_t save2					: 1;
+        uint8_t save3					: 1;
+        uint8_t load					: 1;
     } bits;
     uint8_t all;
 }Cylinder_and_save_t;
@@ -219,7 +212,7 @@ typedef union {
         uint8_t tray2_p1			: 1;
         uint8_t tray2_p2			: 1;
         uint8_t tray2_p3			: 1;
-        uint8_t load				:1;
+        uint8_t load				: 1;
     } bits;
     uint16_t all;
 }Rubber_and_tray_indicator_t;
@@ -234,11 +227,35 @@ typedef union {
         uint8_t START				: 1;
         uint8_t STOP				: 1;
     } bits;
-    uint16_t all;
+    uint8_t all;
 }ScreenMain_t;
 
 
+
+typedef union {
+    struct {
+    	uint8_t home                : 1;
+    	uint8_t motor               : 1;
+    	uint8_t setting             : 1;
+    	uint8_t RESERVER1           : 2;
+        uint8_t RESET				: 1;
+        uint8_t START				: 1;
+        uint8_t STOP				: 1;
+    } bits;
+    uint8_t all;
+}Taskbar_t;
+
+typedef union {
+    struct {
+        uint8_t reset				: 1;
+        uint8_t start				: 1;
+        uint8_t stop				: 1;
+    } bits;
+    uint8_t all;
+}Tab_main_t;
+
 typedef void (*ActionHandler_t)(void);
+
 extern uint8_t Coils_Database[25];
 extern uint16_t Holding_Registers_Database[300];
 extern uint8_t Inputs_Database[25];
@@ -316,6 +333,7 @@ void Stop_motor_x(void);
 void Stop_motor_y(void);
 void Stop_motor_z(void);
 
+void wait_handler_stop();
 void move_axis(uint16_t xd, uint16_t yd, uint16_t zd);
 void Set_HMI_X_Axis(uint16_t value);
 void Set_HMI_Y_Axis(uint16_t value);

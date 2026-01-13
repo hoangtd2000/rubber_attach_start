@@ -7,8 +7,8 @@
 
 
 #include "modbusRTU.h"
-extern uint8_t RxData[256];
-extern uint8_t TxData[256];
+ uint8_t RxData[256];
+ uint8_t TxData[256];
 extern UART_HandleTypeDef huart2;
 
 ///* Table of CRC values for high-order byte */
@@ -50,7 +50,7 @@ uint8_t Inputs_Database[25]={
 };
 
 uint8_t Coils_Database[25]={
-		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 0-39    1-40
+		0b00000001, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 0-39    1-40
 		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 40-79   41-80
 		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 80-119  81-120
 		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 120-159 121-160

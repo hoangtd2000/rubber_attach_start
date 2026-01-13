@@ -17,12 +17,16 @@ Point2D Rubber_Mark[3];
 Point2D Tray1_Mark[3];
 Point2D Tray2_Mark[3];
 
+extern uint8_t Coils_Database[25];
+extern uint16_t Holding_Registers_Database[300];
+extern uint8_t Inputs_Database[25];
+
 uint16_t* Mark = &Holding_Registers_Database[6];
 const uint32_t FlashStart = 0x0800C000;
 
- uint32_t data[10] = {1,1,1,1,1,1,1,1,1,1};
+ uint32_t data[10];
 
-ActionHandler_t motormoveTable1[] =  {
+ActionHandler_t Move_tray_table[] =  {
 		 Move_tray_rubber_p1,
 		 Move_tray_rubber_p2,
 		 Move_tray_rubber_p3,
@@ -35,10 +39,8 @@ ActionHandler_t motormoveTable1[] =  {
 };
 Axis_t AxisX = {
 		.dir =  DIR_POS,
-		.is_moving = 0 ,
 		.mode = STOP,
 		.pulse_count = 0 ,
-		.stop_request = 0 ,
 		.target_pulse = 0,
 		.current_pos = 0 ,
 		.old_pos = 0,
@@ -47,20 +49,16 @@ Axis_t AxisX = {
 
 Axis_t AxisY = {
 		.dir =  DIR_POS,
-		.is_moving = 0 ,
 		.mode = STOP,
 		.pulse_count = 0 ,
-		.stop_request = 0 ,
 		.current_pos = 0 ,
 		.old_pos = 0,
 		.target_pulse = 0
 };
 Axis_t AxisZ = {
 		.dir =  DIR_POS,
-		.is_moving = 0 ,
 		.mode = STOP,
 		.pulse_count = 0 ,
-		.stop_request = 0 ,
 		.current_pos = 0 ,
 		.old_pos = 0,
 		.target_pulse = 0
@@ -71,22 +69,16 @@ void Set_Speed_Motor_x(uint16_t f, uint16_t f_max){
 	if(f > f_max) f = f_max;
 	set_speed_x(2000000/f);
 	set_pulse_x(2000000/f/2);
-//	htim8.Instance->ARR = 2000000/f;
-//	htim8.Instance->CCR1 = htim8.Instance->ARR / 2;
 }
 void Set_Speed_Motor_y(uint16_t f, uint16_t f_max){
 	if(f > f_max) f = f_max;
 	set_speed_y(2000000/f);
 	set_pulse_y(2000000/f/2);
-//	htim3.Instance->ARR = 2000000/f;
-//	htim3.Instance->CCR3 =  htim3.Instance->ARR / 2;
 }
 void Set_Speed_Motor_z(uint16_t f, uint16_t f_max){
 	if(f > f_max) f = f_max;
 	set_speed_z(1000000/f);
 	set_pulse_z(1000000/f/2);
-//	htim1.Instance->ARR = 2000000/f;
-//	htim1.Instance->CCR1 =htim1.Instance->ARR / 2;
 }
 
 
@@ -117,6 +109,11 @@ void excute_move_z_down(void){
 
 
 void move_x_left(uint16_t d){
+//	if(d == 1){
+//		set_x_target_pull(1);
+//	}else{
+//	set_x_target_pull(d-1);
+//	}
 	AxisX.dir = DIR_NEG;
 	reset_counter_timer_x();
 	set_x_target_pull(d-1);
@@ -125,6 +122,11 @@ void move_x_left(uint16_t d){
 
 
 void move_x_right(uint16_t d){
+//	if(d == 1){
+//		set_x_target_pull(1);
+//	}else{
+//	set_x_target_pull(d-1);
+//	}
 	AxisX.dir = DIR_POS;
 	reset_counter_timer_x();
 	set_x_target_pull(d-1);
@@ -132,6 +134,12 @@ void move_x_right(uint16_t d){
 }
 
 void move_y_forward(uint16_t d){
+//	if(d == 1){
+//		set_y_target_pull(1);
+//	}else{
+//		set_y_target_pull(d-1);
+//	}
+
 	AxisY.dir = DIR_POS;
 	reset_counter_timer_y();
 	set_y_target_pull(d-1);
@@ -139,6 +147,11 @@ void move_y_forward(uint16_t d){
 }
 
 void move_y_backward(uint16_t d){
+//	if(d == 1){
+//		set_y_target_pull(1);
+//	}else{
+//		set_y_target_pull(d-1);
+//	}
 	AxisY.dir = DIR_NEG;
 	reset_counter_timer_y();
 	set_y_target_pull(d-1);
@@ -146,6 +159,11 @@ void move_y_backward(uint16_t d){
 }
 
 void move_z_up(uint16_t d){
+//	if(d == 1){
+//		set_y_target_pull(1);
+//	}else{
+//		set_y_target_pull(d-1);
+//	}
 	AxisZ.dir = DIR_NEG;
 	reset_counter_timer_z();
 	set_z_target_pull(d-1);
@@ -153,42 +171,99 @@ void move_z_up(uint16_t d){
 }
 
 void move_z_down(uint16_t d){
+//	if(d == 1){
+//		set_z_target_pull(1);
+//	}else{
+//		set_z_target_pull(d-1);
+//	}
+
 	AxisZ.dir = DIR_POS;
 	reset_counter_timer_z();
 	set_z_target_pull(d-1);
 	excute_move_z_down();
 }
 
-void move_axis(uint16_t xd, uint16_t yd, uint16_t zd){
-    if(xd > max_x || yd > max_y || zd > max_z ){
+//void move_axis(uint16_t xd, uint16_t yd, uint16_t zd){
+//    if(xd > max_x || yd > max_y || zd > max_z ){
+//        return;
+//    }
+//    if((AxisX.current_pos != xd) && ((AxisX.current_pos - xd) != 1) && ((xd - AxisX.current_pos) != 1) ){
+//    	Set_Speed_Motor_x( speed_run, speed_x_max);
+//    	AxisX.mode = MOVE_AUTO;
+//    	if(AxisX.current_pos > xd){
+//    		move_x_left(AxisX.current_pos - xd  );
+//    	}else{
+//    		move_x_right(xd- AxisX.current_pos );
+//    	}
+//    }
+//    if((AxisY.current_pos != yd ) && ((AxisY.current_pos - yd) != 1) && ((yd - AxisY.current_pos) != 1) ){
+//	Set_Speed_Motor_y( speed_run, speed_y_max);
+//   	AxisY.mode = MOVE_AUTO;
+//    	if(AxisY.current_pos > yd){
+//    		move_y_backward(AxisY.current_pos - yd );
+//    	}else{
+//    		move_y_forward(yd-AxisY.current_pos );
+//    	}
+//    }
+//    if((AxisZ.current_pos != zd) && ((AxisZ.current_pos - zd) != 1) && ((zd - AxisZ.current_pos) != 1)){
+//    		Set_Speed_Motor_z( speed_run_z, speed_z_max);
+//    		AxisZ.mode = MOVE_AUTO;
+//    	if(AxisZ.current_pos > zd){
+//    		move_z_up(AxisZ.current_pos -  zd );
+//    	}else{
+//    		move_z_down(zd - AxisZ.current_pos );
+//    	}
+//    }
+//}
+static inline uint16_t abs_diff_u16(uint16_t a, uint16_t b)
+{
+    return (a > b) ? (a - b) : (b - a);
+}
+
+void move_axis(uint16_t xd, uint16_t yd, uint16_t zd)
+{
+    /* Check giới hạn */
+    if (xd > max_x || yd > max_y || zd > max_z) {
         return;
     }
-    if(AxisX.current_pos != xd ){
-    	Set_Speed_Motor_x( speed_run, speed_x_max);
-    	AxisX.mode = MOVE_AUTO;
-    	if(AxisX.current_pos > xd){
-    		move_x_left(AxisX.current_pos - xd  );
-    	}else{
-    		move_x_right(xd- AxisX.current_pos );
-    	}
+
+    /* ================= X AXIS ================= */
+    uint16_t dx = abs_diff_u16(AxisX.current_pos, xd);
+    if (dx > 1 && AxisX.mode == STOP) {
+        Set_Speed_Motor_x(speed_run, speed_x_max);
+        AxisX.mode = MOVE_AUTO;
+
+        if (AxisX.current_pos > xd) {
+            move_x_left(dx);
+        } else {
+            move_x_right(dx);
+        }
     }
-    if(AxisY.current_pos != yd ){
-	Set_Speed_Motor_y( speed_run, speed_y_max);
-   	AxisY.mode = MOVE_AUTO;
-    	if(AxisY.current_pos > yd){
-    		move_y_backward(AxisY.current_pos - yd );
-    	}else{
-    		move_y_forward(yd-AxisY.current_pos );
-    	}
+
+    /* ================= Y AXIS ================= */
+    uint16_t dy = abs_diff_u16(AxisY.current_pos, yd);
+    if (dy > 1 && AxisY.mode == STOP) {
+        Set_Speed_Motor_y(speed_run, speed_y_max);
+        AxisY.mode = MOVE_AUTO;
+
+        if (AxisY.current_pos > yd) {
+            move_y_backward(dy);
+        } else {
+            move_y_forward(dy);
+        }
     }
-    if(AxisZ.current_pos != zd ){
-	Set_Speed_Motor_z( speed_run_z, speed_z_max);
-   	AxisZ.mode = MOVE_AUTO;
-    	if(AxisZ.current_pos > zd){
-    		move_z_up(AxisZ.current_pos -  zd );
-    	}else{
-    		move_z_down(zd - AxisZ.current_pos );
-    	}
+
+    /* ================= Z AXIS ================= */
+    uint16_t dz = abs_diff_u16(AxisZ.current_pos, zd);
+    if (dz > 1 && AxisZ.mode == STOP) {
+        Set_Speed_Motor_z(speed_run_z, speed_z_max);
+        AxisZ.mode = MOVE_AUTO;
+
+        if (AxisZ.current_pos > zd) {
+            move_z_up(dz);
+        } else {
+            move_z_down(dz);
+        }
     }
 }
 
@@ -345,7 +420,20 @@ void Stop_motor_z(void){
 		AxisZ.old_pos = AxisZ.current_pos;
 }
 
+static inline bool AllAxisStop(void)
+{
+    return (AxisX.mode == STOP &&
+            AxisY.mode == STOP &&
+            AxisZ.mode == STOP);
+}
 
+void wait_handler_stop(){
+	while (!AllAxisStop())
+	{
+		__NOP();
+	}
+
+}
  void Set_HMI_X_Axis(uint16_t value){
 	Holding_Registers_Database[0] = value;
 }
@@ -474,7 +562,6 @@ void Handle_Home(void){
 	}
 }
 
-//uint8_t test_bitload = 0 ;
 
 //Cylinder_and_save
 void Handle_pick_handler1(void){
@@ -499,11 +586,8 @@ void Handle_save1(void){
 		Mark[0] =  Rubber_Mark[0].x;
 		Mark[1] =  Rubber_Mark[0].y;
 		Rubber_and_tray_indicator->bits.tray_rubber_p1 = 0;
-		// test
 		data[0] =  Rubber_Mark[0].raw;
 		Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-
-
 		break;
 	case 2:
 		Rubber_Mark[1].x = AxisX.current_pos;
@@ -511,8 +595,6 @@ void Handle_save1(void){
 		Mark[2] =  Rubber_Mark[1].x;
 		Mark[3] =  Rubber_Mark[1].y;
 		Rubber_and_tray_indicator->bits.tray_rubber_p2 = 0;
-
-		//test
 		data[1] =  Rubber_Mark[1].raw;
 		Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
 		break;
@@ -522,8 +604,6 @@ void Handle_save1(void){
 		Mark[4] =  Rubber_Mark[2].x;
 		Mark[5] =  Rubber_Mark[2].y;
 		Rubber_and_tray_indicator->bits.tray_rubber_p3 = 0;
-
-		//test
 		data[2] =  Rubber_Mark[2].raw;
 		Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
 		break;
@@ -533,12 +613,10 @@ void Handle_save2(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
 	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
 	case 4:
-
 				Tray1_Mark[0].x = AxisX.current_pos;
 				Tray1_Mark[0].y = AxisY.current_pos;
 				Mark[6] =  Tray1_Mark[0].x;
 				Mark[7] =  Tray1_Mark[0].y;
-
 				data[3] =  Tray1_Mark[0].raw;
 				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 				Rubber_and_tray_indicator->bits.tray1_p1 = 0 ;
@@ -549,7 +627,6 @@ void Handle_save2(void){
 				Tray1_Mark[1].y = AxisY.current_pos;
 				Mark[8] =  Tray1_Mark[1].x;
 				Mark[9] =  Tray1_Mark[1].y;
-
 				data[4] =  Tray1_Mark[1].raw;
 				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 				Rubber_and_tray_indicator->bits.tray1_p2 = 0 ;
@@ -559,7 +636,6 @@ void Handle_save2(void){
 				Tray1_Mark[2].y = AxisY.current_pos;
 				Mark[10] =  Tray1_Mark[2].x;
 				Mark[11] =  Tray1_Mark[2].y;
-
 				data[5] =  Tray1_Mark[2].raw;
 				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 				Rubber_and_tray_indicator->bits.tray1_p3 = 0 ;
@@ -574,7 +650,6 @@ void Handle_save3(void){
 				Tray2_Mark[0].y = AxisY.current_pos;
 				Mark[12] =  Tray2_Mark[0].x;
 				Mark[13] =  Tray2_Mark[0].y;
-
 				data[6] =  Tray2_Mark[0].raw;
 				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 				Rubber_and_tray_indicator->bits.tray2_p1 = 0 ;
@@ -605,9 +680,9 @@ void Handle_load(void){
 	int test_builtin1 = __builtin_ffs(Rubber_and_tray_indicator->all);
 		if (test_builtin1 > 0) {
 		    test_builtin1 -= 1;
-		    if (test_builtin1 < (int)(sizeof(motormoveTable1) / sizeof(motormoveTable1[0]))) {
+		    if (test_builtin1 < (int)(sizeof(Move_tray_table) / sizeof(Move_tray_table[0]))) {
 		    	if(AxisX.mode == STOP && AxisY.mode == STOP && AxisZ.mode == STOP ){
-		    		motormoveTable1[test_builtin1]();
+		    		Move_tray_table[test_builtin1]();
 		        	Cylinder_and_save->bits.load = 0;
 				}
 		    }

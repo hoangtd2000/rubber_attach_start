@@ -9,16 +9,6 @@
 #include "flash.h"
 
 
-void Flash_Read_Data (uint32_t StartSectorAddress, uint32_t *RxBuf, uint16_t numberofwords)
-{
-	while (1)
-	{
-		*RxBuf = *(__IO uint32_t *)StartSectorAddress;
-		StartSectorAddress += 4;
-		RxBuf++;
-		if (!(numberofwords--)) break;
-	}
-}
 uint32_t GetSector(uint32_t Address)
 {
   uint32_t sector = 0;
@@ -34,7 +24,16 @@ uint32_t GetSector(uint32_t Address)
   else sector = FLASH_SECTOR_7;
   return sector;
 }
-
+void Flash_Read_Data (uint32_t StartSectorAddress, uint32_t *RxBuf, uint16_t numberofwords)
+{
+	while (1)
+	{
+		*RxBuf = *(__IO uint32_t *)StartSectorAddress;
+		StartSectorAddress += 4;
+		RxBuf++;
+		if (!(numberofwords--)) break;
+	}
+}
 
 uint32_t Flash_Write_Data(uint32_t StartAddress,
                           uint32_t *Data,

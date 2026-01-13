@@ -8,6 +8,7 @@
 #ifndef INC_SCANMAP_H_
 #define INC_SCANMAP_H_
 
+#include "tick.h"
 #include "main.h"
 #include "motor_control.h"
 #include "application.h"
@@ -36,7 +37,11 @@
 //#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(I5_GPIO_Port, I5_Pin)
 
 
+#define RUBBER_COLS 20
+#define RUBBER_ROWS 7
 
+#define TRAY_COLS   4
+#define TRAY_ROWS   4
 
 // Vị trí từng Rubber
 typedef enum {
@@ -50,12 +55,11 @@ typedef struct {
 	ItemState State;
 }Item;
 
-
+void Handle(void);
 void wait_handler_stop();
 void Read_Tray_Data();
-void Calculate_TrayRubber_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
-void Calculate_Tray1_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
-void Calculate_Tray2_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
+
+void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col);
 uint8_t Pick_Item(uint8_t No);
 
 #endif /* INC_SCANMAP_H_ */

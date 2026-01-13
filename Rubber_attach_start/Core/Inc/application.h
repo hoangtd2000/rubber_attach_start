@@ -13,24 +13,22 @@
 #include "ScanMap.h"
 #include "flash.h"
 void application_init(void);
-void application_run(void);
+//void application_run(void);
 void application_run_main(void);
 void task_timer6(void);
+void task_timer7(void);
+
+void Try_go_home();
+
+void Handle_main(void);
+void Handle_motor(void);
+void Handle_setting(void);
 
 
-
-typedef union {
-    struct {
-
-        uint8_t home	: 1;
-        uint8_t motor	: 1;
-        uint8_t setting		: 1;
-    } bits;
-    uint8_t all;
-} control_taskbar_t;
-
-
-
+void Handle_reset(void);
+void Handle_start(void);
+void Handle_stop(void);
+void Handle_empty(void);
 
 
 #endif /* INC_APPLICATION_H_ */

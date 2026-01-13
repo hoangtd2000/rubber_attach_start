@@ -258,7 +258,7 @@ typedef void (*ActionHandler_t)(void);
 
 extern uint8_t Coils_Database[25];
 extern uint16_t Holding_Registers_Database[300];
-extern uint8_t Inputs_Database[25];
+extern uint8_t Inputs_Database[50];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;

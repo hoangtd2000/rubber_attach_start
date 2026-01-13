@@ -19,7 +19,7 @@ Point2D Tray2_Mark[3];
 
 extern uint8_t Coils_Database[25];
 extern uint16_t Holding_Registers_Database[300];
-extern uint8_t Inputs_Database[25];
+extern uint8_t Inputs_Database[50];
 
 uint16_t* Mark = &Holding_Registers_Database[6];
 const uint32_t FlashStart = 0x0800C000;
@@ -109,11 +109,6 @@ void excute_move_z_down(void){
 
 
 void move_x_left(uint16_t d){
-//	if(d == 1){
-//		set_x_target_pull(1);
-//	}else{
-//	set_x_target_pull(d-1);
-//	}
 	AxisX.dir = DIR_NEG;
 	reset_counter_timer_x();
 	set_x_target_pull(d-1);
@@ -122,11 +117,6 @@ void move_x_left(uint16_t d){
 
 
 void move_x_right(uint16_t d){
-//	if(d == 1){
-//		set_x_target_pull(1);
-//	}else{
-//	set_x_target_pull(d-1);
-//	}
 	AxisX.dir = DIR_POS;
 	reset_counter_timer_x();
 	set_x_target_pull(d-1);
@@ -134,12 +124,6 @@ void move_x_right(uint16_t d){
 }
 
 void move_y_forward(uint16_t d){
-//	if(d == 1){
-//		set_y_target_pull(1);
-//	}else{
-//		set_y_target_pull(d-1);
-//	}
-
 	AxisY.dir = DIR_POS;
 	reset_counter_timer_y();
 	set_y_target_pull(d-1);
@@ -147,11 +131,6 @@ void move_y_forward(uint16_t d){
 }
 
 void move_y_backward(uint16_t d){
-//	if(d == 1){
-//		set_y_target_pull(1);
-//	}else{
-//		set_y_target_pull(d-1);
-//	}
 	AxisY.dir = DIR_NEG;
 	reset_counter_timer_y();
 	set_y_target_pull(d-1);
@@ -159,11 +138,6 @@ void move_y_backward(uint16_t d){
 }
 
 void move_z_up(uint16_t d){
-//	if(d == 1){
-//		set_y_target_pull(1);
-//	}else{
-//		set_y_target_pull(d-1);
-//	}
 	AxisZ.dir = DIR_NEG;
 	reset_counter_timer_z();
 	set_z_target_pull(d-1);
@@ -171,12 +145,6 @@ void move_z_up(uint16_t d){
 }
 
 void move_z_down(uint16_t d){
-//	if(d == 1){
-//		set_z_target_pull(1);
-//	}else{
-//		set_z_target_pull(d-1);
-//	}
-
 	AxisZ.dir = DIR_POS;
 	reset_counter_timer_z();
 	set_z_target_pull(d-1);
@@ -300,23 +268,7 @@ void Control_motor_x(){
 		break;
 	}
 }
-void Stop_motor_x(void){
-	output_x_pull_stop();
-	if(AxisX.mode == MOVE_MANUAL){
-		AxisX.current_pos = AxisX.old_pos + (AxisX.dir*( get_counter_timer_slave_x() ) );
-		Set_HMI_X_Axis(AxisX.current_pos);
-	reset_counter_timer_slave_x();
-	}
-	else if(AxisX.mode == MOVE_AUTO){
-		AxisX.current_pos = AxisX.old_pos + (AxisX.dir*(get_x_target_pull()+1));
-		Set_HMI_X_Axis(AxisX.current_pos);
-	}else if(AxisX.mode == MOVE_HOME2){
-		AxisX.mode = MOVE_HOME3;
-		return;
-	}
-	AxisX.mode = STOP;
-	AxisX.old_pos = AxisX.current_pos;
-}
+
 void Control_motor_y(){
 	switch(AxisY.mode) {
 	case MOVE_AUTO:
@@ -384,7 +336,23 @@ void Control_motor_z(){
 		break;
 	}
 }
-
+void Stop_motor_x(void){
+	output_x_pull_stop();
+	if(AxisX.mode == MOVE_MANUAL){
+		AxisX.current_pos = AxisX.old_pos + (AxisX.dir*( get_counter_timer_slave_x() ) );
+		Set_HMI_X_Axis(AxisX.current_pos);
+	reset_counter_timer_slave_x();
+	}
+	else if(AxisX.mode == MOVE_AUTO){
+		AxisX.current_pos = AxisX.old_pos + (AxisX.dir*(get_x_target_pull()+1));
+		Set_HMI_X_Axis(AxisX.current_pos);
+	}else if(AxisX.mode == MOVE_HOME2){
+		AxisX.mode = MOVE_HOME3;
+		return;
+	}
+	AxisX.mode = STOP;
+	AxisX.old_pos = AxisX.current_pos;
+}
 void Stop_motor_y(void){
 	output_y_pull_stop();
 		if(AxisY.mode == MOVE_MANUAL){

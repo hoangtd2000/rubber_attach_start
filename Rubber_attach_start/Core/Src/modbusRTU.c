@@ -41,11 +41,30 @@ uint16_t Input_Registers_Database[50]={
 
 
 
-uint8_t Inputs_Database[25]={
+//uint8_t Inputs_Database[50]={
+//		0, 0, 0, 0x00, 0xff,    // 0-39    10001-10040
+//		0x00, 0xff, 0x00, 0xff, 0x00,    // 40-79   10041-10080
+//		0xff, 0x00, 0xff, 0x00, 0xff,    // 80-119  10081-10120
+//		0x00, 0xff, 0x00, 0xff, 0x0,    // 120-159 10121-10160
+//		0xff, 0x0, 0xff, 0x0, 0xff,    // 160-199 10161-10200
+//		0x0, 0xff, 0x0, 0xff, 0xff,    // 160-199 10161-10200
+//		0xff, 0xff, 0xff, 0xff, 0xff,    // 160-199 10161-10200
+//		0xff, 0xff, 0xff, 0xff, 0xff,    // 160-199 10161-10200
+//		0xff, 0xff, 0xff, 0xff, 0xff,    // 160-199 10161-10200
+//		0xff, 0xff, 0xff, 0xff, 0xff,    // 160-199 10161-10200
+//};
+
+
+uint8_t Inputs_Database[50]={
 		0, 0, 0, 0, 0,    // 0-39    10001-10040
 		0, 0, 0, 0, 0,    // 40-79   10041-10080
 		0, 0, 0, 0, 0,    // 80-119  10081-10120
 		0, 0, 0, 0, 0,    // 120-159 10121-10160
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
 		0, 0, 0, 0, 0,    // 160-199 10161-10200
 };
 
@@ -268,7 +287,7 @@ uint8_t readInputs (void)
 	}
 
 	uint16_t endAddr = startAddr+numCoils-1;  // Last coils address
-	if (endAddr>199)  // end coil can not be more than 199 as we only have record of 200 (0-199) coils in total
+	if (endAddr>400)  // end coil can not be more than 199 as we only have record of 200 (0-199) coils in total
 	{
 		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
 		return 0;

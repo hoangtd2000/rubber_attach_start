@@ -18,7 +18,7 @@ extern Rubber_and_tray_t* Rubber_and_tray;
 
 extern Axis_t AxisX, AxisY, AxisZ;
 extern uint16_t Input_Registers_Database[50];
-extern uint8_t Inputs_Database[25];
+extern uint8_t Inputs_Database[50];
 extern uint16_t* Mark;
 extern const uint32_t FlashStart;
 
@@ -64,6 +64,19 @@ ActionHandler_t Tab_motor_table[] =  {
 
 void application_init(){
 		HAL_Delay(3000);
+
+		Mark_all_rubber();
+
+//		Clear_mark_rubber(1);
+//		Clear_mark_rubber(5);
+//
+//
+//		Mark_tray1(3);
+//		Clear_mark_tray1(3);
+//
+//		Mark_tray2(2) ;
+//		Mark_tray2(5) ;
+
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
 		Read_Tray_Data();
 		HAL_TIM_Base_Start_IT(&htim5); //x
@@ -129,16 +142,16 @@ void Handle_setting(void){
 
 
 void Handle_reset(void){
-	//Tab_main_indicator->bits.reset =  1 ;
+	Tab_main_indicator->bits.reset =  1 ;
 }
 
 void Handle_start(void){
+	Tab_main_indicator->bits.start =  1 ;
 	Handle();
 
-	//Tab_main_indicator->bits.start =  1 ;
 }
 void Handle_stop(void){
-	//Tab_main_indicator->bits.stop =  1 ;
+	Tab_main_indicator->bits.stop =  1 ;
 }
 
 

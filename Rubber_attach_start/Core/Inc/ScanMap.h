@@ -38,7 +38,7 @@
 
 
 #define RUBBER_COLS 20
-#define RUBBER_ROWS 3
+#define RUBBER_ROWS 4 // luôn là số chẵn
 
 #define TRAY_COLS   4
 #define TRAY_ROWS   4

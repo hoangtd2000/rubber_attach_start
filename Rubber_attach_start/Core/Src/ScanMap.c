@@ -125,26 +125,129 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 //}
 
 
-#define PAIRS_PER_TRAY  4
+//#define PAIRS_PER_TRAY  7  // Só lượng vị trí tray đựng rubber ở tray1, 2
+//#define MAX_TRAYS       2
+//#define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
+//#define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
+//
+//uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
+//extern Tab_main_t* Tab_main;
+//void Handle(void){
+//	//ScreenMain->bits.START = 0;
+//	Tab_main->bits.start = 0;
+//	Tab_main_indicator->bits.start =  1 ;
+//	uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
+//
+//
+//	Clear_all_tray1();
+//	Clear_all_tray2();
+//	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+//	{
+//		int rx = rubber_pair % RUBBER_COLS;
+//		int ry = (rubber_pair / RUBBER_COLS) * 2;
+//
+//		// ===== Tray mapping =====
+//		int tray_id   = tray_index / PAIRS_PER_TRAY;
+//		int tray_pair = tray_index % PAIRS_PER_TRAY;
+//
+//		int tx = tray_pair % TRAY_COLS;
+//		int ty = (tray_pair / TRAY_COLS) * 2;
+//
+//		wait_handler_stop();
+//		move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z - 4000);
+//		delay_us(1000);
+//
+//		wait_handler_stop();
+//		move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z);
+//		Clear_mark_rubber(ry * RUBBER_COLS + rx);
+//
+//		Clear_mark_rubber(ry * RUBBER_COLS + rx +RUBBER_COLS );
+//		//Input_Registers_Database[0] =  Rubber_Index+1 ;
+//
+//		delay_us(1000);
+//		if(tray_id == 0){
+//			wait_handler_stop();
+//			move_axis(Tray_1[ty * TRAY_COLS + tx].x, Tray_1[ty * TRAY_COLS + tx].y, max_z-4000);
+//			delay_us(500);
+//			wait_handler_stop();
+//			move_axis(Tray_1[ty * TRAY_COLS + tx].x, Tray_1[ty * TRAY_COLS + tx].y, max_z);
+//			wait_handler_stop();
+//			Mark_tray1(ty * TRAY_COLS + tx);
+//		//	Input_Registers_Database[1] = rubber_pair+1;
+//			delay_us(1000);
+//
+//			wait_handler_stop();
+//			move_axis(Tray_1[(ty + 1) * TRAY_COLS + tx].x, Tray_1[(ty + 1) * TRAY_COLS + tx].y, max_z - 4000);
+//			delay_us(500);
+//			wait_handler_stop();
+//			move_axis(Tray_1[(ty + 1) * TRAY_COLS + tx].x, Tray_1[(ty + 1) * TRAY_COLS + tx].y, max_z);
+//			wait_handler_stop();
+//			Mark_tray1(ty * TRAY_COLS + tx + TRAY_COLS);
+//			//Input_Registers_Database[1] = tray_index+1;
+//			delay_us(1000);
+//		}
+//		if(tray_id == 1){
+//			wait_handler_stop();
+//			move_axis(Tray_2[ty * TRAY_COLS + tx].x, Tray_2[ty * TRAY_COLS + tx].y, max_z-4000);
+//			delay_us(500);
+//			wait_handler_stop();
+//			move_axis(Tray_2[ty * TRAY_COLS + tx].x, Tray_2[ty * TRAY_COLS + tx].y, max_z);
+//			wait_handler_stop();
+//			Mark_tray2(ty * TRAY_COLS + tx);
+//		//	Input_Registers_Database[1] = tray_index+1;
+//			delay_us(1000);
+//
+//			wait_handler_stop();
+//			move_axis(Tray_2[(ty + 1) * TRAY_COLS + tx].x, Tray_2[(ty + 1) * TRAY_COLS + tx].y, max_z - 4000);
+//			delay_us(500);
+//			wait_handler_stop();
+//			move_axis(Tray_2[(ty + 1) * TRAY_COLS + tx].x, Tray_2[(ty + 1) * TRAY_COLS + tx].y, max_z);
+//			wait_handler_stop();
+//			Mark_tray2(ty * TRAY_COLS + tx + TRAY_COLS);
+//			//Input_Registers_Database[1] = tray_index+1;
+//			delay_us(1000);
+//		}
+//		rubber_pair++;    // quét tuần tự khuôn cao su
+//		tray_index++;     // đếm số đã bỏ vào tray
+//	}
+//	wait_handler_stop();
+//	move_axis(0, 0, 0);
+////	Input_Registers_Database[0] =0 ;
+////	Input_Registers_Database[1] = 0;
+//	Tab_main_indicator->bits.start =  0 ;
+//	if(rubber_pair >= RUBBER_TOTAL_PAIRS){
+//		rubber_pair  = 0;
+//		Mark_all_rubber();
+//	}
+//}
+
+
+#define PAIRS_PER_TRAY  7
 #define MAX_TRAYS       2
 #define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 
 uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
+uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
+
 extern Tab_main_t* Tab_main;
 void Handle(void){
 	//ScreenMain->bits.START = 0;
 	Tab_main->bits.start = 0;
 	Tab_main_indicator->bits.start =  1 ;
-	uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
 
 
-	Clear_all_tray1();
-	Clear_all_tray2();
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
 	{
-		int rx = rubber_pair % RUBBER_COLS;
-		int ry = (rubber_pair / RUBBER_COLS) * 2;
+        int pair_row = rubber_pair / RUBBER_COLS;   // hàng cặp 0..4
+        int pair_col = rubber_pair % RUBBER_COLS;   // 0..19
+
+        int rx;
+        if (pair_row % 2 == 0)
+            rx = pair_col;                          // hàng chẵn: trái → phải
+        else
+            rx = RUBBER_COLS - 1 - pair_col;        // hàng lẻ: phải → trái
+        int ry = pair_row * 2;
 
 		// ===== Tray mapping =====
 		int tray_id   = tray_index / PAIRS_PER_TRAY;
@@ -219,81 +322,15 @@ void Handle(void){
 		rubber_pair  = 0;
 		Mark_all_rubber();
 	}
+	if(tray_index >= MAX_PAIRS){
+		tray_index  = 0;
+		Clear_all_tray1();
+		Clear_all_tray2();
+		//Mark_all_rubber();
+	}
+//	}else{
+//	}
 }
-
-
-
-//#define RUBBER_COLS 8
-//#define RUBBER_ROWS 7
-//
-//#define TRAY_COLS   4
-//#define TRAY_ROWS   3
-//
-//#define PAIRS_PER_TRAY  12     // 24 con
-//#define MAX_TRAYS       2
-//#define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 lần gắp
-//void Handle(uint8_t end_cover){
-//	if(ScreenMain->bits.START == 1){
-//		ScreenMain->bits.START = 0;
-//		uint16_t Rubber_Index = 0;
-//		while(Rubber_Index  < 12){
-//            int rx = (Rubber_Index % RUBBER_COLS);
-//            int ry = ((Rubber_Index / RUBBER_COLS) * 2);
-//
-//            int tray_id   = Rubber_Index / 12; // So luong tray1 và 2
-//            int tray_pair = Rubber_Index  % PAIRS_PER_TRAY;
-//
-//            int tx = (tray_pair % TRAY_COLS);
-//            int ty = ((tray_pair / TRAY_COLS) * 2);
-//
-//			wait_handler_stop();
-//			move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, AxisZ.current_pos);
-//			Input_Registers_Database[0] =  Rubber_Index+1 ;
-//			delay_us(500);
-//
-//			if(tray_id == 0){
-//				wait_handler_stop();
-//				move_axis(Tray1[ty * TRAY_COLS + tx].x, Tray1[ty * TRAY_COLS + tx].y, AxisZ.current_pos);
-//				Input_Registers_Database[0] =  Rubber_Index+1 ;
-//				delay_us(500);
-//
-//				wait_handler_stop();
-//				move_axis(Tray1[(ty + 1) * TRAY_COLS + tx].x, Tray1[(ty + 1) * TRAY_COLS + tx].y, AxisZ.current_pos);
-//				Input_Registers_Database[0] =  Rubber_Index+1 ;
-//				delay_us(500);
-//			}
-//
-//			Rubber_Index++;
-//		}
-//		wait_handler_stop();
-//		move_axis(0, 0, 0);
-//		Input_Registers_Database[0] =0 ;
-//		Input_Registers_Database[1] = 0;
-//
-//	}
-//}
-
-//void Handle(uint8_t end_cover){
-//	if(ScreenMain->bits.START == 1){
-//		ScreenMain->bits.START = 0;
-//
-//		Rubber_Index = 0;
-//		uint8_t item_count = end_cover;
-//		uint8_t count = 0;
-//		while(count < item_count){
-//
-//			count++;
-//			// Data Flash
-//			wait_handler_stop();
-//			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, AxisZ.current_pos);
-//		//	wait_handler_stop();
-//			delay_us(2000);
-//				Input_Registers_Database[0] =  Rubber_Index+1 ;
-//			Rubber_Index++;
-//		}
-//	}
-//}
-
 
 
 uint8_t Pick_Item(uint8_t No){

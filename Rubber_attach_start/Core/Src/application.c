@@ -63,7 +63,7 @@ ActionHandler_t Tab_motor_table[] =  {
 };
 
 void application_init(){
-		HAL_Delay(3000);
+		HAL_Delay(5000);
 
 		Mark_all_rubber();
 
@@ -101,7 +101,6 @@ void Try_go_home(){
 	  }else{
 		  AxisX.mode = MOVE_HOME1;
 	  }
-
 	  if(get_home_y() == home_y){
 		  AxisY.mode = MOVE_HOME2;
 	  }else{
@@ -114,11 +113,7 @@ void Try_go_home(){
 	  }
 }
 
-
 void Handle_main(void){
-
-
-
 	uint8_t builtin_Handle_main = __builtin_ffs(Tab_main->all);
 		if (builtin_Handle_main > 0) {
 			builtin_Handle_main -= 1;
@@ -166,9 +161,10 @@ void task_timer6(){
 //	}
 }
 void task_timer7(){
-	Control_motor_z();
 	Control_motor_y();
 	Control_motor_x();
+	Control_motor_z();
+	BipControl();
 }
 
 

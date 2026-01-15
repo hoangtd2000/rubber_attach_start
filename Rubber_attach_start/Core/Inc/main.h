@@ -80,6 +80,12 @@ void Error_Handler(void);
 #define i3_home_z_Pin GPIO_PIN_2
 #define i3_home_z_GPIO_Port GPIOC
 #define i3_home_z_EXTI_IRQn EXTI2_IRQn
+#define i4_vacum1_Pin GPIO_PIN_3
+#define i4_vacum1_GPIO_Port GPIOC
+#define i4_vacum1_EXTI_IRQn EXTI3_IRQn
+#define i5_vacum2_Pin GPIO_PIN_4
+#define i5_vacum2_GPIO_Port GPIOC
+#define i5_vacum2_EXTI_IRQn EXTI4_IRQn
 #define i1_home_x1_Pin GPIO_PIN_13
 #define i1_home_x1_GPIO_Port GPIOE
 #define i2_home_y1_Pin GPIO_PIN_14

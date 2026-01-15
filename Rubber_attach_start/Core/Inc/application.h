@@ -13,6 +13,8 @@
 #include "ScanMap.h"
 #include "flash.h"
 #include "common.h"
+#include "IO_Controller.h"
+
 void application_init(void);
 void application_run_main(void);
 void task_timer6(void);

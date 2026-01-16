@@ -33,11 +33,12 @@
 							//HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 1)
 #define Vacum2_Release		HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 1)
 							//HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, 1)
-//#define Is_Vacum1_Pick		HAL_GPIO_ReadPin(I4_GPIO_Port, I4_Pin)
-//#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(I5_GPIO_Port, I5_Pin)
+#define Is_Vacum1_Pick		HAL_GPIO_ReadPin(i4_vacum1_GPIO_Port, i4_vacum1_Pin)
+#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(i5_vacum2_GPIO_Port, i5_vacum2_Pin)
 
 void SetBlinks(uint8_t numBlinks);
 void SetBips(uint8_t numBips);
 void BipControl(void);
-uint8_t Pick_Item(uint8_t No);
+uint8_t PickRubber(uint8_t vacum_id);
+uint8_t ReleaseRubber(uint8_t vacum_id);
 #endif /* INC_IO_CONTROLLER_H_ */

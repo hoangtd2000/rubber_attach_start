@@ -7,6 +7,7 @@
 
 
 #include "IO_Controller.h"
+uint8_t vacum_error = 0;   // Hiển thị lỗi lên màn hình
 uint8_t NumberBips = 0;
 uint8_t modeBip = 1;
 uint16_t TIME_SET_BIP_ON = 1000;
@@ -48,38 +49,55 @@ void BipControl(void){
 }
 
 void SetBlinks(uint8_t numBlinks){
-	for(uint8_t i = 0; i < numBlinks; i++){
+	for(uint8_t i = 0; i < numBlinks * 2; i++){
 		HAL_GPIO_TogglePin(O11_GPIO_Port, O11_Pin);
 		delay_us(500);
 	}
 }
 
-uint8_t Pick_Item(uint8_t No){
-	if(No == 1){
-		for(uint8_t i = 0; i < 3; i++){
-			Cylinder1_Go_Down;
-			HAL_Delay(500);
-			Vacum1_Pick;
-			HAL_Delay(500);
-			Cylinder1_Go_Up;
-//			if(Is_Vacum1_Pick == 0){
-//				return 1;
-//			}
-		}
-		return 0;
-	}
-	else if(No == 2){
-		for(uint8_t i = 0; i < 3; i++){
-			Cylinder2_Go_Down;
-			HAL_Delay(500);
-			Vacum2_Pick;
-			HAL_Delay(500);
-			Cylinder2_Go_Up;
-//			if(Is_Vacum2_Pick == 0){
-//				return 1;
-//			}
-		}
-		return 0;
-	}
-	return 0;
+uint8_t PickRubber(uint8_t vacum_id)
+{
+    for(int retry = 0; retry < 3; retry++)
+    {
+        if(vacum_id == 1){
+        	Cylinder1_Go_Down;
+            delay_us(100);
+            Vacum1_Pick;
+            delay_us(300);
+            if(Is_Vacum1_Pick) return 1;
+        }
+        else{
+            Cylinder2_Go_Down;
+            delay_us(100);
+            Vacum2_Pick;
+            delay_us(300);
+            if(Is_Vacum2_Pick) return 1;
+        }
+    }
+
+    //Set_Warring(0);
+    return 0;
+}
+
+uint8_t ReleaseRubber(uint8_t vacum_id)
+{
+    for(int retry = 0; retry < 3; retry++)
+    {
+        if(vacum_id == 1){
+            Cylinder1_Go_Down;
+            delay_us(100);
+            Vacum1_Release;
+            delay_us(300);
+            if(Is_Vacum1_Pick == 0) return 1;
+        }
+        else{
+            Cylinder2_Go_Down;
+            delay_us(100);
+            Vacum2_Release;
+            delay_us(300);
+            if(Is_Vacum2_Pick == 0) return 1;
+        }
+    }
+
+    return 0;
 }

@@ -26,11 +26,14 @@ void Handle_main(void);
 void Handle_motor(void);
 void Handle_setting(void);
 
-
 void Handle_reset(void);
 void Handle_start(void);
 void Handle_stop(void);
 void Handle_empty(void);
+
+void Popup_handle_next(void);
+void Popup_handle_stop(void);
+
 
 #define Mark_all_rubber()  		(SetBit(&Inputs_Database[3], 0, 200))
 
@@ -48,7 +51,8 @@ void Handle_empty(void);
 
 #define Mark_rubber_working(f)  Input_Registers_Database[0] =  f+1
 
-
+#define Close_Popup(f) 		(ClearBit(&Inputs_Database[34], f, 1))
+#define Open_Popup(f) 			(SetBit(&Inputs_Database[34], f, 1))
 
 
 #endif /* INC_APPLICATION_H_ */

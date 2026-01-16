@@ -12,9 +12,9 @@ extern Axis_t AxisX, AxisY, AxisZ;
 extern uint16_t* Mark;
 extern ScreenMain_t* ScreenMain;
 
- Item Rubber_Tray[400] = { [0 ... 399] = { .State = Not_Empty } };;
- Item Tray1[30];
- Item Tray2[30];
+Item Rubber_Tray[400] = { [0 ... 399] = { .State = Not_Empty } };;
+Item Tray1[30];
+Item Tray2[30];
 
 TrayPos Rubber_TrayPos;
 TrayPos Tray1Pos;
@@ -27,14 +27,16 @@ const Item* Tray_2 = Tray2;
 extern Point2D Rubber_Mark[3];
 extern Point2D Tray1_Mark[3];
 extern Point2D Tray2_Mark[3];
-volatile uint16_t Rubber_Index = 0;
-uint16_t Tray_Index = 0;
-uint8_t end_Cover = 25;
+
 extern const uint32_t FlashStart;
 
 extern uint16_t Input_Registers_Database[50];
 extern uint32_t data[10];
 extern Tab_main_t* Tab_main_indicator;
+extern Tab_popup_t* Tab_popup;
+
+uint8_t st_continue = 0;
+uint8_t st_stop = 0;
 
 void Read_Tray_Data(){
 	Flash_Read_Data( FlashStart, data, 10);
@@ -130,66 +132,141 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 #define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 
+typedef enum {
+    ST_IDLE,
+    ST_MOVE_TO_RUBBER,
+    ST_PICK,
+    ST_WAIT_POPUP,
+    ST_PLACE,
+    ST_NEXT_PAIR,
+    ST_STOP
+} PickState_t;
+
+PickState_t pick_state = ST_IDLE;
 
 uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
 uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
 Item *TrayList[2] = { Tray1, Tray2 };
 extern Tab_main_t* Tab_main;
-uint8_t count_tray[2] = {0, 0};
-void Handle(void){
-	//ScreenMain->bits.START = 0;
+uint8_t count_tray[10] = {0, 0};
+
+void Handle(void)
+{
 	Tab_main->bits.start = 0;
 	Tab_main_indicator->bits.start =  1 ;
 	Input_Registers_Database[3] = count_tray[0];
 	Input_Registers_Database[4] = count_tray[1];
-	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
-	{
-        int pair_row = rubber_pair / RUBBER_COLS;   // hàng cặp 0..4
-        int pair_col = rubber_pair % RUBBER_COLS;   // 0..19
-
-        int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
-        int ry = pair_row * 2;
-
-		// ===== Tray mapping =====
-        uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
-		int tray_pair = tray_index % PAIRS_PER_TRAY;
-
-		int tx = tray_pair % TRAY_COLS;
-		int ty = (tray_pair / TRAY_COLS) * 2;
-
-		Item *tray = TrayList[tray_id];
-		// ===== Pick Rubber =====
-		wait_handler_stop();
-		move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z - 4000);
-		delay_us(1000);
-
-		wait_handler_stop();
-		move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z);
-		Clear_mark_rubber(ry * RUBBER_COLS + rx);
-		Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
-		delay_us(1000);
-
-        // ===== Place to Tray =====
-		PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);        // con trên
-		PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);  // con dưới
-
-		rubber_pair++;
-		tray_index++;
-	}
-	wait_handler_stop();
-	move_axis(0, 0, 0);
-	Tab_main_indicator->bits.start =  0 ;
-	if(rubber_pair >= RUBBER_TOTAL_PAIRS){
-		rubber_pair  = 0;
-		Mark_all_rubber();
-	}
-	if(tray_index >= MAX_PAIRS){
-		tray_index  = 0;
+	if(tray_index == 0){
 		Clear_all_tray1();
 		Clear_all_tray2();
-		count_tray[0] = 0;
-		count_tray[1] = 0;
 	}
+	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+    {
+		switch(pick_state)
+		{
+			case ST_IDLE:
+				Close_Popup(0);
+				st_continue = 0;
+				st_stop = 0;
+				pick_state = ST_MOVE_TO_RUBBER;
+				break;
+
+			case ST_MOVE_TO_RUBBER:
+			{
+				if(tray_index >= MAX_PAIRS || rubber_pair >= RUBBER_TOTAL_PAIRS)
+				{
+					pick_state = ST_STOP;
+					break;
+				}
+
+				int pair_row = rubber_pair / RUBBER_COLS;
+				int pair_col = rubber_pair % RUBBER_COLS;
+
+				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+				int ry = pair_row * 2;
+
+				// ===== Pick Rubber =====
+				wait_handler_stop();
+				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z - 4000);
+				delay_us(1000);
+
+				wait_handler_stop();
+				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z);
+				Clear_mark_rubber(ry * RUBBER_COLS + rx);
+				Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
+				delay_us(1000);
+				pick_state = ST_PICK;
+			}
+			break;
+
+			case ST_PICK:
+			{
+				if(!PickRubber(1) || !PickRubber(2))
+				{
+					Open_Popup(0);
+					pick_state = ST_WAIT_POPUP;
+				}
+				else
+				{
+					pick_state = ST_PLACE;
+				}
+			}
+			break;
+
+			case ST_WAIT_POPUP:
+				if(Tab_popup->bits.stop ==  1)
+				{
+					Tab_popup->bits.stop = 0;
+					pick_state = ST_STOP;
+				}
+				if(Tab_popup->bits.next ==  1)
+				{
+					Tab_popup->bits.next = 0;
+					Close_Popup(0);
+
+					//ReleaseRubber(1);
+					//ReleaseRubber(2);
+
+					rubber_pair++;   // bỏ cả cặp lỗi
+					pick_state = ST_MOVE_TO_RUBBER;
+				}
+				break;
+
+			case ST_PLACE:
+			{
+				uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
+				uint8_t tray_pair = tray_index % PAIRS_PER_TRAY;
+
+				int tx = tray_pair % TRAY_COLS;
+				int ty = (tray_pair / TRAY_COLS) * 2;
+
+				Item *tray = TrayList[tray_id];
+
+				PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
+				PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
+
+				pick_state = ST_NEXT_PAIR;
+			}
+			break;
+
+			case ST_NEXT_PAIR:
+				rubber_pair++;
+				tray_index++;
+				pick_state = ST_MOVE_TO_RUBBER;
+				break;
+
+			case ST_STOP:
+				wait_handler_stop();
+				move_axis(0, 0, 0);   // về home
+
+				Tab_main_indicator->bits.start = 0;
+				Close_Popup(0);
+				Tab_main->bits.start = 0;
+
+				pick_state = ST_IDLE;
+				break;
+		}
+    }
 }
 
 void PlaceToTray(Item *tray, uint8_t tray_id, int index)

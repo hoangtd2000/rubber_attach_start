@@ -21,17 +21,26 @@ extern uint16_t Input_Registers_Database[50];
 extern uint8_t Inputs_Database[50];
 extern uint16_t* Mark;
 extern const uint32_t FlashStart;
+extern uint8_t st_continue;
+extern uint8_t st_stop;
 
 
 Taskbar_t* Taskbar = (Taskbar_t*)&Coils_Database[0];
 Tab_main_t* Tab_main = (Tab_main_t*)&Coils_Database[5];
+Tab_popup_t* Tab_popup = (Tab_popup_t*)&Coils_Database[6];
 
 Tab_main_t* Tab_main_indicator = (Tab_main_t*) &Inputs_Database[0];
+
 
 ActionHandler_t Tab_main_table[] =  {
 		 Handle_reset,
 		 Handle_start,
 		 Handle_stop,
+};
+
+ActionHandler_t Tab_popup_table[] =  {
+		 Popup_handle_stop,
+		 Popup_handle_next,
 };
 
 ActionHandler_t Tab_motor_table[] =  {
@@ -64,20 +73,9 @@ ActionHandler_t Tab_motor_table[] =  {
 
 void application_init(){
 		HAL_Delay(5000);
-
 		Mark_all_rubber();
-
-//		Clear_mark_rubber(1);
-//		Clear_mark_rubber(5);
-//
-//
-//		Mark_tray1(3);
-//		Clear_mark_tray1(3);
-//
-//		Mark_tray2(2) ;
-//		Mark_tray2(5) ;
-
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
+		Taskbar->bits.home = 1 ;
 		Read_Tray_Data();
 		HAL_TIM_Base_Start_IT(&htim5); //x
 		HAL_TIM_Base_Start_IT(&htim9); //y
@@ -111,6 +109,16 @@ void Try_go_home(){
 	  }else {
 		  AxisZ.mode = MOVE_HOME1;
 	  }
+}
+
+void Handle_popup(void){
+	uint8_t builtin_Handle_popup = __builtin_ffs(Tab_popup->all);
+		if (builtin_Handle_popup > 0) {
+			builtin_Handle_popup -= 1;
+		    if (builtin_Handle_popup < (int)(sizeof(Tab_popup_table) / sizeof(Tab_popup_table[0]))) {
+		    	Tab_popup_table[builtin_Handle_popup]();
+		    }
+		}
 }
 
 void Handle_main(void){
@@ -149,9 +157,21 @@ void Handle_stop(void){
 	Tab_main_indicator->bits.stop =  1 ;
 }
 
+void Popup_handle_next(void){
+	//Tab_popup->bits.next =  1;
+	//st_continue = 1;
+	Close_Popup(0);
+}
+
+void Popup_handle_stop(void){
+	//Tab_popup->bits.stop =  1;
+	//st_stop = 1;
+	Close_Popup(0);
+}
 
 void task_timer6(){
 	if(Taskbar->bits.home){
+		Handle_popup();
 		Handle_main();
 	}else if(Taskbar->bits.motor){
 		Handle_motor();

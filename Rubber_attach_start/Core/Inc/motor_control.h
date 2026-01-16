@@ -254,6 +254,14 @@ typedef union {
     uint8_t all;
 }Tab_main_t;
 
+typedef union {
+    struct {
+        uint8_t stop				: 1;
+        uint8_t next				: 1;
+    } bits;
+    uint8_t all;
+}Tab_popup_t;
+
 typedef void (*ActionHandler_t)(void);
 
 extern uint8_t Coils_Database[25];

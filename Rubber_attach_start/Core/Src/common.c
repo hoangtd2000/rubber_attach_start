@@ -29,6 +29,7 @@ void SetBit(uint8_t *number, uint16_t startbit, uint8_t len)
         number[byteIndex] |= (1U << bitPos);
     }
 }
+
 void ClearBit(uint8_t *number, uint16_t startbit, uint8_t len)
 {
     uint16_t endbit = startbit + len;

@@ -50,6 +50,13 @@
 #define get_counter_timer_slave_y()   __HAL_TIM_GET_COUNTER(&htim2)
 #define get_counter_timer_slave_z()   __HAL_TIM_GET_COUNTER(&htim9)
 
+#define get_counter_timer_x()   __HAL_TIM_GET_COUNTER(&htim8)
+#define get_counter_timer_y()   __HAL_TIM_GET_COUNTER(&htim1)
+#define get_counter_timer_z()   __HAL_TIM_GET_COUNTER(&htim3)
+
+
+
+
 #define set_x_target_pull(pull) __HAL_TIM_SET_AUTORELOAD(&htim5, pull)
 #define set_y_target_pull(pull) __HAL_TIM_SET_AUTORELOAD(&htim2, pull)
 #define set_z_target_pull(pull) __HAL_TIM_SET_AUTORELOAD(&htim9, pull)
@@ -61,10 +68,18 @@
 
 #define set_speed_x(speed) __HAL_TIM_SET_AUTORELOAD(&htim8, speed)
 #define set_pulse_x(pulse) __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, pulse)
+#define get_pulse_x() __HAL_TIM_GET_COMPARE(&htim8, TIM_CHANNEL_1)
+
+
 #define set_speed_y(speed) __HAL_TIM_SET_AUTORELOAD(&htim1, speed)
 #define set_pulse_y(pulse) __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pulse)
+#define get_pulse_y() __HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1)
+
 #define set_speed_z(speed) __HAL_TIM_SET_AUTORELOAD(&htim3, speed)
 #define set_pulse_z(pulse) __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pulse)
+#define get_pulse_z() __HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_3)
+
+
 
 #define reset_counter_timer_x() __HAL_TIM_SET_COUNTER(&htim8, 0)
 #define reset_counter_timer_y() __HAL_TIM_SET_COUNTER(&htim1, 0)
@@ -77,10 +92,10 @@
 #define max_y 28000U
 #define max_z 15000U
 
-#define speed_x_max (30000U)
-#define speed_y_max (30000U)
+#define speed_x_max (40000U)
+#define speed_y_max (40000U)
 #define speed_z_max (5000U)
-#define speed_default (60U)
+#define speed_default (50U)
 #define speed_run     (30000U)
 #define speed_run_z 	(20000U)
 

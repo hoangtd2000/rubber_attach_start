@@ -242,12 +242,14 @@ void Control_motor_x(){
 		Set_HMI_X_Axis(AxisX.current_pos);
 		break;
 	case MOVE_MANUAL:
-		if((Control_motor->bits.x_Left == 0 ) && (Control_motor->bits.x_Right == 0 )){
-			Stop_motor_x();
-		}
 		AxisX.current_pos = AxisX.old_pos + (AxisX.dir*( get_counter_timer_slave_x()  ) );
 		Set_HMI_X_Axis(AxisX.current_pos);
 		Set_Speed_Motor_x( (get_counter_timer_slave_x()) + speed_default, speed_x_max);
+		if((Control_motor->bits.x_Left == 0 ) && (Control_motor->bits.x_Right == 0 )){
+			if(get_counter_timer_x() <= get_pulse_x() ){
+			Stop_motor_x();
+			}
+		}
 		break;
 	case MOVE_HOME1:
 		Set_Speed_Motor_x(speed_home1_x, speed_x_max);
@@ -276,12 +278,14 @@ void Control_motor_y(){
 		Set_HMI_Y_Axis(AxisY.current_pos);
 		break;
 	case MOVE_MANUAL:
-		if((Control_motor->bits.y_Forward == 0 ) && (Control_motor->bits.y_Backward == 0 )){
-					Stop_motor_y();
-				}
 		AxisY.current_pos = AxisY.old_pos + (AxisY.dir*( get_counter_timer_slave_y()  ) );
 				Set_HMI_Y_Axis(AxisY.current_pos);
 				Set_Speed_Motor_y( (get_counter_timer_slave_y()) + speed_default, speed_y_max);
+		if((Control_motor->bits.y_Forward == 0 ) && (Control_motor->bits.y_Backward == 0 )){
+			if(get_counter_timer_y() <= get_pulse_y() ){
+					Stop_motor_y();
+					}
+				}
 		break;
 	case MOVE_HOME1:
 		Set_Speed_Motor_y(speed_home1_y, speed_y_max);
@@ -309,12 +313,14 @@ void Control_motor_z(){
 		break;
 	case MOVE_MANUAL:
 
-		if((Control_motor->bits.z_Up == 0 ) && (Control_motor->bits.z_Down == 0 )){
-					Stop_motor_z();
-				}
 		AxisZ.current_pos = AxisZ.old_pos + (AxisZ.dir*(get_counter_timer_slave_z() ) );
 				Set_HMI_Z_Axis(AxisZ.current_pos);
 				Set_Speed_Motor_z((get_counter_timer_slave_z()) + speed_default, speed_z_max);
+		if((Control_motor->bits.z_Up == 0 ) && (Control_motor->bits.z_Down == 0 )){
+			if(get_counter_timer_z() < get_pulse_z() ){
+				Stop_motor_z();
+					}
+				}
 		break;
 	case MOVE_HOME1:
 		Set_Speed_Motor_z(speed_home1_z, speed_z_max);
@@ -332,60 +338,86 @@ void Control_motor_z(){
 		move_z_up(max_z);
 		break;
 	case STOP:
-
 		break;
 	}
 }
-void Stop_motor_x(void){
-	output_x_pull_stop();
-	if(AxisX.mode == MOVE_MANUAL){
-		AxisX.current_pos = AxisX.old_pos + (AxisX.dir*( get_counter_timer_slave_x() ) );
-		Set_HMI_X_Axis(AxisX.current_pos);
-	reset_counter_timer_slave_x();
-	}
-	else if(AxisX.mode == MOVE_AUTO){
-		AxisX.current_pos = AxisX.old_pos + (AxisX.dir*(get_x_target_pull()+1));
-		Set_HMI_X_Axis(AxisX.current_pos);
-	}else if(AxisX.mode == MOVE_HOME2){
-		AxisX.mode = MOVE_HOME3;
-		return;
-	}
-	AxisX.mode = STOP;
-	AxisX.old_pos = AxisX.current_pos;
+void Stop_motor_x(void)
+{
+    output_x_pull_stop();
+    switch (AxisX.mode) {
+    case MOVE_MANUAL:
+        AxisX.current_pos =
+            AxisX.old_pos + (AxisX.dir * get_counter_timer_slave_x());
+        Set_HMI_X_Axis(AxisX.current_pos);
+        reset_counter_timer_slave_x();
+        break;
+
+    case MOVE_AUTO:
+        AxisX.current_pos =
+            AxisX.old_pos + (AxisX.dir * (get_x_target_pull() + 1));
+        Set_HMI_X_Axis(AxisX.current_pos);
+        break;
+    case MOVE_HOME2:
+        AxisX.mode = MOVE_HOME3;
+        return;   // thoát hàm, KHÔNG set STOP (giữ đúng logic cũ)
+    default:
+        break;
+    }
+
+    AxisX.mode = STOP;
+    AxisX.old_pos = AxisX.current_pos;
 }
-void Stop_motor_y(void){
-	output_y_pull_stop();
-		if(AxisY.mode == MOVE_MANUAL){
-			AxisY.current_pos = AxisY.old_pos + (AxisY.dir*(get_counter_timer_slave_y()) );
-			Set_HMI_Y_Axis(AxisY.current_pos);
-		reset_counter_timer_slave_y();
-		}
-		else if(AxisY.mode == MOVE_AUTO){
-			AxisY.current_pos = AxisY.old_pos + (AxisY.dir*(get_y_target_pull() + 1));
-			Set_HMI_Y_Axis(AxisY.current_pos);
-		}else if(AxisY.mode == MOVE_HOME2){
-			AxisY.mode = MOVE_HOME3;
-			return;
-		}
-		AxisY.mode = STOP;
-		AxisY.old_pos = AxisY.current_pos;
+
+
+void Stop_motor_y(void)
+{
+    output_y_pull_stop();
+    switch (AxisY.mode) {
+    case MOVE_MANUAL:
+        AxisY.current_pos =
+            AxisY.old_pos + (AxisY.dir * get_counter_timer_slave_y());
+        Set_HMI_Y_Axis(AxisY.current_pos);
+        reset_counter_timer_slave_y();
+        break;
+    case MOVE_AUTO:
+        AxisY.current_pos =
+            AxisY.old_pos + (AxisY.dir * (get_y_target_pull() + 1));
+        Set_HMI_Y_Axis(AxisY.current_pos);
+        break;
+    case MOVE_HOME2:
+        AxisY.mode = MOVE_HOME3;
+        return;
+    default:
+        break;
+    }
+    AxisY.mode = STOP;
+    AxisY.old_pos = AxisY.current_pos;
 }
-void Stop_motor_z(void){
-	output_z_pull_stop();
-		if(AxisZ.mode == MOVE_MANUAL){
-			AxisZ.current_pos = AxisZ.old_pos + (AxisZ.dir*(get_counter_timer_slave_z()) );
-			Set_HMI_Z_Axis(AxisZ.current_pos);
-		reset_counter_timer_slave_z();
-		}
-		else if(AxisZ.mode == MOVE_AUTO){
-			AxisZ.current_pos = AxisZ.old_pos + (AxisZ.dir*(get_z_target_pull() + 1)  );
-			Set_HMI_Z_Axis(AxisZ.current_pos);
-		}else if(AxisZ.mode == MOVE_HOME2){
-			AxisZ.mode = MOVE_HOME3;
-			return;
-		}
-		AxisZ.mode = STOP;
-		AxisZ.old_pos = AxisZ.current_pos;
+
+
+void Stop_motor_z(void)
+{
+    output_z_pull_stop();
+    switch (AxisZ.mode) {
+    case MOVE_MANUAL:
+        AxisZ.current_pos =
+            AxisZ.old_pos + (AxisZ.dir * get_counter_timer_slave_z());
+        Set_HMI_Z_Axis(AxisZ.current_pos);
+        reset_counter_timer_slave_z();
+        break;
+    case MOVE_AUTO:
+        AxisZ.current_pos =
+            AxisZ.old_pos + (AxisZ.dir * (get_z_target_pull() + 1));
+        Set_HMI_Z_Axis(AxisZ.current_pos);
+        break;
+    case MOVE_HOME2:
+        AxisZ.mode = MOVE_HOME3;
+        return;
+    default:
+        break;
+    }
+    AxisZ.mode = STOP;
+    AxisZ.old_pos = AxisZ.current_pos;
 }
 
 static inline bool AllAxisStop(void)

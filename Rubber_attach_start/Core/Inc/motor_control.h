@@ -88,16 +88,19 @@
 #define reset_counter_timer_slave_y() __HAL_TIM_SET_COUNTER(&htim2, 0)
 #define reset_counter_timer_slave_z() __HAL_TIM_SET_COUNTER(&htim9, 0)
 
-#define max_x 50000U
-#define max_y 28000U
-#define max_z 15000U
+#define max_x 55000U
+#define max_y 33500U
+#define max_z_tray 13600U
+#define max_z_rubber 9900U
+#define max_z 	(max_z_tray)
 
 #define speed_x_max (40000U)
 #define speed_y_max (40000U)
 #define speed_z_max (5000U)
+
 #define speed_default (50U)
 #define speed_run     (30000U)
-#define speed_run_z 	(20000U)
+#define speed_run_z 	(5000U)
 
 #define speed_home1 	(4000U)
 #define speed_home2 	(4000U)

@@ -7,7 +7,6 @@
 
 #include "ScanMap.h"
 
-// Screen Main
 extern Axis_t AxisX, AxisY, AxisZ;
 extern uint16_t* Mark;
 extern ScreenMain_t* ScreenMain;
@@ -34,9 +33,6 @@ extern uint16_t Input_Registers_Database[50];
 extern uint32_t data[10];
 extern Tab_main_t* Tab_main_indicator;
 extern Tab_popup_t* Tab_popup;
-
-uint8_t st_continue = 0;
-uint8_t st_stop = 0;
 
 void Read_Tray_Data(){
 	Flash_Read_Data( FlashStart, data, 10);
@@ -95,39 +91,7 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
     }
 }
 
-
-//void Handle(void){
-//		ScreenMain->bits.START = 0;
-//		Rubber_Index = 0;
-//		uint8_t item_count = 16;
-//		uint8_t count = 0;
-//		while(count < item_count){
-//			count++;
-//			wait_handler_stop();
-//			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, max_z-4000);
-//			Input_Registers_Database[0] =  Rubber_Index+1 ;
-//			delay_us(500);
-//			wait_handler_stop();
-//			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, max_z);
-//			delay_us(1000);
-////			wait_handler_stop();
-////			move_axis(Tray_1[Rubber_Index].x, Tray_1[Rubber_Index].y, max_z-4000);
-////			delay_us(500);
-////			wait_handler_stop();
-////			move_axis(Tray_1[Rubber_Index].x, Tray_1[Rubber_Index].y, max_z);
-////			wait_handler_stop();
-////			Input_Registers_Database[1] = Rubber_Index+1;
-////			delay_us(1000);
-//			Rubber_Index++;
-//		}
-//		wait_handler_stop();
-//		move_axis(0, 0, 0);
-//		Input_Registers_Database[0] =0 ;
-//		Input_Registers_Database[1] = 0;
-//}
-
-
-#define PAIRS_PER_TRAY  8
+#define PAIRS_PER_TRAY  12
 #define MAX_TRAYS       2
 #define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
@@ -146,9 +110,11 @@ PickState_t pick_state = ST_IDLE;
 
 uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
 uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
-Item *TrayList[2] = { Tray1, Tray2 };
+Item *TrayList[] = { Tray1, Tray2 };
 extern Tab_main_t* Tab_main;
 uint8_t count_tray[10] = {0, 0};
+
+#if 1
 
 void Handle(void)
 {
@@ -160,19 +126,23 @@ void Handle(void)
 		Clear_all_tray1();
 		Clear_all_tray2();
 	}
+	if(rubber_pair == 0){
+		Mark_all_rubber();
+	}
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		switch(pick_state)
 		{
 			case ST_IDLE:
+				Tab_main_indicator->bits.start =  1 ;
 				Close_Popup(0);
-				st_continue = 0;
-				st_stop = 0;
 				pick_state = ST_MOVE_TO_RUBBER;
-				break;
-
+			break;
 			case ST_MOVE_TO_RUBBER:
 			{
+				OFF_LED_RED;
+				ON_LED_GREEN;
+				Tab_main_indicator->bits.start =  1 ;
 				if(tray_index >= MAX_PAIRS || rubber_pair >= RUBBER_TOTAL_PAIRS)
 				{
 					pick_state = ST_STOP;
@@ -187,23 +157,25 @@ void Handle(void)
 
 				// ===== Pick Rubber =====
 				wait_handler_stop();
-				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z - 4000);
+				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber - 8000);
 				delay_us(1000);
 
 				wait_handler_stop();
-				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z);
+				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
 				Clear_mark_rubber(ry * RUBBER_COLS + rx);
 				Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 				delay_us(1000);
 				pick_state = ST_PICK;
 			}
 			break;
-
 			case ST_PICK:
 			{
-				if(!PickRubber(1) || !PickRubber(2))
+				//!PickRubber(1) || !PickRubber(2)
+				if(rubber_pair % 180 == 0)
 				{
+					wait_handler_stop();
 					Open_Popup(0);
+					SetBips(3);
 					pick_state = ST_WAIT_POPUP;
 				}
 				else
@@ -212,11 +184,16 @@ void Handle(void)
 				}
 			}
 			break;
-
 			case ST_WAIT_POPUP:
+				if(Timer_Check(1, 500) && Inputs_Database[34]){
+					TOGGLE_LED_RED;
+					OFF_LED_GREEN;
+				}
 				if(Tab_popup->bits.stop ==  1)
 				{
 					Tab_popup->bits.stop = 0;
+					Close_Popup(0);
+					rubber_pair++;   // bỏ cả cặp lỗi
 					pick_state = ST_STOP;
 				}
 				if(Tab_popup->bits.next ==  1)
@@ -230,8 +207,7 @@ void Handle(void)
 					rubber_pair++;   // bỏ cả cặp lỗi
 					pick_state = ST_MOVE_TO_RUBBER;
 				}
-				break;
-
+			break;
 			case ST_PLACE:
 			{
 				uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
@@ -248,31 +224,44 @@ void Handle(void)
 				pick_state = ST_NEXT_PAIR;
 			}
 			break;
-
 			case ST_NEXT_PAIR:
 				rubber_pair++;
 				tray_index++;
 				pick_state = ST_MOVE_TO_RUBBER;
 				break;
-
 			case ST_STOP:
 				wait_handler_stop();
-				move_axis(0, 0, 0);   // về home
-
+				move_axis(0, 0, 0);
+				wait_handler_stop();
 				Tab_main_indicator->bits.start = 0;
-				Close_Popup(0);
-				Tab_main->bits.start = 0;
 
-				pick_state = ST_IDLE;
+				if(Tab_main->bits.start == 1){
+					Tab_main->bits.start = 0;
+					pick_state = ST_MOVE_TO_RUBBER;
+				}
 				break;
 		}
     }
+	SetBips(5);
+	ON_LED_GREEN;
+	wait_handler_stop();
+	move_axis(0, 0, 0);
+	wait_handler_stop();
+	Tab_main_indicator->bits.start =  0 ;
+	if(rubber_pair >= RUBBER_TOTAL_PAIRS){
+		rubber_pair  = 0;
+	}
+	if(tray_index >= MAX_PAIRS){
+		tray_index  = 0;
+		count_tray[0] = 0;
+		count_tray[1] = 0;
+	}
 }
 
 void PlaceToTray(Item *tray, uint8_t tray_id, int index)
 {
     wait_handler_stop();
-    move_axis(tray[index].x, tray[index].y, max_z - 4000);
+    move_axis(tray[index].x, tray[index].y, max_z_tray - 8000);
     delay_us(500);
     wait_handler_stop();
 
@@ -286,7 +275,35 @@ void PlaceToTray(Item *tray, uint8_t tray_id, int index)
         Input_Registers_Database[4] = count_tray[1];
     }
 
-    move_axis(tray[index].x, tray[index].y, max_z);
+    move_axis(tray[index].x, tray[index].y, max_z_tray);
     wait_handler_stop();
     delay_us(1000);
 }
+#else
+
+int Rubber_Index = 0;
+
+void Handle(void){
+	Tab_main->bits.start = 0;
+	Tab_main_indicator->bits.start =  1 ;
+		Rubber_Index = 0;
+		uint8_t item_count = 16;
+		uint8_t count = 0;
+		while(count < item_count){
+			count++;
+			wait_handler_stop();
+			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, max_z-4000);
+			Input_Registers_Database[0] =  Rubber_Index+1 ;
+			delay_us(500);
+			wait_handler_stop();
+			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, max_z);
+			delay_us(1000);
+
+			Rubber_Index++;
+		}
+		wait_handler_stop();
+		move_axis(0, 0, 0);
+		Input_Registers_Database[0] =0 ;
+		Input_Registers_Database[1] = 0;
+}
+#endif

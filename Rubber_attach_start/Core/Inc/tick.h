@@ -10,4 +10,6 @@
 
 #include "stdint.h"
 void delay_us(uint32_t us);
+uint32_t millis(void);
+uint8_t Timer_Check(uint8_t id, uint32_t interval);
 #endif /* INC_TICK_H_ */

@@ -6,6 +6,10 @@
  */
 
 #include "motor_control.h"
+
+
+#define truc_z_len_het
+
 ScreenMain_t* ScreenMain = (ScreenMain_t*)&Coils_Database[0];
 
 Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[1];
@@ -194,7 +198,21 @@ void move_axis(uint16_t xd, uint16_t yd, uint16_t zd)
     if (xd > max_x || yd > max_y || zd > max_z) {
         return;
     }
+    /* ================= Z AXIS ================= */
+    uint16_t dz = abs_diff_u16(AxisZ.current_pos, zd);
+    if (dz > 1 && AxisZ.mode == STOP) {
+        Set_Speed_Motor_z(speed_run_z, speed_z_max);
+        AxisZ.mode = MOVE_AUTO;
 
+        if (AxisZ.current_pos > zd) {
+            move_z_up(dz);
+        } else {
+            move_z_down(dz);
+        }
+    }
+#ifdef truc_z_len_het
+    while(AxisZ.mode != STOP);
+#endif
     /* ================= X AXIS ================= */
     uint16_t dx = abs_diff_u16(AxisX.current_pos, xd);
     if (dx > 1 && AxisX.mode == STOP) {
@@ -221,18 +239,7 @@ void move_axis(uint16_t xd, uint16_t yd, uint16_t zd)
         }
     }
 
-    /* ================= Z AXIS ================= */
-    uint16_t dz = abs_diff_u16(AxisZ.current_pos, zd);
-    if (dz > 1 && AxisZ.mode == STOP) {
-        Set_Speed_Motor_z(speed_run_z, speed_z_max);
-        AxisZ.mode = MOVE_AUTO;
 
-        if (AxisZ.current_pos > zd) {
-            move_z_up(dz);
-        } else {
-            move_z_down(dz);
-        }
-    }
 }
 
 void Control_motor_x(){

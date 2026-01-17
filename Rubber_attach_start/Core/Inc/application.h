@@ -53,6 +53,7 @@ void Popup_handle_stop(void);
 
 #define Close_Popup(f) 		(ClearBit(&Inputs_Database[34], f, 1))
 #define Open_Popup(f) 			(SetBit(&Inputs_Database[34], f, 1))
+#define Read_Warring(f)        (ReadBit(&Inputs_Database[34], f, 1))
 
 
 #endif /* INC_APPLICATION_H_ */

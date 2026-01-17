@@ -76,7 +76,7 @@ static void MX_TIM7_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint32_t x = 0;
 
 /* USER CODE END 0 */
 
@@ -122,7 +122,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   application_init();
   SetBips(3);
-  //SetBlinks(10);
+
 
   /* USER CODE END 2 */
 
@@ -149,6 +149,10 @@ int main(void)
 	//  application_run();
 //	  task_timer6();
 	  application_run_main();
+	  if(Timer_Check(0, 500)){
+		  TOGGLE_LED_GREEN;
+	  }
+
 //  HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
 //	  HAL_GPIO_TogglePin(O2_GPIO_Port, O2_Pin);
 //	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
@@ -673,8 +677,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, O13_Pin|O14_Pin|O15_Pin|O16_Pin
-                          |O17_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, O13_Pin|O11_Pin|O12_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOE, O14_Pin|O15_Pin|O16_Pin|O17_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, O18_Pin|output_x_sig_Pin|output_z_sig_Pin, GPIO_PIN_RESET);
@@ -691,9 +697,6 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, O11_Pin|O12_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : O13_Pin O14_Pin O15_Pin O16_Pin
                            O17_Pin O11_Pin O12_Pin */

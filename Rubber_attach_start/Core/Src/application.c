@@ -30,6 +30,7 @@ Tab_main_t* Tab_main = (Tab_main_t*)&Coils_Database[5];
 Tab_popup_t* Tab_popup = (Tab_popup_t*)&Coils_Database[6];
 
 Tab_main_t* Tab_main_indicator = (Tab_main_t*) &Inputs_Database[0];
+Tab_popup_t* Tab_popup_indicator = (Tab_popup_t*) &Inputs_Database[35];
 
 
 ActionHandler_t Tab_main_table[] =  {
@@ -158,24 +159,24 @@ void Handle_stop(void){
 }
 
 void Popup_handle_next(void){
-	//Tab_popup->bits.next =  1;
+	//Tab_popup->bits.next = 0;
 	//st_continue = 1;
-	Close_Popup(0);
+	//Close_Popup(0);
 }
 
 void Popup_handle_stop(void){
-	//Tab_popup->bits.stop =  1;
+	//Tab_popup->bits.stop = 0;
 	//st_stop = 1;
-	Close_Popup(0);
+	//Close_Popup(0);
 }
 
 void task_timer6(){
 	if(Taskbar->bits.home){
-		Handle_popup();
 		Handle_main();
 	}else if(Taskbar->bits.motor){
 		Handle_motor();
 	}
+	Handle_popup();
 //	else if(Taskbar->bits.SETTING == 1){
 //
 //	}
@@ -185,6 +186,7 @@ void task_timer7(){
 	Control_motor_x();
 	Control_motor_z();
 	BipControl();
+	BlinkControl();
 }
 
 

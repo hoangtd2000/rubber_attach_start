@@ -13,5 +13,16 @@ void delay_us(uint32_t us)
 	    while(Tick < tmp){
 	  	//  __NOP();
 	    }
+}
 
+uint8_t Timer_Check(uint8_t id, uint32_t interval)
+{
+    static uint32_t previousMillis[10] = {0};
+
+    if (Tick - previousMillis[id] >= interval)
+    {
+        previousMillis[id] = Tick;
+        return 1;
+    }
+    return 0;
 }

@@ -28,7 +28,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-uint32_t Tick = 0 ;
+uint32_t Tick = 0;
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -435,8 +435,8 @@ void TIM6_DAC_IRQHandler(void)
 void TIM7_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM7_IRQn 0 */
-	Tick++;
-	task_timer7();
+  Tick++;
+  task_timer7();
   /* USER CODE END TIM7_IRQn 0 */
   HAL_TIM_IRQHandler(&htim7);
   /* USER CODE BEGIN TIM7_IRQn 1 */

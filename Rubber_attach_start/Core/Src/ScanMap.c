@@ -34,6 +34,8 @@ extern uint32_t data[10];
 extern Tab_main_t* Tab_main_indicator;
 extern Tab_popup_t* Tab_popup;
 
+uint8_t place_step = 0;
+
 void Read_Tray_Data(){
 	Flash_Read_Data( FlashStart, data, 10);
 
@@ -167,8 +169,6 @@ void Handle(void)
 				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber - 8000);
 				delay_us(1000);
 
-				CheckDoorAndPause();
-
 				wait_handler_stop();
 				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
 				Clear_mark_rubber(ry * RUBBER_COLS + rx);
@@ -228,14 +228,29 @@ void Handle(void)
 
 				Item *tray = TrayList[tray_id];
 
-				PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
-				CheckDoorAndPause();
-				PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
+//				PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
+//				PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
+			    if(place_step == 0)
+			    {
+			        PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
+			        place_step = 1;
+			        if(DOOR_OPEN())
+			        {
+			            prev_state = ST_PLACE;
+			            pick_state = ST_PAUSE_DOOR;
+			            break;
+			        }
+			    }
+			    if(place_step == 1)
+			    {
+			        PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
+			        place_step = 0;
 
-				//ReleaseRubber(1);
-				//ReleaseRubber(2);
+			        ReleaseRubber(1);
+			        ReleaseRubber(2);
 
-				pick_state = ST_NEXT_PAIR;
+			        pick_state = ST_NEXT_PAIR;
+			    }
 			}
 			break;
 			case ST_NEXT_PAIR:
@@ -295,8 +310,10 @@ void Handle(void)
 
 void PlaceToTray(Item *tray, uint8_t tray_id, int index)
 {
+	if(DOOR_OPEN()) return;
     wait_handler_stop();
     move_axis(tray[index].x, tray[index].y, max_z_tray - 8000);
+    if(DOOR_OPEN()) return;
     delay_us(500);
     wait_handler_stop();
 

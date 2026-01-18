@@ -6,7 +6,7 @@
  */
 
 #include "motor_control.h"
-
+#include "IO_Controller.h"
 
 #define truc_z_len_het
 
@@ -16,6 +16,8 @@ Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[1];
 Cylinder_and_save_t* Cylinder_and_save = (Cylinder_and_save_t*)&Coils_Database[2];
 Rubber_and_tray_t* Rubber_and_tray  = (Rubber_and_tray_t*)&Coils_Database[3];
 Rubber_and_tray_indicator_t* Rubber_and_tray_indicator = (Rubber_and_tray_indicator_t*)&Inputs_Database[1];
+
+Control_Vacum_Indicator_t* Control_Vacum_Indicator = (Control_Vacum_Indicator_t*)&Inputs_Database[2];
 
 Point2D Rubber_Mark[3];
 Point2D Tray1_Mark[3];
@@ -572,16 +574,24 @@ void Handle_Home(void){
 
 //Cylinder_and_save
 void Handle_pick_handler1(void){
-	HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, pick);
+	if(PickRubber(1)){
+		Control_Vacum_Indicator->bits.pick1 = 1;
+	}
 }
 void Handle_release_handler1(void){
-	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, release);
+	if(ReleaseRubber(1)){
+		Control_Vacum_Indicator->bits.realse1 = 1;
+	}
 }
 void Handle_pick_handler2(void){
-	HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, pick);
+	if(PickRubber(2)){
+		Control_Vacum_Indicator->bits.pick2 = 1;
+	}
 }
 void Handle_release_handler2(void){
-	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, release);
+	if(ReleaseRubber(2)){
+		Control_Vacum_Indicator->bits.realse2 = 1;
+	}
 }
 void Handle_save1(void){
 //	HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);

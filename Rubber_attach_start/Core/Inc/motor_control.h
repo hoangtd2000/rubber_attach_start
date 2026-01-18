@@ -157,9 +157,6 @@ typedef struct {
     MoveMode mode;
 } Axis_t;
 
-
-
-
 typedef union {
     struct {
 
@@ -248,8 +245,6 @@ typedef union {
     uint8_t all;
 }ScreenMain_t;
 
-
-
 typedef union {
     struct {
     	uint8_t home                : 1;
@@ -279,6 +274,17 @@ typedef union {
     } bits;
     uint8_t all;
 }Tab_popup_t;
+
+typedef union {
+    struct {
+    	uint8_t reserver            : 2;
+        uint8_t pick1				: 1;
+        uint8_t realse1				: 1;
+        uint8_t pick2				: 1;
+        uint8_t realse2				: 1;
+    } bits;
+    uint8_t all;
+} Control_Vacum_Indicator_t;
 
 typedef void (*ActionHandler_t)(void);
 

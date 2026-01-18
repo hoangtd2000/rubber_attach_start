@@ -175,7 +175,6 @@ void Handle(void)
 
 			    if(!pick1_ok || !pick2_ok)
 			    {
-			        // Release đầu còn hút được
 			        if(pick1_ok) ReleaseRubber(1);
 			        if(pick2_ok) ReleaseRubber(2);
 
@@ -206,7 +205,6 @@ void Handle(void)
 				{
 					Tab_popup->bits.next = 0;
 					Close_Popup(0);
-
 					rubber_pair++;   // bỏ cả cặp lỗi
 					pick_state = ST_MOVE_TO_RUBBER;
 				}

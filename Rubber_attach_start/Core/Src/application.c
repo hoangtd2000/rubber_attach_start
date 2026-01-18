@@ -21,8 +21,8 @@ extern uint16_t Input_Registers_Database[50];
 extern uint8_t Inputs_Database[50];
 extern uint16_t* Mark;
 extern const uint32_t FlashStart;
-extern uint8_t st_continue;
-extern uint8_t st_stop;
+extern uint8_t SS_Door_Left;
+extern uint8_t SS_Door_Right;
 
 
 Taskbar_t* Taskbar = (Taskbar_t*)&Coils_Database[0];
@@ -171,10 +171,12 @@ void Popup_handle_stop(void){
 }
 
 void task_timer6(){
-	if(Taskbar->bits.home){
-		Handle_main();
-	}else if(Taskbar->bits.motor){
-		Handle_motor();
+	if(HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) && HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin)){
+		if(Taskbar->bits.home){
+			Handle_main();
+		}else if(Taskbar->bits.motor){
+			Handle_motor();
+		}
 	}
 	Handle_popup();
 //	else if(Taskbar->bits.SETTING == 1){
@@ -185,8 +187,7 @@ void task_timer7(){
 	Control_motor_y();
 	Control_motor_x();
 	Control_motor_z();
-	BipControl();
-	BlinkControl();
+	//BipControl();
 }
 
 

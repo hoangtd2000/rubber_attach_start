@@ -55,5 +55,7 @@ void Popup_handle_stop(void);
 #define Open_Popup(f) 			(SetBit(&Inputs_Database[34], f, 1))
 #define Read_Warring(f)        (ReadBit(&Inputs_Database[34], f, 1))
 
+extern uint8_t SS_Door_Left;
+extern uint8_t SS_Door_Right;
 
 #endif /* INC_APPLICATION_H_ */

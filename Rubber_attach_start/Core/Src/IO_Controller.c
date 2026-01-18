@@ -13,17 +13,8 @@ uint16_t TIME_SET_BIP_ON = 500;
 uint16_t TIME_SET_BIP_OFF = 500;
 uint16_t TimeDelayBip = 0;
 
-uint8_t NumberBlinks = 0;
-uint8_t modeBlink = 0;
-uint16_t TIME_SET_BLINK_ON = 500;
-uint16_t TIME_SET_BLINK_OFF = 500;
-uint16_t TimeDelayBlink = 0;
-
 void SetBips(uint8_t numBips){
 	NumberBips = numBips - 1;
-}
-void SetBlinks(uint8_t numBlinks){
-	NumberBlinks = numBlinks - 1;
 }
 
 void BipControl(void){
@@ -55,37 +46,6 @@ void BipControl(void){
 			break;
 	}
 	if(TimeDelayBip > 0) TimeDelayBip--;
-}
-
-void BlinkControl(){
-	switch(modeBlink){
-		case 0:
-			ON_LED_RED;
-			TimeDelayBlink = TIME_SET_BLINK_ON;
-			modeBlink = 1;
-			break;
-		case 1:
-			if(TimeDelayBlink == 0){
-				OFF_LED_RED;
-				TimeDelayBlink = TIME_SET_BLINK_OFF;
-				modeBlink = 2;
-			}
-			break;
-		case 2:
-			if(TimeDelayBlink == 0){
-				modeBlink = 0;
-				if(NumberBlinks > 0) NumberBlinks--;
-				else modeBlink = 3;
-			}
-			break;
-		case 3:
-			if(NumberBlinks != 0)
-				modeBlink = 0;
-			break;
-		default:
-			break;
-	}
-	if(TimeDelayBlink > 0) TimeDelayBlink--;
 }
 
 

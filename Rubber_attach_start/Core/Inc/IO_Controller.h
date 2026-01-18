@@ -46,8 +46,6 @@ enum {
 	LED_GREEN,
 };
 
-void SetBlinks(uint8_t numBlinks);
-void BlinkControl();
 void SetBips(uint8_t numBips);
 void BipControl(void);
 uint8_t PickRubber(uint8_t vacum_id);

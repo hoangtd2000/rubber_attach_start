@@ -76,8 +76,8 @@ static void MX_TIM7_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t x = 0;
-
+uint32_t x1 = 0;
+uint32_t x2 = 0;
 /* USER CODE END 0 */
 
 /**
@@ -120,9 +120,9 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-  application_init();
-  SetBips(3);
 
+  application_init();
+  //SetBips(3);
 
   /* USER CODE END 2 */
 
@@ -149,8 +149,13 @@ int main(void)
 	//  application_run();
 //	  task_timer6();
 	  application_run_main();
-	  if(Timer_Check(0, 500)){
+	  if(Timer_Check(0, 500) && HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) && HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin)){
+		  OFF_LED_RED;
 		  TOGGLE_LED_GREEN;
+	  }
+	  else if(Timer_Check(2, 500) && (!HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) || !HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin))){
+		  OFF_LED_GREEN;
+		  TOGGLE_LED_RED;
 	  }
 
 //  HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
@@ -722,11 +727,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PE7 PE8 PE9 PE10
-                           PE11 PE12 i1_home_x1_Pin i2_home_y1_Pin
+  /*Configure GPIO pins : I9_EXTI_Pin PE8 PE9 PE10
+                           PE11 I14_Door_L_Pin I15_Door_R_Pin i2_home_y1_Pin
                            i3_home_z1_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12|i1_home_x1_Pin|i2_home_y1_Pin
+  GPIO_InitStruct.Pin = I9_EXTI_Pin|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10
+                          |GPIO_PIN_11|I14_Door_L_Pin|I15_Door_R_Pin|i2_home_y1_Pin
                           |i3_home_z1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -772,6 +777,9 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI4_IRQn, 4, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 3, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

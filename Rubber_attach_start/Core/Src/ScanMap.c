@@ -129,7 +129,7 @@ void Handle(void)
 	if(rubber_pair == 0){
 		Mark_all_rubber();
 	}
-	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) && HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin)) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		switch(pick_state)
 		{
@@ -186,8 +186,8 @@ void Handle(void)
 			break;
 			case ST_WAIT_POPUP:
 				if(Timer_Check(1, 500) && Inputs_Database[34]){
-					TOGGLE_LED_RED;
 					OFF_LED_GREEN;
+					TOGGLE_LED_RED;
 				}
 				if(Tab_popup->bits.stop ==  1)
 				{
@@ -234,7 +234,10 @@ void Handle(void)
 				move_axis(0, 0, 0);
 				wait_handler_stop();
 				Tab_main_indicator->bits.start = 0;
-
+				if(Timer_Check(1, 500)){
+					OFF_LED_GREEN;
+					TOGGLE_LED_RED;
+				}
 				if(Tab_main->bits.start == 1){
 					Tab_main->bits.start = 0;
 					pick_state = ST_MOVE_TO_RUBBER;

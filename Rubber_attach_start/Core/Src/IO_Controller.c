@@ -76,7 +76,6 @@ uint8_t PickRubber(uint8_t vacum_id)
             if(Is_Vacum2_Pick) return 1;
         }
     }
-    //Set_Warring(0);
     return 0;
 }
 

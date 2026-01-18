@@ -112,7 +112,7 @@ uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
 uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
 Item *TrayList[] = { Tray1, Tray2 };
 extern Tab_main_t* Tab_main;
-uint8_t count_tray[10] = {0, 0};
+uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
 #if 1
 
@@ -170,14 +170,20 @@ void Handle(void)
 			break;
 			case ST_PICK:
 			{
-				//!PickRubber(1) || !PickRubber(2)
-				if(rubber_pair % 180 == 0)
-				{
-					wait_handler_stop();
-					Open_Popup(0);
-					SetBips(3);
-					pick_state = ST_WAIT_POPUP;
-				}
+			    uint8_t pick1_ok = PickRubber(1);
+			    uint8_t pick2_ok = PickRubber(2);
+
+			    if(!pick1_ok || !pick2_ok)
+			    {
+			        // Release đầu còn hút được
+			        if(pick1_ok) ReleaseRubber(1);
+			        if(pick2_ok) ReleaseRubber(2);
+
+			        wait_handler_stop();
+			        Open_Popup(0);
+			        SetBips(3);
+			        pick_state = ST_WAIT_POPUP;
+			    }
 				else
 				{
 					pick_state = ST_PLACE;
@@ -201,9 +207,6 @@ void Handle(void)
 					Tab_popup->bits.next = 0;
 					Close_Popup(0);
 
-					//ReleaseRubber(1);
-					//ReleaseRubber(2);
-
 					rubber_pair++;   // bỏ cả cặp lỗi
 					pick_state = ST_MOVE_TO_RUBBER;
 				}
@@ -220,6 +223,9 @@ void Handle(void)
 
 				PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
 				PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
+
+				//ReleaseRubber(1);
+				//ReleaseRubber(2);
 
 				pick_state = ST_NEXT_PAIR;
 			}

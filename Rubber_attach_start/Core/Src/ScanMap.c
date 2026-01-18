@@ -103,14 +103,16 @@ typedef enum {
     ST_WAIT_POPUP,
     ST_PLACE,
     ST_NEXT_PAIR,
-    ST_STOP
+    ST_STOP,
+	ST_PAUSE_DOOR,
 } PickState_t;
 
 PickState_t pick_state = ST_IDLE;
+PickState_t prev_state = ST_IDLE;
 
 uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
 uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
-Item *TrayList[] = { Tray1, Tray2 };
+Item *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 extern Tab_main_t* Tab_main;
 uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
@@ -129,8 +131,13 @@ void Handle(void)
 	if(rubber_pair == 0){
 		Mark_all_rubber();
 	}
-	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) && HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin)) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
+	    if(DOOR_OPEN() && pick_state != ST_PAUSE_DOOR)
+	    {
+	        prev_state = pick_state;
+	        pick_state = ST_PAUSE_DOOR;
+	    }
 		switch(pick_state)
 		{
 			case ST_IDLE:
@@ -159,6 +166,8 @@ void Handle(void)
 				wait_handler_stop();
 				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber - 8000);
 				delay_us(1000);
+
+				CheckDoorAndPause();
 
 				wait_handler_stop();
 				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
@@ -220,6 +229,7 @@ void Handle(void)
 				Item *tray = TrayList[tray_id];
 
 				PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
+				CheckDoorAndPause();
 				PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
 
 				//ReleaseRubber(1);
@@ -247,6 +257,24 @@ void Handle(void)
 					pick_state = ST_MOVE_TO_RUBBER;
 				}
 				break;
+			case ST_PAUSE_DOOR:
+			{
+		        wait_handler_stop();
+				move_axis(0, 0, 0);
+				wait_handler_stop();
+			    if(Timer_Check(1, 500))
+			    {
+			        OFF_LED_GREEN;
+			        TOGGLE_LED_RED;
+			    }
+			    if(!DOOR_OPEN() && Tab_main->bits.start == 1)
+			    {
+			        Tab_main->bits.start = 0;
+			        ON_LED_GREEN;
+			        OFF_LED_RED;
+			        pick_state = prev_state;
+			    }
+			}
 		}
     }
 	SetBips(5);
@@ -286,6 +314,7 @@ void PlaceToTray(Item *tray, uint8_t tray_id, int index)
     wait_handler_stop();
     delay_us(1000);
 }
+
 #else
 
 int Rubber_Index = 0;

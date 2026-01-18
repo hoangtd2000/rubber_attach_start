@@ -37,4 +37,5 @@ void Read_Tray_Data();
 
 void Calculate_Tray_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
 void PlaceToTray(Item *tray, uint8_t tray_id, int index);
+void CheckDoorAndPause(void);
 #endif /* INC_SCANMAP_H_ */

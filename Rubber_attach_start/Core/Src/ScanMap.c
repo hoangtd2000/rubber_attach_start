@@ -307,7 +307,6 @@ void Handle(void)
 			        }
 			        else if (Tab_main->bits.start == 1)
 			        {
-			            Tab_main->bits.start = 0;
 			            ON_LED_GREEN;
 			            OFF_LED_RED;
 			            Tab_main_indicator->bits.start = 1;

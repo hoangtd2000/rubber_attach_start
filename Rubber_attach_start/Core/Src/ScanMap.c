@@ -120,6 +120,7 @@ uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
 uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
 Item *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 extern Tab_main_t* Tab_main;
+extern uint8_t flag_Stop;
 uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
 #if 1
@@ -139,6 +140,7 @@ void Handle(void)
 	}
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
+		//flag_Stop = 0;
 	    if(DOOR_OPEN() && pick_state != ST_PAUSE_DOOR)
 	    {
 	        prev_state = pick_state;

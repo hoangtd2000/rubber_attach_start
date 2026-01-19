@@ -122,6 +122,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   application_init();
+
   //SetBips(3);
 
   /* USER CODE END 2 */
@@ -149,11 +150,11 @@ int main(void)
 	//  application_run();
 //	  task_timer6();
 	  application_run_main();
-	  if(Timer_Check(0, 500) && HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) && HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin)){
+	  if(Timer_Check(0, 500) && !DOOR_OPEN()){
 		  OFF_LED_RED;
 		  TOGGLE_LED_GREEN;
 	  }
-	  else if(Timer_Check(2, 500) && (!HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) || !HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin))){
+	  else if(Timer_Check(2, 500) && DOOR_OPEN()){
 		  OFF_LED_GREEN;
 		  TOGGLE_LED_RED;
 	  }

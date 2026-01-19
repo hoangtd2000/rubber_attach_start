@@ -103,7 +103,8 @@ typedef enum {
     ST_MOVE_TO_RUBBER,
     ST_PICK,
     ST_WAIT_POPUP,
-    ST_PLACE,
+    ST_PLACE1,
+	ST_PLACE,
     ST_NEXT_PAIR,
     ST_STOP,
 	ST_PAUSE_DOOR,
@@ -179,13 +180,14 @@ void Handle(void)
 			break;
 			case ST_PICK:
 			{
-			    uint8_t pick1_ok = PickRubber(1);
-			    uint8_t pick2_ok = PickRubber(2);
+//			    uint8_t pick1_ok = PickRubber(1);
+//			    uint8_t pick2_ok = PickRubber(2);
 
-			    if(!pick1_ok || !pick2_ok)
+			    //if(!pick1_ok || !pick2_ok)
+				if(rubber_pair % 10 == 0)
 			    {
-			        if(pick1_ok) ReleaseRubber(1);
-			        if(pick2_ok) ReleaseRubber(2);
+//			        if(pick1_ok) ReleaseRubber(1);
+//			        if(pick2_ok) ReleaseRubber(2);
 
 			        wait_handler_stop();
 			        Open_Popup(0);
@@ -233,6 +235,7 @@ void Handle(void)
 			    if(place_step == 0)
 			    {
 			        PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
+			        ReleaseRubber(1);
 			        place_step = 1;
 			        if(DOOR_OPEN())
 			        {
@@ -244,11 +247,8 @@ void Handle(void)
 			    if(place_step == 1)
 			    {
 			        PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
-			        place_step = 0;
-
-			        ReleaseRubber(1);
 			        ReleaseRubber(2);
-
+			        place_step = 0;
 			        pick_state = ST_NEXT_PAIR;
 			    }
 			}
@@ -274,19 +274,21 @@ void Handle(void)
 				break;
 			case ST_PAUSE_DOOR:
 			{
-		        wait_handler_stop();
-				move_axis(0, 0, 0);
 				wait_handler_stop();
+				Tab_main_indicator->bits.start = 0;
 			    if(Timer_Check(1, 500))
 			    {
 			        OFF_LED_GREEN;
 			        TOGGLE_LED_RED;
 			    }
+
 			    if(!DOOR_OPEN() && Tab_main->bits.start == 1)
 			    {
-			        Tab_main->bits.start = 0;
+			    	Tab_main->bits.start = 0;
+			    	Close_Popup(1);
 			        ON_LED_GREEN;
 			        OFF_LED_RED;
+			        Tab_main_indicator->bits.start = 1;
 			        pick_state = prev_state;
 			    }
 			}

@@ -59,7 +59,7 @@ uint8_t PickRubber(uint8_t vacum_id)
             Vacum1_Release_Off;
             delay_us(50);
             Vacum1_Pick_On;
-            delay_us(200); // Thời gian hút
+            delay_us(100); // Thời gian hút
             Cylinder1_Go_Up;
             delay_us(100); // Thời gian xi lanh nâng
             if(Is_Vacum1_Pick) return 1;
@@ -70,7 +70,7 @@ uint8_t PickRubber(uint8_t vacum_id)
             Vacum2_Release_Off;
             delay_us(50);
             Vacum2_Pick_On;
-            delay_us(200);  // Thời gian hút
+            delay_us(100);  // Thời gian hút
             Cylinder2_Go_Up;
             delay_us(100); // Thời gian xi lanh nâng
             if(Is_Vacum2_Pick) return 1;
@@ -89,7 +89,7 @@ uint8_t ReleaseRubber(uint8_t vacum_id)
             Vacum1_Pick_Off;
             delay_us(50);
             Vacum1_Release_On;
-            delay_us(200); // Thời gian nhả
+            delay_us(100); // Thời gian nhả
             Cylinder1_Go_Up;
             delay_us(100); // Thời gian xi lanh nâng
             if(Is_Vacum1_Pick == 0) return 1;
@@ -100,7 +100,7 @@ uint8_t ReleaseRubber(uint8_t vacum_id)
             Vacum2_Pick_Off;
             delay_us(50);
             Vacum2_Release_On;
-            delay_us(200); // Thời gian nhả
+            delay_us(100); // Thời gian nhả
             Cylinder2_Go_Up;
             delay_us(100); // Thời gian xi lanh nâng
             if(Is_Vacum2_Pick == 0) return 1;

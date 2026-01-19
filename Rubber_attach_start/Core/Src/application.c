@@ -171,14 +171,15 @@ void Popup_handle_stop(void){
 }
 
 void task_timer6(){
-	if(HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) && HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin)){
+	if(!DOOR_OPEN()){
 		if(Taskbar->bits.home){
 			Handle_main();
 		}else if(Taskbar->bits.motor){
 			Handle_motor();
 		}
+		Handle_popup();
 	}
-	Handle_popup();
+
 //	else if(Taskbar->bits.SETTING == 1){
 //
 //	}
@@ -188,6 +189,8 @@ void task_timer7(){
 	Control_motor_x();
 	Control_motor_z();
 	//BipControl();
+	if(DOOR_OPEN()) Open_Popup(1);
+	else Close_Popup(1);
 }
 
 

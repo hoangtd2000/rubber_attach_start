@@ -121,6 +121,10 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
+//  while(DOOR_OPEN());
+//  {
+//
+//  }
   application_init();
 
   //SetBips(3);

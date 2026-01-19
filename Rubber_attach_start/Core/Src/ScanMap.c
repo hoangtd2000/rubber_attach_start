@@ -183,7 +183,8 @@ void Handle(void)
 			break;
 			case ST_PICK1:
 			{
-			    if (!PickRubber(1))
+				//!PickRubber(1)
+			    if (rubber_pair % 180 == 0)
 			    {
 			        Open_Popup(0);
 			        SetBips(3);
@@ -195,7 +196,8 @@ void Handle(void)
 			break;
 			case ST_PICK2:
 			{
-			    if (!PickRubber(2))
+				//!PickRubber(2)
+			    if (rubber_pair % 180 == 0)
 			    {
 			        ReleaseRubber(1);   // đầu 1 đã hút thì nhả
 			        Open_Popup(0);
@@ -208,7 +210,6 @@ void Handle(void)
 			break;
 
 			case ST_WAIT_POPUP:
-
 				if(Timer_Check(1, 500) && Inputs_Database[34]){
 					OFF_LED_GREEN;
 					TOGGLE_LED_RED;
@@ -296,15 +297,34 @@ void Handle(void)
 			        OFF_LED_GREEN;
 			        TOGGLE_LED_RED;
 			    }
-
-			    if(!DOOR_OPEN() && Tab_main->bits.start == 1)
+			    // ===== Resume logic =====
+			    if (!DOOR_OPEN())
 			    {
-			    	Tab_main->bits.start = 0;
-			        ON_LED_GREEN;
-			        OFF_LED_RED;
-			        Tab_main_indicator->bits.start = 1;
-			        pick_state = prev_state;
+			        // 👉 Nếu pause từ POPUP → tự resume
+			        if (prev_state == ST_WAIT_POPUP)
+			        {
+			            ON_LED_GREEN;
+			            OFF_LED_RED;
+			            pick_state = ST_WAIT_POPUP;
+			        }
+			        // 👉 Pause từ AUTO → cần nhấn START
+			        else if (Tab_main->bits.start == 1)
+			        {
+			            Tab_main->bits.start = 0;
+			            ON_LED_GREEN;
+			            OFF_LED_RED;
+			            Tab_main_indicator->bits.start = 1;
+			            pick_state = prev_state;
+			        }
 			    }
+
+//			    if(Tab_main->bits.start == 1)
+//			    {
+//			        ON_LED_GREEN;
+//			        OFF_LED_RED;
+//			        Tab_main_indicator->bits.start = 1;
+//			        pick_state = prev_state;
+//			    }
 			}
 		}
     }

@@ -99,8 +99,9 @@
 #define speed_home2 	(4000U)
 #define speed_home3		(1000U)
 
-#define speed_home1_x 	(speed_home1 + 500)
-#define speed_home2_x 	(speed_home2 + 500)
+//#define speed_home1_x 	(speed_home1 + 1000)
+#define speed_home1_x 	(speed_home1)
+#define speed_home2_x 	(speed_home2 + 1000)
 #define speed_home3_x	(speed_home3)
 
 #define speed_home1_y 	(speed_home1 - 2000)
@@ -142,9 +143,6 @@ typedef struct {
 
 typedef struct {
 	__IO int8_t dir;
-    __IO uint16_t pulse_count;
-    __IO uint16_t target_pulse;
-    __IO uint16_t speed;
     __IO uint16_t current_pos;
     __IO uint16_t old_pos;
     MoveMode mode;
@@ -221,22 +219,15 @@ typedef union {
         uint8_t tray2_p2			: 1;
         uint8_t tray2_p3			: 1;
         uint8_t load				: 1;
+        uint8_t pick1				: 1;
+		uint8_t release1			: 1;
+		uint8_t pick2				: 1;
+		uint8_t release2			: 1;
     } bits;
     uint16_t all;
 }Rubber_and_tray_indicator_t;
 
-typedef union {
-    struct {
-    	uint8_t HOME                : 1;
-    	uint8_t MOTOR               : 1;
-    	uint8_t SETTING             : 1;
-    	uint8_t RESERVER1           : 2;
-        uint8_t RESET				: 1;
-        uint8_t START				: 1;
-        uint8_t STOP				: 1;
-    } bits;
-    uint8_t all;
-}ScreenMain_t;
+
 
 typedef union {
     struct {
@@ -272,9 +263,9 @@ typedef union {
     struct {
     	uint8_t reserver            : 2;
         uint8_t pick1				: 1;
-        uint8_t realse1				: 1;
+        uint8_t release1				: 1;
         uint8_t pick2				: 1;
-        uint8_t realse2				: 1;
+        uint8_t release2				: 1;
     } bits;
     uint8_t all;
 } Control_Vacum_Indicator_t;

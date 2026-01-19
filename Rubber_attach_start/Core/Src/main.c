@@ -76,20 +76,7 @@ static void MX_TIM7_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern Tab_main_t* Tab_main;
-volatile uint8_t flag_Stop = 0;
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	if(GPIO_Pin == i16_start_Pin){
-		Tab_main->bits.start = 1;
-	}
-	else if(GPIO_Pin == i4_estop_Pin){
-		NVIC_SystemReset();
-	}
-	else if(GPIO_Pin == i5_stop_Pin){
-		flag_Stop = 1;
-	}
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -166,14 +153,7 @@ int main(void)
 	//  application_run();
 //	  task_timer6();
 	  application_run_main();
-	  if(Timer_Check(0, 500) && !DOOR_OPEN()){
-		  OFF_LED_RED;
-		  TOGGLE_LED_GREEN;
-	  }
-	  else if(Timer_Check(2, 500) && DOOR_OPEN()){
-		  OFF_LED_GREEN;
-		  TOGGLE_LED_RED;
-	  }
+
 
 //  HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
 //	  HAL_GPIO_TogglePin(O2_GPIO_Port, O2_Pin);
@@ -744,9 +724,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : I9_EXTI_Pin PE8 PE9 i12_vacum1_Pin
+  /*Configure GPIO pins : i9_pressure_Pin PE8 PE9 i12_vacum1_Pin
                            i13_vacum2_Pin I15_Door_R_Pin i16_start_Pin i17_reset_Pin */
-  GPIO_InitStruct.Pin = I9_EXTI_Pin|GPIO_PIN_8|GPIO_PIN_9|i12_vacum1_Pin
+  GPIO_InitStruct.Pin = i9_pressure_Pin|GPIO_PIN_8|GPIO_PIN_9|i12_vacum1_Pin
                           |i13_vacum2_Pin|I15_Door_R_Pin|i16_start_Pin|i17_reset_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -784,22 +764,25 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 3, 0);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 3, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 3, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 4, 0);
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 4, 0);
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 3, 0);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 4, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */

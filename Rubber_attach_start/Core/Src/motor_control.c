@@ -10,7 +10,6 @@
 
 #define truc_z_len_het
 
-ScreenMain_t* ScreenMain = (ScreenMain_t*)&Coils_Database[0];
 
 Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[1];
 Cylinder_and_save_t* Cylinder_and_save = (Cylinder_and_save_t*)&Coils_Database[2];
@@ -46,28 +45,21 @@ ActionHandler_t Move_tray_table[] =  {
 Axis_t AxisX = {
 		.dir =  DIR_POS,
 		.mode = STOP,
-		.pulse_count = 0 ,
-		.target_pulse = 0,
 		.current_pos = 0 ,
 		.old_pos = 0,
-		.speed = 100
 };
 
 Axis_t AxisY = {
 		.dir =  DIR_POS,
 		.mode = STOP,
-		.pulse_count = 0 ,
 		.current_pos = 0 ,
 		.old_pos = 0,
-		.target_pulse = 0
 };
 Axis_t AxisZ = {
 		.dir =  DIR_POS,
 		.mode = STOP,
-		.pulse_count = 0 ,
 		.current_pos = 0 ,
 		.old_pos = 0,
-		.target_pulse = 0
 };
 
 
@@ -157,38 +149,6 @@ void move_z_down(uint16_t d){
 	excute_move_z_down();
 }
 
-//void move_axis(uint16_t xd, uint16_t yd, uint16_t zd){
-//    if(xd > max_x || yd > max_y || zd > max_z ){
-//        return;
-//    }
-//    if((AxisX.current_pos != xd) && ((AxisX.current_pos - xd) != 1) && ((xd - AxisX.current_pos) != 1) ){
-//    	Set_Speed_Motor_x( speed_run, speed_x_max);
-//    	AxisX.mode = MOVE_AUTO;
-//    	if(AxisX.current_pos > xd){
-//    		move_x_left(AxisX.current_pos - xd  );
-//    	}else{
-//    		move_x_right(xd- AxisX.current_pos );
-//    	}
-//    }
-//    if((AxisY.current_pos != yd ) && ((AxisY.current_pos - yd) != 1) && ((yd - AxisY.current_pos) != 1) ){
-//	Set_Speed_Motor_y( speed_run, speed_y_max);
-//   	AxisY.mode = MOVE_AUTO;
-//    	if(AxisY.current_pos > yd){
-//    		move_y_backward(AxisY.current_pos - yd );
-//    	}else{
-//    		move_y_forward(yd-AxisY.current_pos );
-//    	}
-//    }
-//    if((AxisZ.current_pos != zd) && ((AxisZ.current_pos - zd) != 1) && ((zd - AxisZ.current_pos) != 1)){
-//    		Set_Speed_Motor_z( speed_run_z, speed_z_max);
-//    		AxisZ.mode = MOVE_AUTO;
-//    	if(AxisZ.current_pos > zd){
-//    		move_z_up(AxisZ.current_pos -  zd );
-//    	}else{
-//    		move_z_down(zd - AxisZ.current_pos );
-//    	}
-//    }
-//}
 static inline uint16_t abs_diff_u16(uint16_t a, uint16_t b)
 {
     return (a > b) ? (a - b) : (b - a);
@@ -262,7 +222,7 @@ void Control_motor_x(){
 		break;
 	case MOVE_HOME1:
 		Set_Speed_Motor_x(speed_home1_x, speed_x_max);
-		move_x_left(max_x+500);
+		move_x_left(max_x+1000);
 		break;
 	case MOVE_HOME2:
 		if( get_counter_timer_slave_x() == 0 ){
@@ -574,24 +534,29 @@ void Handle_Home(void){
 
 //Cylinder_and_save
 void Handle_pick_handler1(void){
-	if(PickRubber(1)){
-		Control_Vacum_Indicator->bits.pick1 = 1;
-	}
+//	if(PickRubber(1)){
+//		Control_Vacum_Indicator->bits.pick1 = 1;
+//	}
+	Control_Vacum_Indicator->bits.pick1 =  PickRubber(1);
 }
 void Handle_release_handler1(void){
-	if(ReleaseRubber(1)){
-		Control_Vacum_Indicator->bits.realse1 = 1;
-	}
+//	if(ReleaseRubber(1)){
+//		Control_Vacum_Indicator->bits.realse1 = 1;
+//	}
+	Control_Vacum_Indicator->bits.release1 = ReleaseRubber(1);
 }
 void Handle_pick_handler2(void){
-	if(PickRubber(2)){
-		Control_Vacum_Indicator->bits.pick2 = 1;
-	}
+//	if(PickRubber(2)){
+//		Control_Vacum_Indicator->bits.pick2 = 1;
+//	}
+
+	Control_Vacum_Indicator->bits.pick1 =  PickRubber(2);
 }
 void Handle_release_handler2(void){
-	if(ReleaseRubber(2)){
-		Control_Vacum_Indicator->bits.realse2 = 1;
-	}
+//	if(ReleaseRubber(2)){
+//		Control_Vacum_Indicator->bits.realse2 = 1;
+//	}
+	Control_Vacum_Indicator->bits.release2 = ReleaseRubber(2);
 }
 void Handle_save1(void){
 //	HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);

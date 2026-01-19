@@ -86,8 +86,9 @@ void Error_Handler(void);
 #define i5_stop_Pin GPIO_PIN_4
 #define i5_stop_GPIO_Port GPIOC
 #define i5_stop_EXTI_IRQn EXTI4_IRQn
-#define I9_EXTI_Pin GPIO_PIN_7
-#define I9_EXTI_GPIO_Port GPIOE
+#define i9_pressure_Pin GPIO_PIN_7
+#define i9_pressure_GPIO_Port GPIOE
+#define i9_pressure_EXTI_IRQn EXTI9_5_IRQn
 #define i12_vacum1_Pin GPIO_PIN_10
 #define i12_vacum1_GPIO_Port GPIOE
 #define i12_vacum1_EXTI_IRQn EXTI15_10_IRQn

@@ -9,7 +9,6 @@
 
 extern Axis_t AxisX, AxisY, AxisZ;
 extern uint16_t* Mark;
-extern ScreenMain_t* ScreenMain;
 
 Item Rubber_Tray[400] = { [0 ... 399] = { .State = Not_Empty } };;
 Item Tray1[30];
@@ -123,7 +122,6 @@ extern Tab_main_t* Tab_main;
 extern uint8_t flag_Stop;
 uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
-#if 1
 
 void Handle(void)
 {
@@ -358,31 +356,4 @@ void PlaceToTray(Item *tray, uint8_t tray_id, int index)
     delay_us(1000);
 }
 
-#else
 
-int Rubber_Index = 0;
-
-void Handle(void){
-	Tab_main->bits.start = 0;
-	Tab_main_indicator->bits.start =  1 ;
-		Rubber_Index = 0;
-		uint8_t item_count = 16;
-		uint8_t count = 0;
-		while(count < item_count){
-			count++;
-			wait_handler_stop();
-			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, max_z-4000);
-			Input_Registers_Database[0] =  Rubber_Index+1 ;
-			delay_us(500);
-			wait_handler_stop();
-			move_axis(Rubber[Rubber_Index].x, Rubber[Rubber_Index].y, max_z);
-			delay_us(1000);
-
-			Rubber_Index++;
-		}
-		wait_handler_stop();
-		move_axis(0, 0, 0);
-		Input_Registers_Database[0] =0 ;
-		Input_Registers_Database[1] = 0;
-}
-#endif

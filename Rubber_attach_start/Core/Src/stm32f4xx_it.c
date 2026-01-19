@@ -215,7 +215,7 @@ void SysTick_Handler(void)
 void EXTI0_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI0_IRQn 0 */
-	if(get_home_x() == home_x){
+//	if(get_home_x() == home_x){
 	//	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
 		switch(AxisX.mode){
 		case MOVE_HOME1:
@@ -235,7 +235,7 @@ void EXTI0_IRQHandler(void)
 			AxisX.old_pos = 0;
 			break;
 	  }
-  }
+ // }
   /* USER CODE END EXTI0_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i1_home_x_Pin);
   /* USER CODE BEGIN EXTI0_IRQn 1 */
@@ -354,6 +354,23 @@ void DMA1_Stream5_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles EXTI line[9:5] interrupts.
+  */
+void EXTI9_5_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
+
+  /* USER CODE END EXTI9_5_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+  HAL_GPIO_EXTI_IRQHandler(i9_pressure_Pin);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
+
+  /* USER CODE END EXTI9_5_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM1 break interrupt and TIM9 global interrupt.
   */
 void TIM1_BRK_TIM9_IRQHandler(void)
@@ -406,6 +423,7 @@ void USART2_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+
   /* USER CODE END EXTI15_10_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i12_vacum1_Pin);
   HAL_GPIO_EXTI_IRQHandler(i13_vacum2_Pin);

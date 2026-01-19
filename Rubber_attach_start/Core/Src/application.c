@@ -10,7 +10,6 @@
 extern uint8_t RxData[256];
 extern uint8_t TxData[256];
 
-extern ScreenMain_t* ScreenMain;
 extern Control_motor_t* Control_motor;
 extern Cylinder_and_save_t* Cylinder_and_save;
 extern Rubber_and_tray_t* Rubber_and_tray;
@@ -31,6 +30,8 @@ Tab_popup_t* Tab_popup = (Tab_popup_t*)&Coils_Database[6];
 
 Tab_main_t* Tab_main_indicator = (Tab_main_t*) &Inputs_Database[0];
 Tab_popup_t* Tab_popup_indicator = (Tab_popup_t*) &Inputs_Database[35];
+
+volatile uint8_t flag_Stop = 0;
 
 
 ActionHandler_t Tab_main_table[] =  {
@@ -195,18 +196,30 @@ void task_timer7(){
 
 
 void application_run_main(void){
-//	for(int i = 1 ; i < 201 ; i++){
-//	Input_Registers_Database[0] = i;
-//	HAL_Delay(100);
-//	}
-//	for(int j = 0 ; j < 25 ; j++){
-//	Input_Registers_Database[1] = j;
-//	HAL_Delay(300);
-//	}
-//	for(int z = 0 ; z < 25 ; z++){
-//	Input_Registers_Database[2] = z;
-//	HAL_Delay(300);
-//	}
+	  if(Timer_Check(0, 500) && !DOOR_OPEN()){
+		  OFF_LED_RED;
+		  TOGGLE_LED_GREEN;
+	  }
+	  else if(Timer_Check(2, 500) && DOOR_OPEN()){
+		  OFF_LED_GREEN;
+		  TOGGLE_LED_RED;
+	  }
 
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == i16_start_Pin){
+		Tab_main->bits.start = 1;
+	}
+	else if(GPIO_Pin == i4_estop_Pin){
+		NVIC_SystemReset();
+	}
+	else if(GPIO_Pin == i5_stop_Pin){
+		flag_Stop = 1;
+
+	}	else if(GPIO_Pin == i17_reset_Pin){
+
+	}
 }
 

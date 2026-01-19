@@ -297,17 +297,14 @@ void Handle(void)
 			        OFF_LED_GREEN;
 			        TOGGLE_LED_RED;
 			    }
-			    // ===== Resume logic =====
 			    if (!DOOR_OPEN())
 			    {
-			        // 👉 Nếu pause từ POPUP → tự resume
 			        if (prev_state == ST_WAIT_POPUP)
 			        {
 			            ON_LED_GREEN;
 			            OFF_LED_RED;
 			            pick_state = ST_WAIT_POPUP;
 			        }
-			        // 👉 Pause từ AUTO → cần nhấn START
 			        else if (Tab_main->bits.start == 1)
 			        {
 			            Tab_main->bits.start = 0;
@@ -317,14 +314,6 @@ void Handle(void)
 			            pick_state = prev_state;
 			        }
 			    }
-
-//			    if(Tab_main->bits.start == 1)
-//			    {
-//			        ON_LED_GREEN;
-//			        OFF_LED_RED;
-//			        Tab_main_indicator->bits.start = 1;
-//			        pick_state = prev_state;
-//			    }
 			}
 		}
     }

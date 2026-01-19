@@ -188,7 +188,7 @@ void task_timer7(){
 	Control_motor_y();
 	Control_motor_x();
 	Control_motor_z();
-	//BipControl();
+	BipControl();
 	if(DOOR_OPEN()) Open_Popup(1);
 	else Close_Popup(1);
 }

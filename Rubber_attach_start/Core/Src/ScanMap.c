@@ -101,10 +101,13 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 typedef enum {
     ST_IDLE,
     ST_MOVE_TO_RUBBER,
-    ST_PICK,
+    ST_PICK1,
+	ST_PICK2,
     ST_WAIT_POPUP,
     ST_PLACE1,
-	ST_PLACE,
+	ST_PLACE2,
+	ST_RELEASE1,
+	ST_RELEASE2,
     ST_NEXT_PAIR,
     ST_STOP,
 	ST_PAUSE_DOOR,
@@ -175,32 +178,37 @@ void Handle(void)
 				Clear_mark_rubber(ry * RUBBER_COLS + rx);
 				Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 				delay_us(1000);
-				pick_state = ST_PICK;
+				pick_state = ST_PICK1;
 			}
 			break;
-			case ST_PICK:
+			case ST_PICK1:
 			{
-//			    uint8_t pick1_ok = PickRubber(1);
-//			    uint8_t pick2_ok = PickRubber(2);
-
-			    //if(!pick1_ok || !pick2_ok)
-				if(rubber_pair % 10 == 0)
+			    if (!PickRubber(1))
 			    {
-//			        if(pick1_ok) ReleaseRubber(1);
-//			        if(pick2_ok) ReleaseRubber(2);
-
-			        wait_handler_stop();
 			        Open_Popup(0);
 			        SetBips(3);
 			        pick_state = ST_WAIT_POPUP;
+			        break;
 			    }
-				else
-				{
-					pick_state = ST_PLACE;
-				}
+			    pick_state = ST_PICK2;
 			}
 			break;
+			case ST_PICK2:
+			{
+			    if (!PickRubber(2))
+			    {
+			        ReleaseRubber(1);   // đầu 1 đã hút thì nhả
+			        Open_Popup(0);
+			        SetBips(3);
+			        pick_state = ST_WAIT_POPUP;
+			        break;
+			    }
+			    pick_state = ST_PLACE1;
+			}
+			break;
+
 			case ST_WAIT_POPUP:
+
 				if(Timer_Check(1, 500) && Inputs_Database[34]){
 					OFF_LED_GREEN;
 					TOGGLE_LED_RED;
@@ -220,37 +228,44 @@ void Handle(void)
 					pick_state = ST_MOVE_TO_RUBBER;
 				}
 			break;
-			case ST_PLACE:
+			case ST_PLACE1:
 			{
-				uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
-				uint8_t tray_pair = tray_index % PAIRS_PER_TRAY;
+			    uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
+			    uint8_t tray_pair = tray_index % PAIRS_PER_TRAY;
 
-				int tx = tray_pair % TRAY_COLS;
-				int ty = (tray_pair / TRAY_COLS) * 2;
+			    int tx = tray_pair % TRAY_COLS;
+			    int ty = (tray_pair / TRAY_COLS) * 2;
 
-				Item *tray = TrayList[tray_id];
+			    Item *tray = TrayList[tray_id];
 
-//				PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
-//				PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
-			    if(place_step == 0)
-			    {
-			        PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
-			        ReleaseRubber(1);
-			        place_step = 1;
-			        if(DOOR_OPEN())
-			        {
-			            prev_state = ST_PLACE;
-			            pick_state = ST_PAUSE_DOOR;
-			            break;
-			        }
-			    }
-			    if(place_step == 1)
-			    {
-			        PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
-			        ReleaseRubber(2);
-			        place_step = 0;
-			        pick_state = ST_NEXT_PAIR;
-			    }
+			    PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
+			    pick_state = ST_RELEASE1;
+			}
+			break;
+			case ST_RELEASE1:
+			{
+			    ReleaseRubber(1);
+			    pick_state = ST_PLACE2;
+			}
+			break;
+			case ST_PLACE2:
+			{
+			    uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
+			    uint8_t tray_pair = tray_index % PAIRS_PER_TRAY;
+
+			    int tx = tray_pair % TRAY_COLS;
+			    int ty = (tray_pair / TRAY_COLS) * 2;
+
+			    Item *tray = TrayList[tray_id];
+
+			    PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
+			    pick_state = ST_RELEASE2;
+			}
+			break;
+			case ST_RELEASE2:
+			{
+			    ReleaseRubber(2);
+			    pick_state = ST_NEXT_PAIR;
 			}
 			break;
 			case ST_NEXT_PAIR:
@@ -285,7 +300,6 @@ void Handle(void)
 			    if(!DOOR_OPEN() && Tab_main->bits.start == 1)
 			    {
 			    	Tab_main->bits.start = 0;
-			    	Close_Popup(1);
 			        ON_LED_GREEN;
 			        OFF_LED_RED;
 			        Tab_main_indicator->bits.start = 1;

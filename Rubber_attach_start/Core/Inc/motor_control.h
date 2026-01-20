@@ -92,7 +92,7 @@
 #define speed_z_max (5000U)
 
 #define speed_default (50U)
-#define speed_run     (10000U)
+#define speed_run     (30000U)
 #define speed_run_z 	(5000U)
 
 #define speed_home1 	(4000U)
@@ -146,6 +146,7 @@ typedef struct {
     __IO uint16_t current_pos;
     __IO uint16_t old_pos;
     MoveMode mode;
+    MoveMode pre_mode;
 } Axis_t;
 
 typedef union {
@@ -351,6 +352,7 @@ void Stop_motor_z(void);
 
 void wait_handler_stop();
 void move_axis(uint16_t xd, uint16_t yd, uint16_t zd);
+void move_axis1(uint16_t xd, uint16_t yd, uint16_t zd);
 void Set_HMI_X_Axis(uint16_t value);
 void Set_HMI_Y_Axis(uint16_t value);
 void Set_HMI_Z_Axis(uint16_t value);

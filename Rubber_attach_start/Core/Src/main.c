@@ -725,18 +725,18 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : i9_pressure_Pin PE8 PE9 i12_vacum1_Pin
-                           i13_vacum2_Pin I15_Door_R_Pin i16_start_Pin i17_reset_Pin */
+                           i13_vacum2_Pin i15_Door_R_Pin i16_start_Pin i17_reset_Pin */
   GPIO_InitStruct.Pin = i9_pressure_Pin|GPIO_PIN_8|GPIO_PIN_9|i12_vacum1_Pin
-                          |i13_vacum2_Pin|I15_Door_R_Pin|i16_start_Pin|i17_reset_Pin;
+                          |i13_vacum2_Pin|i15_Door_R_Pin|i16_start_Pin|i17_reset_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : I14_Door_L_Pin */
-  GPIO_InitStruct.Pin = I14_Door_L_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  /*Configure GPIO pin : i14_Door_L_Pin */
+  GPIO_InitStruct.Pin = i14_Door_L_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(I14_Door_L_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(i14_Door_L_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : output_y_sig_Pin */
   GPIO_InitStruct.Pin = output_y_sig_Pin;

@@ -31,6 +31,23 @@ typedef struct {
 	ItemState State;
 }Item;
 
+typedef enum {
+    ST_IDLE,
+    ST_MOVE_TO_RUBBER,
+    ST_PICK1,
+	ST_PICK2,
+    ST_WAIT_POPUP,
+    ST_PLACE1,
+	ST_PLACE2,
+	ST_RELEASE1,
+	ST_RELEASE2,
+    ST_NEXT_PAIR,
+    ST_STOP,
+	ST_PAUSE_DOOR,
+	ST_STOP_PULSE,
+} PickState_t;
+
+
 void Handle(void);
 void wait_handler_stop();
 void Read_Tray_Data();

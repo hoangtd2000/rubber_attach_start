@@ -41,7 +41,8 @@
 #define Is_Vacum1_Pick		HAL_GPIO_ReadPin(i12_vacum1_GPIO_Port, i12_vacum1_Pin)
 #define Is_Vacum2_Pick		HAL_GPIO_ReadPin(i13_vacum2_GPIO_Port, i13_vacum2_Pin)
 
-#define DOOR_OPEN()         (!HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) || !HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin))
+//#define DOOR_OPEN()         (!HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) || !HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin))
+#define DOOR_OPEN()         (!HAL_GPIO_ReadPin(i14_Door_L_GPIO_Port, i14_Door_L_Pin))
 
 enum {
 	LED_RED,

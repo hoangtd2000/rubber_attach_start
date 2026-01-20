@@ -97,20 +97,7 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 #define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 
-typedef enum {
-    ST_IDLE,
-    ST_MOVE_TO_RUBBER,
-    ST_PICK1,
-	ST_PICK2,
-    ST_WAIT_POPUP,
-    ST_PLACE1,
-	ST_PLACE2,
-	ST_RELEASE1,
-	ST_RELEASE2,
-    ST_NEXT_PAIR,
-    ST_STOP,
-	ST_PAUSE_DOOR,
-} PickState_t;
+
 
 PickState_t pick_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
@@ -136,9 +123,9 @@ void Handle(void)
 	if(rubber_pair == 0){
 		Mark_all_rubber();
 	}
-	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !flag_Stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
-		//flag_Stop = 0;
+		Tab_main->bits.start = 0;
 	    if(DOOR_OPEN() && pick_state != ST_PAUSE_DOOR)
 	    {
 	        prev_state = pick_state;
@@ -174,7 +161,8 @@ void Handle(void)
 				delay_us(1000);
 
 				wait_handler_stop();
-				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
+
+				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
 				Clear_mark_rubber(ry * RUBBER_COLS + rx);
 				Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 				delay_us(1000);
@@ -313,9 +301,13 @@ void Handle(void)
 			            pick_state = prev_state;
 			        }
 			    }
+			    break;
 			}
+			default:
+				break;
 		}
     }
+	flag_Stop = 0;
 	SetBips(5);
 	ON_LED_GREEN;
 	wait_handler_stop();
@@ -334,10 +326,10 @@ void Handle(void)
 
 void PlaceToTray(Item *tray, uint8_t tray_id, int index)
 {
-	if(DOOR_OPEN()) return;
+	//if(DOOR_OPEN()) return;
     wait_handler_stop();
     move_axis(tray[index].x, tray[index].y, max_z_tray - 8000);
-    if(DOOR_OPEN()) return;
+    //if(DOOR_OPEN()) return;
     delay_us(500);
     wait_handler_stop();
 
@@ -351,7 +343,7 @@ void PlaceToTray(Item *tray, uint8_t tray_id, int index)
         Input_Registers_Database[4] = count_tray[1];
     }
 
-    move_axis(tray[index].x, tray[index].y, max_z_tray);
+    move_axis1(tray[index].x, tray[index].y, max_z_tray);
     wait_handler_stop();
     delay_us(1000);
 }

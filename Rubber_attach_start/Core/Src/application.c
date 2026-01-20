@@ -210,16 +210,45 @@ void application_run_main(void){
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == i16_start_Pin){
-		Tab_main->bits.start = 1;
+		if(HAL_GPIO_ReadPin(i16_start_GPIO_Port, i16_start_Pin)){
+			Tab_main->bits.start = 1;
+		}
 	}
 	else if(GPIO_Pin == i4_estop_Pin){
-		NVIC_SystemReset();
+		if(HAL_GPIO_ReadPin(i4_estop_GPIO_Port, i4_estop_Pin)){
+			NVIC_SystemReset();
+		}
 	}
 	else if(GPIO_Pin == i5_stop_Pin){
-		flag_Stop = 1;
+		if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){ // mo
+			flag_Stop = 1;
+		}else{
 
-	}	else if(GPIO_Pin == i17_reset_Pin){
-
+		}
 	}
+//	else if(GPIO_Pin == i17_reset_Pin){
+//
+//	}
+//	else if(GPIO_Pin ==  i14_Door_L_Pin){
+//		//dong
+////		if(HAL_GPIO_ReadPin(i14_Door_L_GPIO_Port, i14_Door_L_Pin)){
+////			HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin,SET);
+////		//mo
+////		}else{
+////			HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin, RESET);
+////			if(AxisX.mode == MOVE_AUTO){
+////				AxisX.mode = MOVE_MANUAL;
+////			}
+////			if(AxisY.mode == MOVE_AUTO){
+////				AxisY.mode = MOVE_MANUAL;
+////			}
+////			if(AxisZ.mode == MOVE_AUTO){
+////				AxisZ.mode = MOVE_MANUAL;
+////			}
+////				Stop_motor_x();
+////				Stop_motor_y();
+////				Stop_motor_z();
+////		}
+//	}
 }
 

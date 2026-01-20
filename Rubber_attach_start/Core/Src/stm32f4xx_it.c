@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "application.h"
 #include "motor_control.h"
+#include "ScanMap.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +47,8 @@ uint8_t SS_Door_Right = 0;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 extern Axis_t AxisX, AxisY, AxisZ;
+extern PickState_t pick_state ;
+extern PickState_t prev_state ;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -423,12 +426,41 @@ void USART2_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-
+	//dong
+//	if(HAL_GPIO_ReadPin(i14_Door_L_GPIO_Port, i14_Door_L_Pin)){
+//		//		HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin,SET);
+//				 AxisX.mode =  AxisX.pre_mode;
+//				 AxisY.mode =  AxisY.pre_mode;
+//				 AxisZ.mode =  AxisZ.pre_mode;
+//					HAL_TIM_Base_Start_IT(&htim6);
+//					HAL_TIM_Base_Start_IT(&htim7);
+//			}
+//	//mo
+//	else{
+//		//HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin, RESET);
+//		HAL_TIM_Base_Stop_IT(&htim6);
+//		HAL_TIM_Base_Stop_IT(&htim7);
+//		AxisX.pre_mode = AxisX.mode;
+//		AxisY.pre_mode = AxisY.mode;
+//		AxisZ.pre_mode = AxisZ.mode;
+//		if(AxisX.mode == MOVE_AUTO){
+//			AxisX.mode = MOVE_MANUAL;
+//		}
+//		if(AxisY.mode == MOVE_AUTO){
+//			AxisY.mode = MOVE_MANUAL;
+//		}
+//		if(AxisZ.mode == MOVE_AUTO){
+//			AxisZ.mode = MOVE_MANUAL;
+//		}
+//			Stop_motor_x();
+//			Stop_motor_y();
+//			Stop_motor_z();
+//	}
   /* USER CODE END EXTI15_10_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i12_vacum1_Pin);
   HAL_GPIO_EXTI_IRQHandler(i13_vacum2_Pin);
-  HAL_GPIO_EXTI_IRQHandler(I14_Door_L_Pin);
-  HAL_GPIO_EXTI_IRQHandler(I15_Door_R_Pin);
+  HAL_GPIO_EXTI_IRQHandler(i14_Door_L_Pin);
+  HAL_GPIO_EXTI_IRQHandler(i15_Door_R_Pin);
   HAL_GPIO_EXTI_IRQHandler(i16_start_Pin);
   HAL_GPIO_EXTI_IRQHandler(i17_reset_Pin);
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */

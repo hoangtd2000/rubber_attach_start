@@ -9,7 +9,7 @@
 #include "IO_Controller.h"
 
 #define truc_z_len_het
-
+#define truc_z_len_sau
 
 Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[1];
 Cylinder_and_save_t* Cylinder_and_save = (Cylinder_and_save_t*)&Coils_Database[2];
@@ -45,6 +45,7 @@ ActionHandler_t Move_tray_table[] =  {
 Axis_t AxisX = {
 		.dir =  DIR_POS,
 		.mode = STOP,
+		.pre_mode = STOP,
 		.current_pos = 0 ,
 		.old_pos = 0,
 };
@@ -52,12 +53,14 @@ Axis_t AxisX = {
 Axis_t AxisY = {
 		.dir =  DIR_POS,
 		.mode = STOP,
+		.pre_mode = STOP,
 		.current_pos = 0 ,
 		.old_pos = 0,
 };
 Axis_t AxisZ = {
 		.dir =  DIR_POS,
 		.mode = STOP,
+		.pre_mode = STOP,
 		.current_pos = 0 ,
 		.old_pos = 0,
 };
@@ -154,6 +157,7 @@ static inline uint16_t abs_diff_u16(uint16_t a, uint16_t b)
     return (a > b) ? (a - b) : (b - a);
 }
 
+// move z -> x,y
 void move_axis(uint16_t xd, uint16_t yd, uint16_t zd)
 {
     /* Check giới hạn */
@@ -200,8 +204,55 @@ void move_axis(uint16_t xd, uint16_t yd, uint16_t zd)
             move_y_forward(dy);
         }
     }
+}
 
+// move x,y -> z
+void move_axis1(uint16_t xd, uint16_t yd, uint16_t zd)
+{
+    /* Check giới hạn */
+    if (xd > max_x || yd > max_y || zd > max_z) {
+        return;
+    }
 
+    /* ================= X AXIS ================= */
+    uint16_t dx = abs_diff_u16(AxisX.current_pos, xd);
+    if (dx > 1 && AxisX.mode == STOP) {
+        Set_Speed_Motor_x(speed_run, speed_x_max);
+        AxisX.mode = MOVE_AUTO;
+
+        if (AxisX.current_pos > xd) {
+            move_x_left(dx);
+        } else {
+            move_x_right(dx);
+        }
+    }
+
+    /* ================= Y AXIS ================= */
+    uint16_t dy = abs_diff_u16(AxisY.current_pos, yd);
+    if (dy > 1 && AxisY.mode == STOP) {
+        Set_Speed_Motor_y(speed_run, speed_y_max);
+        AxisY.mode = MOVE_AUTO;
+
+        if (AxisY.current_pos > yd) {
+            move_y_backward(dy);
+        } else {
+            move_y_forward(dy);
+        }
+    }
+    while ( !(AxisX.mode == STOP && AxisY.mode == STOP ));
+
+    /* ================= Z AXIS ================= */
+    uint16_t dz = abs_diff_u16(AxisZ.current_pos, zd);
+    if (dz > 1 && AxisZ.mode == STOP) {
+        Set_Speed_Motor_z(speed_run_z, speed_z_max);
+        AxisZ.mode = MOVE_AUTO;
+
+        if (AxisZ.current_pos > zd) {
+            move_z_up(dz);
+        } else {
+            move_z_down(dz);
+        }
+    }
 }
 
 void Control_motor_x(){

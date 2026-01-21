@@ -47,7 +47,7 @@ uint8_t SS_Door_Right = 0;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 extern Axis_t AxisX, AxisY, AxisZ;
-extern PickState_t pick_state ;
+extern PickState_t machine_state ;
 extern PickState_t prev_state ;
 /* USER CODE END PV */
 

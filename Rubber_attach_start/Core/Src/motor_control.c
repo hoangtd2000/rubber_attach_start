@@ -588,26 +588,29 @@ void Handle_pick_handler1(void){
 //	if(PickRubber(1)){
 //		Control_Vacum_Indicator->bits.pick1 = 1;
 //	}
-	Control_Vacum_Indicator->bits.pick1 =  PickRubber(1);
+	SetPickRubber(1);
+	//Control_Vacum_Indicator->bits.pick1 =  PickRubber(1);
 }
 void Handle_release_handler1(void){
 //	if(ReleaseRubber(1)){
 //		Control_Vacum_Indicator->bits.realse1 = 1;
 //	}
-	Control_Vacum_Indicator->bits.release1 = ReleaseRubber(1);
+	SetReleaseRubber(1);
+	//Control_Vacum_Indicator->bits.release1 = ReleaseRubber(1);
 }
 void Handle_pick_handler2(void){
 //	if(PickRubber(2)){
 //		Control_Vacum_Indicator->bits.pick2 = 1;
 //	}
-
-	Control_Vacum_Indicator->bits.pick1 =  PickRubber(2);
+	SetPickRubber(2);
+	//Control_Vacum_Indicator->bits.pick1 =  PickRubber(2);
 }
 void Handle_release_handler2(void){
 //	if(ReleaseRubber(2)){
 //		Control_Vacum_Indicator->bits.realse2 = 1;
 //	}
-	Control_Vacum_Indicator->bits.release2 = ReleaseRubber(2);
+	SetReleaseRubber(2);
+	//Control_Vacum_Indicator->bits.release2 = ReleaseRubber(2);
 }
 void Handle_save1(void){
 //	HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);

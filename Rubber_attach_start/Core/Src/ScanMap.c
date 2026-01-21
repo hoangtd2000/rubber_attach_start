@@ -99,7 +99,7 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 
 
 
-PickState_t pick_state = ST_IDLE;
+PickState_t machine_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
 
 uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
@@ -126,17 +126,17 @@ void Handle(void)
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !flag_Stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		Tab_main->bits.start = 0;
-	    if(DOOR_OPEN() && pick_state != ST_PAUSE_DOOR)
+	    if(DOOR_OPEN() && machine_state != ST_PAUSE_DOOR)
 	    {
-	        prev_state = pick_state;
-	        pick_state = ST_PAUSE_DOOR;
+	        prev_state = machine_state;
+	        machine_state = ST_PAUSE_DOOR;
 	    }
-		switch(pick_state)
+		switch(machine_state)
 		{
 			case ST_IDLE:
 				Tab_main_indicator->bits.start =  1 ;
 				Close_Popup(0);
-				pick_state = ST_MOVE_TO_RUBBER;
+				machine_state = ST_MOVE_TO_RUBBER;
 			break;
 			case ST_MOVE_TO_RUBBER:
 			{
@@ -145,7 +145,7 @@ void Handle(void)
 				Tab_main_indicator->bits.start =  1 ;
 				if(tray_index >= MAX_PAIRS || rubber_pair >= RUBBER_TOTAL_PAIRS)
 				{
-					pick_state = ST_STOP;
+					machine_state = ST_STOP;
 					break;
 				}
 
@@ -166,34 +166,35 @@ void Handle(void)
 				Clear_mark_rubber(ry * RUBBER_COLS + rx);
 				Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 				delay_us(1000);
-				pick_state = ST_PICK1;
+				machine_state = ST_PICK1;
 			}
 			break;
 			case ST_PICK1:
 			{
 				//!PickRubber(1)
-			    if (rubber_pair % 180 == 0)
+			    if (rubber_pair % 10 == 0)
 			    {
 			        Open_Popup(0);
 			        SetBips(3);
-			        pick_state = ST_WAIT_POPUP;
+			        machine_state = ST_WAIT_POPUP;
 			        break;
 			    }
-			    pick_state = ST_PICK2;
+			    machine_state = ST_PICK2;
 			}
 			break;
 			case ST_PICK2:
 			{
 				//!PickRubber(2)
-			    if (rubber_pair % 180 == 0)
+			    if (rubber_pair % 10 == 0)
 			    {
-			        ReleaseRubber(1);   // đầu 1 đã hút thì nhả
+			    	SetReleaseRubber(1);
+			        ReleaseRubber();   			// đầu 1 đã hút thì nhả
 			        Open_Popup(0);
 			        SetBips(3);
-			        pick_state = ST_WAIT_POPUP;
+			        machine_state = ST_WAIT_POPUP;
 			        break;
 			    }
-			    pick_state = ST_PLACE1;
+			    machine_state = ST_PLACE1;
 			}
 			break;
 
@@ -207,14 +208,14 @@ void Handle(void)
 					Tab_popup->bits.stop = 0;
 					Close_Popup(0);
 					rubber_pair++;   // bỏ cả cặp lỗi
-					pick_state = ST_STOP;
+					machine_state = ST_STOP;
 				}
 				if(Tab_popup->bits.next ==  1)
 				{
 					Tab_popup->bits.next = 0;
 					Close_Popup(0);
 					rubber_pair++;   // bỏ cả cặp lỗi
-					pick_state = ST_MOVE_TO_RUBBER;
+					machine_state = ST_MOVE_TO_RUBBER;
 				}
 			break;
 			case ST_PLACE1:
@@ -228,13 +229,14 @@ void Handle(void)
 			    Item *tray = TrayList[tray_id];
 
 			    PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
-			    pick_state = ST_RELEASE1;
+			    machine_state = ST_RELEASE1;
 			}
 			break;
 			case ST_RELEASE1:
 			{
-			    ReleaseRubber(1);
-			    pick_state = ST_PLACE2;
+				SetReleaseRubber(1);
+			    ReleaseRubber();
+			    machine_state = ST_PLACE2;
 			}
 			break;
 			case ST_PLACE2:
@@ -248,19 +250,21 @@ void Handle(void)
 			    Item *tray = TrayList[tray_id];
 
 			    PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
-			    pick_state = ST_RELEASE2;
+			    machine_state = ST_RELEASE2;
 			}
 			break;
 			case ST_RELEASE2:
 			{
-			    ReleaseRubber(2);
-			    pick_state = ST_NEXT_PAIR;
+			    //ReleaseRubber(2);
+				SetReleaseRubber(2);
+				ReleaseRubber();
+			    machine_state = ST_NEXT_PAIR;
 			}
 			break;
 			case ST_NEXT_PAIR:
 				rubber_pair++;
 				tray_index++;
-				pick_state = ST_MOVE_TO_RUBBER;
+				machine_state = ST_MOVE_TO_RUBBER;
 				break;
 			case ST_STOP:
 				wait_handler_stop();
@@ -273,7 +277,7 @@ void Handle(void)
 				}
 				if(Tab_main->bits.start == 1){
 					Tab_main->bits.start = 0;
-					pick_state = ST_MOVE_TO_RUBBER;
+					machine_state = ST_MOVE_TO_RUBBER;
 				}
 				break;
 			case ST_PAUSE_DOOR:
@@ -291,14 +295,14 @@ void Handle(void)
 			        {
 			            ON_LED_GREEN;
 			            OFF_LED_RED;
-			            pick_state = ST_WAIT_POPUP;
+			            machine_state = ST_WAIT_POPUP;
 			        }
 			        else if (Tab_main->bits.start == 1)
 			        {
 			            ON_LED_GREEN;
 			            OFF_LED_RED;
 			            Tab_main_indicator->bits.start = 1;
-			            pick_state = prev_state;
+			            machine_state = prev_state;
 			        }
 			    }
 			    break;

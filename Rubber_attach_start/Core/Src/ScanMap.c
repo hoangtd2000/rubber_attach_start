@@ -134,10 +134,12 @@ void Handle(void)
 		switch(machine_state)
 		{
 			case ST_IDLE:
+			{
 				Tab_main_indicator->bits.start =  1 ;
 				Close_Popup(0);
 				machine_state = ST_MOVE_TO_RUBBER;
-			break;
+				break;
+			}
 			case ST_MOVE_TO_RUBBER:
 			{
 				OFF_LED_RED;
@@ -167,8 +169,8 @@ void Handle(void)
 				Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 				delay_us(1000);
 				machine_state = ST_PICK1;
+				break;
 			}
-			break;
 			case ST_PICK1:
 			{
 				//!PickRubber(1)
@@ -180,25 +182,25 @@ void Handle(void)
 			        break;
 			    }
 			    machine_state = ST_PICK2;
+			    break;
 			}
-			break;
 			case ST_PICK2:
 			{
 				//!PickRubber(2)
+				//PickRubber(2);
 			    if (rubber_pair % 10 == 0)
 			    {
-			    	SetReleaseRubber(1);
-			        ReleaseRubber();   			// đầu 1 đã hút thì nhả
+			        ReleaseRubber(1);   			// đầu 1 đã hút thì nhả
 			        Open_Popup(0);
 			        SetBips(3);
 			        machine_state = ST_WAIT_POPUP;
 			        break;
 			    }
 			    machine_state = ST_PLACE1;
+			    break;
 			}
-			break;
-
 			case ST_WAIT_POPUP:
+			{
 				if(Timer_Check(1, 500) && Inputs_Database[34]){
 					OFF_LED_GREEN;
 					TOGGLE_LED_RED;
@@ -217,7 +219,8 @@ void Handle(void)
 					rubber_pair++;   // bỏ cả cặp lỗi
 					machine_state = ST_MOVE_TO_RUBBER;
 				}
-			break;
+				break;
+			}
 			case ST_PLACE1:
 			{
 			    uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
@@ -230,15 +233,14 @@ void Handle(void)
 
 			    PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
 			    machine_state = ST_RELEASE1;
+			    break;
 			}
-			break;
 			case ST_RELEASE1:
 			{
-				SetReleaseRubber(1);
-			    ReleaseRubber();
+			    ReleaseRubber(1);
 			    machine_state = ST_PLACE2;
+			    break;
 			}
-			break;
 			case ST_PLACE2:
 			{
 			    uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
@@ -251,22 +253,24 @@ void Handle(void)
 
 			    PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
 			    machine_state = ST_RELEASE2;
+			    break;
 			}
-			break;
 			case ST_RELEASE2:
 			{
 			    //ReleaseRubber(2);
-				SetReleaseRubber(2);
-				ReleaseRubber();
+				ReleaseRubber(2);
 			    machine_state = ST_NEXT_PAIR;
+			    break;
 			}
-			break;
 			case ST_NEXT_PAIR:
+			{
 				rubber_pair++;
 				tray_index++;
 				machine_state = ST_MOVE_TO_RUBBER;
 				break;
+			}
 			case ST_STOP:
+			{
 				wait_handler_stop();
 				move_axis(0, 0, 0);
 				wait_handler_stop();
@@ -280,6 +284,7 @@ void Handle(void)
 					machine_state = ST_MOVE_TO_RUBBER;
 				}
 				break;
+			}
 			case ST_PAUSE_DOOR:
 			{
 				wait_handler_stop();

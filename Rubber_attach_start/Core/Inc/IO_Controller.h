@@ -50,9 +50,10 @@ enum {
 };
 
 typedef enum {
-    MODE_PICK = 0,
-    MODE_RELEASE
-} VacumMode_t;
+    OK = 0,
+	NG,
+	RUNNING,
+} Result_t;
 
 typedef enum {
     PICK_IDLE = 0,
@@ -68,23 +69,19 @@ typedef enum {
 } Cylinder_Vacum_State_t;
 
 typedef struct {
-	Cylinder_Vacum_State_t state;
-    VacumMode_t mode;
+    Result_t result;         // 0: running, 1: OK, 2: NG
     uint8_t vacum_id;
     uint8_t retry;
-    uint16_t time_delay;
-    uint8_t result;         // 0: running, 1: OK, 2: NG
+    uint8_t state;
 } Cylinder_Vacum_Init_t;
 
 extern Cylinder_Vacum_Init_t Handle_Pick;
-extern Cylinder_Vacum_Init_t Handle_Realse;
+extern Cylinder_Vacum_Init_t Handle_Release;
 
 void SetBips(uint8_t numBips);
 void BipControl(void);
-void SetReleaseRubber(uint8_t vacum_id);
-void SetPickRubber(uint8_t vacum_id);
-void PickRubber(void);
-void ReleaseRubber(void);
+uint8_t PickRubber(uint8_t vacum_id);
+uint8_t ReleaseRubber(uint8_t vacum_id);
 uint8_t PickRubber1(uint8_t vacum_id);
 uint8_t ReleaseRubber1(uint8_t vacum_id);
 #endif /* INC_IO_CONTROLLER_H_ */

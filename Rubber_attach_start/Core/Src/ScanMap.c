@@ -190,7 +190,8 @@ void Handle(void)
 			//	PickRubber(2);
 			    if (rubber_pair % 100 == 0)
 			    {
-			        ReleaseRubber(1);   			// đầu 1 đã hút thì nhả
+			    	SetReleaseRubber(0);
+			        //ReleaseRubber(1);   			// đầu 1 đã hút thì nhả
 			        Open_Popup(0);
 			        SetBips(3);
 			        machine_state = ST_WAIT_POPUP;
@@ -243,7 +244,8 @@ void Handle(void)
 			}
 			case ST_RELEASE1:
 			{
-			    ReleaseRubber(1);
+				SetReleaseRubber(0);
+			    //ReleaseRubber(1);
 			    machine_state = ST_PLACE2;
 			    break;
 			}
@@ -263,8 +265,8 @@ void Handle(void)
 			}
 			case ST_RELEASE2:
 			{
-			    //ReleaseRubber(2);
-				ReleaseRubber(2);
+				SetReleaseRubber(1);
+				//ReleaseRubber(2);
 			    machine_state = ST_NEXT_PAIR;
 			    break;
 			}

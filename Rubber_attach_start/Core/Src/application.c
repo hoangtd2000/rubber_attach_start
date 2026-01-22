@@ -200,6 +200,10 @@ void task_timer7(){
 	Control_motor_x();
 	Control_motor_z();
 	BipControl();
+	PickRubber1(0);
+	PickRubber1(1);
+	ReleaseRubber1(0);
+	ReleaseRubber1(1);
 	if(DOOR_OPEN()){
 		Open_Popup(1);
 	}

@@ -70,14 +70,15 @@ typedef enum {
 } Cylinder_Vacum_State_t;
 
 typedef struct {
+	Cylinder_Vacum_State_t state;
     Result_t result;         // 0: running, 1: OK, 2: NG
     uint8_t vacum_id;
     uint8_t retry;
-    uint8_t state;
+    uint16_t time_delay;
 } Cylinder_Vacum_Init_t;
 
-extern Cylinder_Vacum_Init_t Handle_Pick;
-extern Cylinder_Vacum_Init_t Handle_Release;
+extern Cylinder_Vacum_Init_t Handle_Pick[2];
+extern Cylinder_Vacum_Init_t Handle_Release[2];
 
 void SetBips(uint8_t numBips);
 void BipControl(void);

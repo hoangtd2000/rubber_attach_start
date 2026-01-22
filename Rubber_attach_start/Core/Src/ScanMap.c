@@ -33,8 +33,6 @@ extern uint32_t data[10];
 extern Tab_main_t* Tab_main_indicator;
 extern Tab_popup_t* Tab_popup;
 
-uint8_t place_step = 0;
-
 void Read_Tray_Data(){
 	Flash_Read_Data( FlashStart, data, 10);
 
@@ -97,8 +95,6 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 #define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 
-
-
 PickState_t machine_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
 
@@ -108,7 +104,6 @@ Item *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 extern Tab_main_t* Tab_main;
 extern uint8_t flag_Stop;
 uint8_t count_tray[MAX_TRAYS] = {0, 0};
-
 
 void Handle(void)
 {
@@ -165,8 +160,6 @@ void Handle(void)
 				wait_handler_stop();
 
 				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
-				Clear_mark_rubber(ry * RUBBER_COLS + rx);
-				Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 				delay_us(1000);
 				machine_state = ST_PICK1;
 				break;
@@ -182,6 +175,12 @@ void Handle(void)
 			        machine_state = ST_WAIT_POPUP;
 			        break;
 			    }
+				int pair_row = rubber_pair / RUBBER_COLS;
+				int pair_col = rubber_pair % RUBBER_COLS;
+
+				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+				int ry = pair_row * 2;
+			    Clear_mark_rubber(ry * RUBBER_COLS + rx);
 			    machine_state = ST_PICK2;
 			    break;
 			}
@@ -197,6 +196,12 @@ void Handle(void)
 			        machine_state = ST_WAIT_POPUP;
 			        break;
 			    }
+				int pair_row = rubber_pair / RUBBER_COLS;
+				int pair_col = rubber_pair % RUBBER_COLS;
+
+				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+				int ry = pair_row * 2;
+			    Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 			    machine_state = ST_PLACE1;
 			    break;
 			}
@@ -294,13 +299,13 @@ void Handle(void)
 			    {
 			        OFF_LED_GREEN;
 			        TOGGLE_LED_RED;
+			        TOGGLE_BUZZ;
 			    }
 			    if (!DOOR_OPEN())
 			    {
+			        OFF_BUZZ;
 			        if (prev_state == ST_WAIT_POPUP)
 			        {
-			            ON_LED_GREEN;
-			            OFF_LED_RED;
 			            machine_state = ST_WAIT_POPUP;
 			        }
 			        else if (Tab_main->bits.start == 1)

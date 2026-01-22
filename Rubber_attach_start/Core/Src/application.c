@@ -96,6 +96,7 @@ void application_init(){
 		Try_go_home();
 }
 void Try_go_home(){
+	Open_Popup_home();
 	 HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	 Cylinder1_Go_Up;
 	 Cylinder2_Go_Up;
@@ -119,7 +120,7 @@ void Try_go_home(){
 	  wait_handler_stop();
 	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 	  HAL_TIM_Base_Start_IT(&htim6);
-
+	  Close_Popup_home();
 }
 
 void Handle_popup(void){
@@ -224,6 +225,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	if(GPIO_Pin == i16_start_Pin){
 		if(HAL_GPIO_ReadPin(i16_start_GPIO_Port, i16_start_Pin)){
 			Tab_main->bits.start = 1;
+			if(Taskbar->bits.motor ==  1){
+				Tab_main->bits.start = 0;
+			}
+
 		}
 	}
 	else if(GPIO_Pin == i4_estop_Pin){

@@ -25,6 +25,7 @@ Point2D Tray2_Mark[3];
 extern uint8_t Coils_Database[25];
 extern uint16_t Holding_Registers_Database[300];
 extern uint8_t Inputs_Database[50];
+extern uint16_t Input_Registers_Database[50];
 extern Item Rubber_Tray[400] ;
 extern Item Tray1[30];
 extern Item Tray2[30];
@@ -460,13 +461,16 @@ void wait_handler_stop(){
 
 }
  void Set_HMI_X_Axis(uint16_t value){
-	Holding_Registers_Database[0] = value;
+	 Input_Registers_Database[11] = value;
+	//Holding_Registers_Database[0] = value;
 }
  void Set_HMI_Y_Axis(uint16_t value){
-	Holding_Registers_Database[1] = value;
+	 Input_Registers_Database[12] = value ;
+	//Holding_Registers_Database[1] = value;
 }
 void Set_HMI_Z_Axis(uint16_t value){
-	Holding_Registers_Database[2] = value;
+	Input_Registers_Database[13] = value ;
+	//Holding_Registers_Database[2] = value;
 }
 
 uint16_t Get_HMI_X_Axis(void){
@@ -564,8 +568,9 @@ void Handle_Set(void){
 }
 void Handle_Home(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
+	Open_Popup_home();
 	 HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
-	 HAL_TIM_Base_Stop_IT(&htim6);
+	// HAL_TIM_Base_Stop_IT(&htim6);
 	 Cylinder1_Go_Up;
 	 Cylinder2_Go_Up;
 	if(get_home_z() != home_z){
@@ -592,7 +597,8 @@ void Handle_Home(void){
 	}
 	  wait_handler_stop();
 	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-	  HAL_TIM_Base_Start_IT(&htim6);
+	//  HAL_TIM_Base_Start_IT(&htim6);
+	  Close_Popup_home();
 }
 
 

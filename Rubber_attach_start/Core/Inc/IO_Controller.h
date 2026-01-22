@@ -13,6 +13,7 @@
 
 #define ON_BUZZ 			HAL_GPIO_WritePin(O12_GPIO_Port, O12_Pin, 0)
 #define OFF_BUZZ			HAL_GPIO_WritePin(O12_GPIO_Port, O12_Pin, 1)
+#define TOGGLE_BUZZ 		HAL_GPIO_TogglePin(O12_GPIO_Port, O12_Pin)
 
 #define ON_LED_RED 			HAL_GPIO_WritePin(O11_GPIO_Port, O11_Pin, 0)
 #define OFF_LED_RED 		HAL_GPIO_WritePin(O11_GPIO_Port, O11_Pin, 1)
@@ -56,16 +57,16 @@ typedef enum {
 } Result_t;
 
 typedef enum {
-    PICK_IDLE = 0,
+    IDLE = 0,
     CYLINDER_GO_DOWN,
+    CYLINDER_GO_UP,
     VACUM_REALSE_OFF,
 	VACUM_REALSE_ON,
 	VACUM_PICK_OFF,
     VACUM_PICK_ON,
-    CYLINDER_GO_UP,
-    PICK_RETRY,
-    PICK_DONE_OK,
-    PICK_DONE_NG
+    RETRY,
+    DONE_OK,
+    DONE_NG
 } Cylinder_Vacum_State_t;
 
 typedef struct {
@@ -82,6 +83,4 @@ void SetBips(uint8_t numBips);
 void BipControl(void);
 uint8_t PickRubber(uint8_t vacum_id);
 uint8_t ReleaseRubber(uint8_t vacum_id);
-uint8_t PickRubber1(uint8_t vacum_id);
-uint8_t ReleaseRubber1(uint8_t vacum_id);
 #endif /* INC_IO_CONTROLLER_H_ */

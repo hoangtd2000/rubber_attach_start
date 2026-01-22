@@ -174,7 +174,8 @@ void Handle(void)
 			case ST_PICK1:
 			{
 				//!PickRubber(1)
-			    if (rubber_pair % 10 == 0)
+			//	PickRubber(1);
+			    if (rubber_pair % 100 == 0)
 			    {
 			        Open_Popup(0);
 			        SetBips(3);
@@ -187,8 +188,8 @@ void Handle(void)
 			case ST_PICK2:
 			{
 				//!PickRubber(2)
-				//PickRubber(2);
-			    if (rubber_pair % 10 == 0)
+			//	PickRubber(2);
+			    if (rubber_pair % 100 == 0)
 			    {
 			        ReleaseRubber(1);   			// đầu 1 đã hút thì nhả
 			        Open_Popup(0);

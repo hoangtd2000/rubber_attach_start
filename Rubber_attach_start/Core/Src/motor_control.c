@@ -25,6 +25,11 @@ Point2D Tray2_Mark[3];
 extern uint8_t Coils_Database[25];
 extern uint16_t Holding_Registers_Database[300];
 extern uint8_t Inputs_Database[50];
+extern Item Rubber_Tray[400] ;
+extern Item Tray1[30];
+extern Item Tray2[30];
+
+
 
 uint16_t* Mark = &Holding_Registers_Database[6];
 const uint32_t FlashStart = 0x0800C000;
@@ -350,7 +355,7 @@ void Control_motor_z(){
 	case MOVE_HOME2:
 		if( get_counter_timer_slave_z() == 0 ){
 		Set_Speed_Motor_z(speed_home2_z, speed_z_max);
-		move_z_down(2000);
+		move_z_down(2500);
 		}
 		break;
 	case MOVE_HOME3:
@@ -559,6 +564,16 @@ void Handle_Set(void){
 }
 void Handle_Home(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
+	 Cylinder1_Go_Up;
+	 Cylinder2_Go_Up;
+	if(get_home_z() != home_z){
+		if(AxisZ.mode == STOP ){
+			if(AxisZ.current_pos >0){
+			AxisZ.mode = MOVE_HOME1;
+				}
+			}
+	}
+	while(AxisZ.current_pos > 3000);
 	if(get_home_x() != home_x){
 		if(AxisX.mode == STOP ){
 			if(AxisX.current_pos >0){
@@ -573,13 +588,6 @@ void Handle_Home(void){
 				}
 			}
 	}
-	if(get_home_z() != home_z){
-		if(AxisZ.mode == STOP ){
-			if(AxisZ.current_pos >0){
-			AxisZ.mode = MOVE_HOME1;
-				}
-			}
-	}
 }
 
 
@@ -588,25 +596,25 @@ void Handle_pick_handler1(void){
 //	if(PickRubber(1)){
 //		Control_Vacum_Indicator->bits.pick1 = 1;
 //	}
-	Control_Vacum_Indicator->bits.pick1 = PickRubber(1);
+	//Control_Vacum_Indicator->bits.pick1 = PickRubber(1);
 }
 void Handle_release_handler1(void){
 //	if(ReleaseRubber(1)){
 //		Control_Vacum_Indicator->bits.realse1 = 1;
 //	}
-	Control_Vacum_Indicator->bits.release1 = ReleaseRubber(1);
+	//Control_Vacum_Indicator->bits.release1 = ReleaseRubber(1);
 }
 void Handle_pick_handler2(void){
 //	if(PickRubber(2)){
 //		Control_Vacum_Indicator->bits.pick2 = 1;
 //	}
-	Control_Vacum_Indicator->bits.pick1 =  PickRubber(2);
+	//Control_Vacum_Indicator->bits.pick1 =  PickRubber(2);
 }
 void Handle_release_handler2(void){
 //	if(ReleaseRubber(2)){
 //		Control_Vacum_Indicator->bits.realse2 = 1;
 //	}
-	Control_Vacum_Indicator->bits.release2 = ReleaseRubber(2);
+	//Control_Vacum_Indicator->bits.release2 = ReleaseRubber(2);
 }
 void Handle_save1(void){
 //	HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);
@@ -617,29 +625,28 @@ void Handle_save1(void){
 		Rubber_Mark[0].y = AxisY.current_pos;
 		Mark[0] =  Rubber_Mark[0].x;
 		Mark[1] =  Rubber_Mark[0].y;
-		Rubber_and_tray_indicator->bits.tray_rubber_p1 = 0;
 		data[0] =  Rubber_Mark[0].raw;
-		Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+
+		Rubber_and_tray_indicator->bits.tray_rubber_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	case 2:
 		Rubber_Mark[1].x = AxisX.current_pos;
 		Rubber_Mark[1].y = AxisY.current_pos;
 		Mark[2] =  Rubber_Mark[1].x;
 		Mark[3] =  Rubber_Mark[1].y;
-		Rubber_and_tray_indicator->bits.tray_rubber_p2 = 0;
 		data[1] =  Rubber_Mark[1].raw;
-		Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+		Rubber_and_tray_indicator->bits.tray_rubber_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	case 3:
 		Rubber_Mark[2].x = AxisX.current_pos;
 		Rubber_Mark[2].y = AxisY.current_pos;
 		Mark[4] =  Rubber_Mark[2].x;
 		Mark[5] =  Rubber_Mark[2].y;
-		Rubber_and_tray_indicator->bits.tray_rubber_p3 = 0;
 		data[2] =  Rubber_Mark[2].raw;
-		Flash_Write_Data (FlashStart, (uint32_t*)data, 20);
+		Rubber_and_tray_indicator->bits.tray_rubber_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	}
+	Calculate_Tray_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
 }
 void Handle_save2(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
@@ -650,8 +657,7 @@ void Handle_save2(void){
 				Mark[6] =  Tray1_Mark[0].x;
 				Mark[7] =  Tray1_Mark[0].y;
 				data[3] =  Tray1_Mark[0].raw;
-				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-				Rubber_and_tray_indicator->bits.tray1_p1 = 0 ;
+				Rubber_and_tray_indicator->bits.tray1_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 
 		break;
 	case 5:
@@ -660,8 +666,7 @@ void Handle_save2(void){
 				Mark[8] =  Tray1_Mark[1].x;
 				Mark[9] =  Tray1_Mark[1].y;
 				data[4] =  Tray1_Mark[1].raw;
-				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-				Rubber_and_tray_indicator->bits.tray1_p2 = 0 ;
+				Rubber_and_tray_indicator->bits.tray1_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	case 6:
 				Tray1_Mark[2].x = AxisX.current_pos;
@@ -669,10 +674,10 @@ void Handle_save2(void){
 				Mark[10] =  Tray1_Mark[2].x;
 				Mark[11] =  Tray1_Mark[2].y;
 				data[5] =  Tray1_Mark[2].raw;
-				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-				Rubber_and_tray_indicator->bits.tray1_p3 = 0 ;
+				Rubber_and_tray_indicator->bits.tray1_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	}
+	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
 }
 void Handle_save3(void){
 	// HAL_GPIO_TogglePin(O9_GPIO_Port, O9_Pin);
@@ -683,8 +688,7 @@ void Handle_save3(void){
 				Mark[12] =  Tray2_Mark[0].x;
 				Mark[13] =  Tray2_Mark[0].y;
 				data[6] =  Tray2_Mark[0].raw;
-				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-				Rubber_and_tray_indicator->bits.tray2_p1 = 0 ;
+				Rubber_and_tray_indicator->bits.tray2_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	case 8:
 				Tray2_Mark[1].x = AxisX.current_pos;
@@ -692,8 +696,7 @@ void Handle_save3(void){
 				Mark[14] =  Tray2_Mark[1].x;
 				Mark[15] =  Tray2_Mark[1].y;
 				data[7] =  Tray2_Mark[1].raw;
-				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-				Rubber_and_tray_indicator->bits.tray2_p2 = 0 ;
+				Rubber_and_tray_indicator->bits.tray2_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	case 9:
 				Tray2_Mark[2].x = AxisX.current_pos;
@@ -701,10 +704,10 @@ void Handle_save3(void){
 				Mark[16] =  Tray2_Mark[2].x;
 				Mark[17] =  Tray2_Mark[2].y;
 				data[8] =  Tray2_Mark[2].raw;
-				Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-				Rubber_and_tray_indicator->bits.tray2_p3 = 0 ;
+				Rubber_and_tray_indicator->bits.tray2_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	}
+	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
 }
 void Handle_load(void){
 //	HAL_GPIO_TogglePin(O10_GPIO_Port, O10_Pin);

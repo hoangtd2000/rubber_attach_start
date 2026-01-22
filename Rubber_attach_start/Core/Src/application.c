@@ -74,7 +74,7 @@ ActionHandler_t Tab_motor_table[] =  {
 };
 
 void application_init(){
-		HAL_Delay(5000);
+		HAL_Delay(6000);
 		Mark_all_rubber();
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
 		Taskbar->bits.home = 1 ;
@@ -96,6 +96,15 @@ void application_init(){
 		Try_go_home();
 }
 void Try_go_home(){
+	 Cylinder1_Go_Up;
+	 Cylinder2_Go_Up;
+	  if(get_home_z() == home_z){
+		  AxisZ.mode = MOVE_HOME2;
+	  }else {
+		  AxisZ.mode = MOVE_HOME1;
+	  }
+		while((AxisZ.mode != MOVE_HOME2));
+
 	  if(get_home_x() == home_x){
 		  AxisX.mode = MOVE_HOME2;
 	  }else{
@@ -105,11 +114,6 @@ void Try_go_home(){
 		  AxisY.mode = MOVE_HOME2;
 	  }else{
 		  AxisY.mode = MOVE_HOME1;
-	  }
-	  if(get_home_z() == home_z){
-		  AxisZ.mode = MOVE_HOME2;
-	  }else {
-		  AxisZ.mode = MOVE_HOME1;
 	  }
 }
 
@@ -189,8 +193,10 @@ void task_timer7(){
 	Control_motor_y();
 	Control_motor_x();
 	Control_motor_z();
-	//BipControl();
-	if(DOOR_OPEN()) Open_Popup(1);
+	BipControl();
+	if(DOOR_OPEN()){
+		Open_Popup(1);
+	}
 	else Close_Popup(1);
 }
 
@@ -198,13 +204,14 @@ void task_timer7(){
 void application_run_main(void){
 	  if(Timer_Check(0, 500) && !DOOR_OPEN()){
 		  OFF_LED_RED;
+		  OFF_BUZZ;
 		  TOGGLE_LED_GREEN;
 	  }
 	  else if(Timer_Check(2, 500) && DOOR_OPEN()){
 		  OFF_LED_GREEN;
 		  TOGGLE_LED_RED;
+		  TOGGLE_BUZZ;
 	  }
-
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)

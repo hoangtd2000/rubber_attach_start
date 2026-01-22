@@ -125,7 +125,6 @@ int main(void)
 //
 //  }
   application_init();
-
   //SetBips(3);
 
   /* USER CODE END 2 */

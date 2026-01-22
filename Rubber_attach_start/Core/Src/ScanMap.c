@@ -9,6 +9,7 @@
 
 extern Axis_t AxisX, AxisY, AxisZ;
 extern uint16_t* Mark;
+uint8_t run_enable  = 0;
 
 Item Rubber_Tray[400] = { [0 ... 399] = { .State = Not_Empty } };;
 Item Tray1[30];
@@ -90,6 +91,14 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
     }
 }
 
+void OnStartButton(void)
+{
+    if (run_enable == 0)
+    {
+        run_enable = 1;
+    }
+}
+
 #define PAIRS_PER_TRAY  12
 #define MAX_TRAYS       2
 #define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
@@ -166,45 +175,55 @@ void Handle(void)
 			}
 			case ST_PICK1:
 			{
-				//!PickRubber(1)
-			//	PickRubber(1);
-			    if (rubber_pair % 100 == 0)
-			    {
-			        Open_Popup(0);
-			        SetBips(3);
-			        machine_state = ST_WAIT_POPUP;
-			        break;
-			    }
-				int pair_row = rubber_pair / RUBBER_COLS;
-				int pair_col = rubber_pair % RUBBER_COLS;
-
-				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
-				int ry = pair_row * 2;
-			    Clear_mark_rubber(ry * RUBBER_COLS + rx);
-			    machine_state = ST_PICK2;
+				SetPickRubber(0);
+			    machine_state = ST_WAIT_PICK1;
 			    break;
+			}
+			case ST_WAIT_PICK1:
+			{
+			    if (Handle_Pick[0].result == OK)
+			    {
+			        int pair_row = rubber_pair / RUBBER_COLS;
+			        int pair_col = rubber_pair % RUBBER_COLS;
+
+			        int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+			        int ry = pair_row * 2;
+
+			        Clear_mark_rubber(ry * RUBBER_COLS + rx);
+			        machine_state = ST_PICK2;
+			    }
+			    else if (Handle_Pick[0].result == NG){
+					Open_Popup(0);
+					SetBips(3);
+					machine_state = ST_WAIT_POPUP;
+			    }
+				break;
 			}
 			case ST_PICK2:
 			{
-				//!PickRubber(2)
-			//	PickRubber(2);
-			    if (rubber_pair % 100 == 0)
+				SetPickRubber(1);
+				machine_state = ST_WAIT_PICK2;
+			    break;
+			}
+			case ST_WAIT_PICK2:
+			{
+			    if (Handle_Pick[1].result == OK)
 			    {
+					int pair_row = rubber_pair / RUBBER_COLS;
+					int pair_col = rubber_pair % RUBBER_COLS;
+
+					int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+					int ry = pair_row * 2;
+				    Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
+				    machine_state = ST_PLACE1;
+			    }
+			    else if(Handle_Pick[1].result == NG){
 			    	SetReleaseRubber(0);
-			        //ReleaseRubber(1);   			// đầu 1 đã hút thì nhả
 			        Open_Popup(0);
 			        SetBips(3);
 			        machine_state = ST_WAIT_POPUP;
-			        break;
 			    }
-				int pair_row = rubber_pair / RUBBER_COLS;
-				int pair_col = rubber_pair % RUBBER_COLS;
-
-				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
-				int ry = pair_row * 2;
-			    Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
-			    machine_state = ST_PLACE1;
-			    break;
+				break;
 			}
 			case ST_WAIT_POPUP:
 			{
@@ -244,9 +263,20 @@ void Handle(void)
 			}
 			case ST_RELEASE1:
 			{
-				SetReleaseRubber(0);
 			    //ReleaseRubber(1);
-			    machine_state = ST_PLACE2;
+				SetReleaseRubber(0);
+				machine_state = ST_WAIT_RELEASE1;
+			    break;
+			}
+			case ST_WAIT_RELEASE1:
+			{
+				if(Handle_Release[0].result == OK){
+					machine_state = ST_PLACE2;
+				}
+			    else if (Handle_Release[0].result == NG)
+			    {
+			        // OpenPopup
+			    }
 			    break;
 			}
 			case ST_PLACE2:
@@ -267,7 +297,19 @@ void Handle(void)
 			{
 				SetReleaseRubber(1);
 				//ReleaseRubber(2);
-			    machine_state = ST_NEXT_PAIR;
+			    machine_state = ST_WAIT_RELEASE2;
+			    break;
+			}
+			case ST_WAIT_RELEASE2:
+			{
+			    if (Handle_Release[1].result == OK)
+			    {
+			        machine_state = ST_NEXT_PAIR;
+			    }
+			    else if (Handle_Release[1].result == NG)
+			    {
+			    	// OpenPopup();
+			    }
 			    break;
 			}
 			case ST_NEXT_PAIR:

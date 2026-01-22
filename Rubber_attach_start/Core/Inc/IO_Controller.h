@@ -82,6 +82,10 @@ extern Cylinder_Vacum_Init_t Handle_Release[2];
 
 void SetBips(uint8_t numBips);
 void BipControl(void);
+void SetPickRubber(uint8_t vacum_id);
+void SetReleaseRubber(uint8_t vacum_id);
+void PickRubber1(uint8_t vacum_id);
+void ReleaseRubber1(uint8_t vacum_id);
 uint8_t PickRubber(uint8_t vacum_id);
 uint8_t ReleaseRubber(uint8_t vacum_id);
 #endif /* INC_IO_CONTROLLER_H_ */

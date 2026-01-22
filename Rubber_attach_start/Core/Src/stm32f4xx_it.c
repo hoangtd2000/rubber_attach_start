@@ -32,6 +32,7 @@
 uint32_t Tick = 0;
 uint8_t SS_Door_Left = 0;
 uint8_t SS_Door_Right = 0;
+volatile uint8_t state_door =  10 ;
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -456,6 +457,46 @@ void EXTI15_10_IRQHandler(void)
 //			Stop_motor_y();
 //			Stop_motor_z();
 //	}
+
+//	dong
+	if(HAL_GPIO_ReadPin(i14_Door_L_GPIO_Port, i14_Door_L_Pin)){
+		state_door = 1 ;
+
+		Close_Popup(popup_door);
+	}
+	//mo
+	else{
+
+		state_door = 0 ;
+		Open_Popup(popup_door) ;
+		if(AxisX.mode != STOP){
+				AxisX.pre_mode = AxisX.mode;
+			if(AxisX.mode == MOVE_AUTO){
+				AxisX.mode = MOVE_MANUAL;
+			}
+			Stop_motor_x();
+		}
+		if(AxisY.mode != STOP){
+				AxisY.pre_mode = AxisY.mode;
+			if(AxisY.mode == MOVE_AUTO){
+				AxisY.mode = MOVE_MANUAL;
+			}
+			Stop_motor_y();
+		}
+		if(AxisZ.mode != STOP){
+				AxisZ.pre_mode = AxisZ.mode;
+			if(AxisZ.mode == MOVE_AUTO){
+				AxisZ.mode = MOVE_MANUAL;
+			}
+			Stop_motor_z();
+		}
+
+		HAL_TIM_Base_Stop_IT(&htim6);
+		HAL_TIM_Base_Stop_IT(&htim7);
+	}
+
+
+
   /* USER CODE END EXTI15_10_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i12_vacum1_Pin);
   HAL_GPIO_EXTI_IRQHandler(i13_vacum2_Pin);

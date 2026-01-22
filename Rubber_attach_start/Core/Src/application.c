@@ -22,7 +22,7 @@ extern uint16_t* Mark;
 extern const uint32_t FlashStart;
 extern uint8_t SS_Door_Left;
 extern uint8_t SS_Door_Right;
-
+extern volatile uint8_t state_door;
 
 Taskbar_t* Taskbar = (Taskbar_t*)&Coils_Database[0];
 Tab_main_t* Tab_main = (Tab_main_t*)&Coils_Database[5];
@@ -96,8 +96,12 @@ void application_init(){
 		Try_go_home();
 }
 void Try_go_home(){
+	while(DOOR_OPEN()){
+		Open_Popup(1);
+	}
+	Close_Popup(1);
 	Open_Popup_home();
-	 HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+	// HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	 Cylinder1_Go_Up;
 	 Cylinder2_Go_Up;
 	  if(get_home_z() == home_z){
@@ -118,7 +122,7 @@ void Try_go_home(){
 		  AxisY.mode = MOVE_HOME1;
 	  }
 	  wait_handler_stop();
-	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+//	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 	  HAL_TIM_Base_Start_IT(&htim6);
 	  Close_Popup_home();
 }
@@ -182,14 +186,14 @@ void Popup_handle_stop(void){
 }
 
 void task_timer6(){
-	if(!DOOR_OPEN()){
+//	if(!DOOR_OPEN()){
 		if(Taskbar->bits.home){
 			Handle_main();
 		}else if(Taskbar->bits.motor){
 			Handle_motor();
 		}
 		Handle_popup();
-	}
+//	}
 
 //	else if(Taskbar->bits.SETTING == 1){
 //
@@ -200,10 +204,10 @@ void task_timer7(){
 	Control_motor_x();
 	Control_motor_z();
 	BipControl();
-	if(DOOR_OPEN()){
-		Open_Popup(1);
-	}
-	else Close_Popup(1);
+//	if(DOOR_OPEN()){
+//		Open_Popup(1);
+//	}
+//	else Close_Popup(1);
 }
 
 
@@ -218,16 +222,46 @@ void application_run_main(void){
 		  TOGGLE_LED_RED;
 		  TOGGLE_BUZZ;
 	  }
+//	  else if(state_door == 1){
+//		  if(Tab_main->bits.start == 1){
+//			  state_door = 10;
+//			  HAL_TIM_Base_Start_IT(&htim6);
+//			  HAL_TIM_Base_Start_IT(&htim7);
+//		  }
+//	  }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == i16_start_Pin){
 		if(HAL_GPIO_ReadPin(i16_start_GPIO_Port, i16_start_Pin)){
+			if(state_door == 1){
+				if(Tab_main_indicator->bits.start == 0 ){
+				AxisX.mode =  AxisX.pre_mode;
+				AxisY.mode =  AxisY.pre_mode;
+				AxisZ.mode =  AxisZ.pre_mode;
+				AxisX.pre_mode = STOP;
+				AxisY.pre_mode = STOP;
+				AxisZ.pre_mode = STOP;
+				  HAL_TIM_Base_Start_IT(&htim6);
+				  HAL_TIM_Base_Start_IT(&htim7);
+				  state_door = 10;
+				  return ;
+					}else{
+						  HAL_TIM_Base_Start_IT(&htim6);
+						  HAL_TIM_Base_Start_IT(&htim7);
+						  state_door = 10;
+						  return;
+					}
+				}
+
+			if((AxisX.mode == STOP) &&(AxisY.mode == STOP)&&(AxisZ.mode == STOP) ){
 			Tab_main->bits.start = 1;
+			}
 			if(Taskbar->bits.motor ==  1){
 				Tab_main->bits.start = 0;
 			}
+
 
 		}
 	}

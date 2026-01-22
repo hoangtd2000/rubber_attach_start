@@ -385,7 +385,7 @@ void Stop_motor_x(void)
         break;
     case MOVE_HOME2:
         AxisX.mode = MOVE_HOME3;
-        return;   // thoát hàm, KHÔNG set STOP (giữ đúng logic cũ)
+        return;
     default:
         break;
     }
@@ -569,8 +569,7 @@ void Handle_Set(void){
 void Handle_Home(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
 	Open_Popup_home();
-	 HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
-	// HAL_TIM_Base_Stop_IT(&htim6);
+//	 HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	 Cylinder1_Go_Up;
 	 Cylinder2_Go_Up;
 	if(get_home_z() != home_z){
@@ -595,9 +594,8 @@ void Handle_Home(void){
 				}
 			}
 	}
-	  wait_handler_stop();
-	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-	//  HAL_TIM_Base_Start_IT(&htim6);
+//	  wait_handler_stop();
+//	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 	  Close_Popup_home();
 }
 

@@ -83,9 +83,14 @@
 
 #define max_x 55000U
 #define max_y 33500U
-#define max_z_tray 11500U
-#define max_z_rubber 13000U
+//#define max_z_tray 11500U
+//#define max_z_rubber 13000U
+//#define max_z 	(max_z_rubber)
+
+#define max_z_tray 9000U
+#define max_z_rubber 9000U
 #define max_z 	(max_z_rubber)
+
 
 #define speed_x_max (40000U)
 #define speed_y_max (40000U)

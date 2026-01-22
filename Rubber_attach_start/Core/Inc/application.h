@@ -58,6 +58,9 @@ void Popup_handle_stop(void);
 #define Close_Popup_home() (ClearBit(&Inputs_Database[34], 2, 1))
 #define Open_Popup_home() 	(SetBit(&Inputs_Database[34], 2, 1))
 
+#define popup_err	 	(0U)
+#define popup_door		(1U)
+#define popup_home 		(2U)
 
 extern uint8_t SS_Door_Left;
 extern uint8_t SS_Door_Right;

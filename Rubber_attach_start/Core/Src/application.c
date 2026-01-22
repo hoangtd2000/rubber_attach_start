@@ -82,7 +82,7 @@ void application_init(){
 		HAL_TIM_Base_Start_IT(&htim5); //x
 		HAL_TIM_Base_Start_IT(&htim9); //y
 		HAL_TIM_Base_Start_IT(&htim2); //z
-		HAL_TIM_Base_Start_IT(&htim6);
+
 		HAL_TIM_Base_Start_IT(&htim7);
 		Set_Speed_Motor_x( speed_default, speed_x_max);
 		Set_Speed_Motor_y( speed_default, speed_y_max);
@@ -96,6 +96,7 @@ void application_init(){
 		Try_go_home();
 }
 void Try_go_home(){
+	 HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	 Cylinder1_Go_Up;
 	 Cylinder2_Go_Up;
 	  if(get_home_z() == home_z){
@@ -115,6 +116,10 @@ void Try_go_home(){
 	  }else{
 		  AxisY.mode = MOVE_HOME1;
 	  }
+	  wait_handler_stop();
+	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	  HAL_TIM_Base_Start_IT(&htim6);
+
 }
 
 void Handle_popup(void){

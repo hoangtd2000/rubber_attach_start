@@ -564,6 +564,8 @@ void Handle_Set(void){
 }
 void Handle_Home(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
+	 HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+	 HAL_TIM_Base_Stop_IT(&htim6);
 	 Cylinder1_Go_Up;
 	 Cylinder2_Go_Up;
 	if(get_home_z() != home_z){
@@ -588,6 +590,9 @@ void Handle_Home(void){
 				}
 			}
 	}
+	  wait_handler_stop();
+	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	  HAL_TIM_Base_Start_IT(&htim6);
 }
 
 

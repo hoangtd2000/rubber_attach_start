@@ -176,6 +176,7 @@ void Handle(void)
 			case ST_PICK1:
 			{
 				SetPickRubber(0);
+				SetPickRubber(1);
 			    machine_state = ST_WAIT_PICK1;
 			    break;
 			}
@@ -201,7 +202,7 @@ void Handle(void)
 			}
 			case ST_PICK2:
 			{
-				SetPickRubber(1);
+				//SetPickRubber(1);
 				machine_state = ST_WAIT_PICK2;
 			    break;
 			}
@@ -263,7 +264,6 @@ void Handle(void)
 			}
 			case ST_RELEASE1:
 			{
-			    //ReleaseRubber(1);
 				SetReleaseRubber(0);
 				machine_state = ST_WAIT_RELEASE1;
 			    break;

@@ -657,7 +657,7 @@ void Handle_save1(void){
 		Rubber_and_tray_indicator->bits.tray_rubber_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
 		break;
 	}
-	Calculate_Tray_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
+	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
 }
 void Handle_save2(void){
 	//HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);

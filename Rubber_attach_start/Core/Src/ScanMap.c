@@ -67,9 +67,28 @@ void Read_Tray_Data(){
 	Mark[16] = Tray2_Mark[2].x;
 	Mark[17] = Tray2_Mark[2].y;
 //	Calculate_Tray2_Point(Tray2, Tray2_Mark, Tray2Pos.row, Tray2Pos.col);
-	Calculate_Tray_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
+	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
 	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
 	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
+}
+
+void Calculate_TrayRubber_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col)
+{
+    if (row < 2 || col < 2) return;          // tránh chia 0
+    const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
+    const double dy_row = (double)(point[2].y - point[0].y) / (row - 1);
+    const double dx_col = (double)(point[1].x - point[0].x) / (col - 1);
+    const double dy_col = (double)(point[1].y - point[0].y) / (col - 1);
+
+    uint16_t index = 0;
+
+    for (uint8_t i = 0; i < row; ++i) {
+        for (uint8_t j = 0; j < col; ++j) {
+        	tray[index].y = point[0].y + i * dy_row + j * dy_col;
+            tray[index].x = point[0].x + i * dx_row + j * dx_col;
+            ++index;
+        }
+    }
 }
 
 void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col)
@@ -84,8 +103,14 @@ void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t 
 
     for (uint8_t i = 0; i < row; ++i) {
         for (uint8_t j = 0; j < col; ++j) {
-            tray[index].x = point[0].x + i * dx_row + j * dx_col;
-            tray[index].y = point[0].y + i * dy_row + j * dy_col;
+        	if(i % 2 == 0){
+        		tray[index].y = point[0].y + i * dy_row + j * dy_col;
+        		tray[index].x = point[0].x + i * dx_row + j * dx_col;
+        	}
+        	else{
+        		tray[index].y = point[0].y + i * dy_row + j * dy_col - Y_Calibrator;
+        		tray[index].x = point[0].x + i * dx_row + j * dx_col - X_Calibrator;
+        	}
             ++index;
         }
     }
@@ -353,26 +378,25 @@ void Handle(void)
 
 void PlaceToTray(Item *tray, uint8_t tray_id, int index)
 {
-	//if(DOOR_OPEN()) return;
     wait_handler_stop();
     move_axis(tray[index].x, tray[index].y, max_z_tray - 8000);
-    //if(DOOR_OPEN()) return;
+
     delay_us(500);
     wait_handler_stop();
-
     count_tray[tray_id]++;
-
     if(tray_id == 0){
         Mark_tray1(index);
         Input_Registers_Database[3] = count_tray[0];
+
     } else {
         Mark_tray2(index);
         Input_Registers_Database[4] = count_tray[1];
     }
-
     move_axis1(tray[index].x, tray[index].y, max_z_tray);
     wait_handler_stop();
     delay_us(1000);
 }
 
+void Calibrator_Y(int y){
 
+}

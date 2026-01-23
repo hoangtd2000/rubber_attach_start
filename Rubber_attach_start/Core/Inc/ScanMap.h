@@ -19,6 +19,9 @@
 #define TRAY_COLS   4
 #define TRAY_ROWS   6
 
+#define Y_Calibrator 0U  //2500
+#define X_Calibrator 0U     //2500
+
 // Vị trí từng Rubber
 typedef enum {
 	Empty,
@@ -57,6 +60,7 @@ void wait_handler_stop();
 void Read_Tray_Data();
 
 void Calculate_Tray_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
+void Calculate_TrayRubber_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col);
 void PlaceToTray(Item *tray, uint8_t tray_id, int index);
 void CheckDoorAndPause(void);
 #endif /* INC_SCANMAP_H_ */

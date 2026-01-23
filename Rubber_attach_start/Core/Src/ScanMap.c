@@ -130,11 +130,6 @@ void Handle(void)
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !flag_Stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		Tab_main->bits.start = 0;
-	    if(DOOR_OPEN() && machine_state != ST_PAUSE_DOOR)
-	    {
-	        prev_state = machine_state;
-	        machine_state = ST_PAUSE_DOOR;
-	    }
 		switch(machine_state)
 		{
 			case ST_IDLE:
@@ -334,33 +329,6 @@ void Handle(void)
 					machine_state = ST_MOVE_TO_RUBBER;
 				}
 				break;
-			}
-			case ST_PAUSE_DOOR:
-			{
-				wait_handler_stop();
-				Tab_main_indicator->bits.start = 0;
-			    if(Timer_Check(1, 500))
-			    {
-			        OFF_LED_GREEN;
-			        TOGGLE_LED_RED;
-			        TOGGLE_BUZZ;
-			    }
-			    if (!DOOR_OPEN())
-			    {
-			        OFF_BUZZ;
-			        if (prev_state == ST_WAIT_POPUP)
-			        {
-			            machine_state = ST_WAIT_POPUP;
-			        }
-			        else if (Tab_main->bits.start == 1)
-			        {
-			            ON_LED_GREEN;
-			            OFF_LED_RED;
-			            Tab_main_indicator->bits.start = 1;
-			            machine_state = prev_state;
-			        }
-			    }
-			    break;
 			}
 			default:
 				break;

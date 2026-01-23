@@ -182,14 +182,12 @@ void Popup_handle_stop(void){
 }
 
 void task_timer6(){
-	if(!DOOR_OPEN()){
-		if(Taskbar->bits.home){
-			Handle_main();
-		}else if(Taskbar->bits.motor){
-			Handle_motor();
-		}
-		Handle_popup();
+	if(Taskbar->bits.home){
+		Handle_main();
+	}else if(Taskbar->bits.motor){
+		Handle_motor();
 	}
+	Handle_popup();
 
 //	else if(Taskbar->bits.SETTING == 1){
 //
@@ -204,23 +202,14 @@ void task_timer7(){
 	PickRubber1(1);
 	ReleaseRubber1(0);
 	ReleaseRubber1(1);
-	if(DOOR_OPEN()){
-		Open_Popup(popup_door);
-	}
-	else Close_Popup(popup_door);
 }
 
 
 void application_run_main(void){
-	  if(Timer_Check(0, 500) && !DOOR_OPEN()){
+	  if(Timer_Check(0, 500)){
 		  OFF_LED_RED;
 		  OFF_BUZZ;
 		  TOGGLE_LED_GREEN;
-	  }
-	  else if(Timer_Check(2, 500) && DOOR_OPEN()){
-		  OFF_LED_GREEN;
-		  TOGGLE_LED_RED;
-		  TOGGLE_BUZZ;
 	  }
 }
 

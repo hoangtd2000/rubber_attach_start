@@ -19,7 +19,7 @@
 #define TRAY_COLS   4
 #define TRAY_ROWS   6
 
-#define Y_Calibrator 300
+#define Y_Calibrator 250
 
 // Vị trí từng Rubber
 typedef enum {

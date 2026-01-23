@@ -389,7 +389,7 @@ void PlaceToTray(Item *tray, uint8_t tray_id, int index)
     if(tray_id == 0){
     	move_axis(tray[index].x, tray[index].y, max_z_tray - 8000);
     } else {
-    	move_axis(tray[index].x, tray[index].y + Y_Calibrator, max_z_tray - 8000);
+    	move_axis(tray[index].x, tray[index].y - Y_Calibrator, max_z_tray - 8000);
     }
     delay_us(500);
     wait_handler_stop();
@@ -401,7 +401,7 @@ void PlaceToTray(Item *tray, uint8_t tray_id, int index)
     } else {
         Mark_tray2(index);
         Input_Registers_Database[4] = count_tray[1];
-        move_axis1(tray[index].x, tray[index].y + Y_Calibrator, max_z_tray);
+        move_axis1(tray[index].x, tray[index].y - Y_Calibrator, max_z_tray);
     }
 
     wait_handler_stop();

@@ -1,3 +1,0 @@
-../Core/Src/flash.c:12:10:GetSector	24	static
-../Core/Src/flash.c:27:6:Flash_Read_Data	24	static
-../Core/Src/flash.c:38:10:Flash_Write_Data	72	static,ignoring_inline_asm

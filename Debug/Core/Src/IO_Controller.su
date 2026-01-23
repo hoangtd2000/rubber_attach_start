@@ -1,8 +1,0 @@
-../Core/Src/IO_Controller.c:19:6:SetBips	16	static
-../Core/Src/IO_Controller.c:23:6:BipControl	8	static
-../Core/Src/IO_Controller.c:54:6:SetPickRubber	16	static
-../Core/Src/IO_Controller.c:65:6:SetReleaseRubber	16	static
-../Core/Src/IO_Controller.c:76:6:PickRubber1	24	static
-../Core/Src/IO_Controller.c:166:6:ReleaseRubber1	24	static
-../Core/Src/IO_Controller.c:257:9:PickRubber	24	static
-../Core/Src/IO_Controller.c:287:9:ReleaseRubber	24	static

@@ -1,5 +1,0 @@
-../Core/Src/ScanMap.c:37:6:Read_Tray_Data	1
-../Core/Src/ScanMap.c:75:6:Calculate_Tray_Point	5
-../Core/Src/ScanMap.c:94:6:OnStartButton	2
-../Core/Src/ScanMap.c:117:6:Handle	47
-../Core/Src/ScanMap.c:386:6:PlaceToTray	3

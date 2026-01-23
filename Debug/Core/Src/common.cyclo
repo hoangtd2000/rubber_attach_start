@@ -1,3 +1,0 @@
-../Core/Src/common.c:12:10:ReadBit	1
-../Core/Src/common.c:22:6:SetBit	2
-../Core/Src/common.c:33:6:ClearBit	2

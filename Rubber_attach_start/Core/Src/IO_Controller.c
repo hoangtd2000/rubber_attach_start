@@ -79,14 +79,14 @@ void PickRubber1(uint8_t vacum_id)
 	switch (Handle_Pick[vacum_id].state)
     {
 		case IDLE:
+			Handle_Pick[vacum_id].retry = 0;
 			break;
 		case CYLINDER_GO_DOWN:
 		{
-			Handle_Pick[vacum_id].retry = 0;
             if (vacum_id == 0) Cylinder1_Go_Down;
             else               Cylinder2_Go_Down;
 
-            Handle_Pick[vacum_id].time_delay = 100;
+            Handle_Pick[vacum_id].time_delay = 1000;
             Handle_Pick[vacum_id].state = VACUM_REALSE_OFF;
 			break;
 		}
@@ -109,7 +109,7 @@ void PickRubber1(uint8_t vacum_id)
                 if (vacum_id == 0) Vacum1_Pick_On;
                 else               Vacum2_Pick_On;
 
-                Handle_Pick[vacum_id].time_delay = 100;
+                Handle_Pick[vacum_id].time_delay = 1000;
                 Handle_Pick[vacum_id].state = CYLINDER_GO_UP;
             }
             break;
@@ -121,7 +121,7 @@ void PickRubber1(uint8_t vacum_id)
                 if (vacum_id == 0) Cylinder1_Go_Up;
                 else               Cylinder2_Go_Up;
 
-                Handle_Pick[vacum_id].time_delay = 100;
+                Handle_Pick[vacum_id].time_delay = 1000;
                 Handle_Pick[vacum_id].state = RETRY;
             }
             break;
@@ -137,7 +137,7 @@ void PickRubber1(uint8_t vacum_id)
                 else
                     ok = Is_Vacum2_Pick;
 
-                if (ok)
+                if (!ok)
                     Handle_Pick[vacum_id].state = DONE_OK;
                 else if (++Handle_Pick[vacum_id].retry < 2)
                     Handle_Pick[vacum_id].state = CYLINDER_GO_DOWN;
@@ -169,13 +169,13 @@ void ReleaseRubber1(uint8_t vacum_id)
 	switch (Handle_Release[vacum_id].state)
     {
 		case IDLE:
+            Handle_Release[vacum_id].retry = 0;
 			break;
 		case CYLINDER_GO_DOWN:
 		{
-            Handle_Release[vacum_id].retry = 0;
             if (vacum_id == 0) Cylinder1_Go_Down;
             else               Cylinder2_Go_Down;
-            Handle_Release[vacum_id].time_delay = 100;
+            Handle_Release[vacum_id].time_delay = 1000;
             Handle_Release[vacum_id].state = VACUM_PICK_OFF;
             break;
 		}
@@ -199,7 +199,7 @@ void ReleaseRubber1(uint8_t vacum_id)
                 if (vacum_id == 0) Vacum1_Release_On;
                 else               Vacum2_Release_On;
 
-                Handle_Release[vacum_id].time_delay = 100;
+                Handle_Release[vacum_id].time_delay = 1000;
                 Handle_Release[vacum_id].state = CYLINDER_GO_UP;
             }
             break;
@@ -211,7 +211,7 @@ void ReleaseRubber1(uint8_t vacum_id)
                 if (vacum_id == 0) Cylinder1_Go_Up;
                 else               Cylinder2_Go_Up;
 
-                Handle_Release[vacum_id].time_delay = 100;
+                Handle_Release[vacum_id].time_delay = 1000;
                 Handle_Release[vacum_id].state = RETRY;
             }
             break;

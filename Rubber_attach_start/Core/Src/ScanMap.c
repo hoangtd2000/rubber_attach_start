@@ -140,7 +140,7 @@ void Handle(void)
 			case ST_IDLE:
 			{
 				Tab_main_indicator->bits.start =  1 ;
-				Close_Popup(0);
+				Close_Popup(popup_err);
 				machine_state = ST_MOVE_TO_RUBBER;
 				break;
 			}
@@ -220,7 +220,7 @@ void Handle(void)
 			    }
 			    else if(Handle_Pick[1].result == NG){
 			    	SetReleaseRubber(0);
-			        Open_Popup(0);
+			        Open_Popup(popup_err);
 			        SetBips(3);
 			        machine_state = ST_WAIT_POPUP;
 			    }
@@ -235,14 +235,14 @@ void Handle(void)
 				if(Tab_popup->bits.stop ==  1)
 				{
 					Tab_popup->bits.stop = 0;
-					Close_Popup(0);
+					Close_Popup(popup_err);
 					rubber_pair++;   // bỏ cả cặp lỗi
 					machine_state = ST_STOP;
 				}
 				if(Tab_popup->bits.next ==  1)
 				{
 					Tab_popup->bits.next = 0;
-					Close_Popup(0);
+					Close_Popup(popup_err);
 					rubber_pair++;   // bỏ cả cặp lỗi
 					machine_state = ST_MOVE_TO_RUBBER;
 				}

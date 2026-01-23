@@ -55,11 +55,11 @@ void Popup_handle_stop(void);
 #define Open_Popup(f) 			(SetBit(&Inputs_Database[34], f, 1))
 #define Read_Warring(f)        (ReadBit(&Inputs_Database[34], f, 1))
 
-#define Close_Popup_home() (ClearBit(&Inputs_Database[34], 2, 1))
-#define Open_Popup_home() 	(SetBit(&Inputs_Database[34], 2, 1))
+#define popup_err  0
+#define popup_door 1
+#define popup_home 2
 
-
-extern uint8_t SS_Door_Left;
-extern uint8_t SS_Door_Right;
+//#define Close_Popup_home() (ClearBit(&Inputs_Database[34], 2, 1))
+//#define Open_Popup_home() 	(SetBit(&Inputs_Database[34], 2, 1))
 
 #endif /* INC_APPLICATION_H_ */

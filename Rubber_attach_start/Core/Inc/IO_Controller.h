@@ -30,14 +30,13 @@
 
 #define Vacum1_Pick_On		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, 1)
 #define Vacum1_Pick_Off		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, 0)
-
 #define Vacum1_Release_On	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, 1)
 #define Vacum1_Release_Off	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, 0)
 
 #define Vacum2_Pick_On		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, 1)
-#define Vacum2_Pick_Off		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, 1)
+#define Vacum2_Pick_Off		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, 0)
 #define Vacum2_Release_On	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 1)
-#define Vacum2_Release_Off	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 1)
+#define Vacum2_Release_Off	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 0)
 
 #define Is_Vacum1_Pick		HAL_GPIO_ReadPin(i12_vacum1_GPIO_Port, i12_vacum1_Pin)
 #define Is_Vacum2_Pick		HAL_GPIO_ReadPin(i13_vacum2_GPIO_Port, i13_vacum2_Pin)

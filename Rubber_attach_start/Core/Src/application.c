@@ -96,7 +96,7 @@ void application_init(){
 		Try_go_home();
 }
 void Try_go_home(){
-	Open_Popup_home();
+	Open_Popup(popup_home);
 	 HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	 Cylinder1_Go_Up;
 	 Cylinder2_Go_Up;
@@ -120,7 +120,7 @@ void Try_go_home(){
 	  wait_handler_stop();
 	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 	  HAL_TIM_Base_Start_IT(&htim6);
-	  Close_Popup_home();
+	  Close_Popup(popup_home);
 }
 
 void Handle_popup(void){
@@ -205,9 +205,9 @@ void task_timer7(){
 	ReleaseRubber1(0);
 	ReleaseRubber1(1);
 	if(DOOR_OPEN()){
-		Open_Popup(1);
+		Open_Popup(popup_door);
 	}
-	else Close_Popup(1);
+	else Close_Popup(popup_door);
 }
 
 

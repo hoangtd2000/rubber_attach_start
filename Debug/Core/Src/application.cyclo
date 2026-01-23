@@ -1,0 +1,16 @@
+../Drivers/CMSIS/Include/core_cm4.h:1938:34:__NVIC_SystemReset	1
+../Core/Src/application.c:76:6:application_init	1
+../Core/Src/application.c:98:6:Try_go_home	5
+../Core/Src/application.c:126:6:Handle_popup	4
+../Core/Src/application.c:136:6:Handle_main	4
+../Core/Src/application.c:145:6:Handle_motor	4
+../Core/Src/application.c:154:6:Handle_setting	1
+../Core/Src/application.c:159:6:Handle_reset	1
+../Core/Src/application.c:163:6:Handle_start	1
+../Core/Src/application.c:168:6:Handle_stop	1
+../Core/Src/application.c:172:6:Popup_handle_next	1
+../Core/Src/application.c:178:6:Popup_handle_stop	1
+../Core/Src/application.c:184:6:task_timer6	4
+../Core/Src/application.c:198:6:task_timer7	2
+../Core/Src/application.c:214:6:application_run_main	5
+../Core/Src/application.c:227:6:HAL_GPIO_EXTI_Callback	7

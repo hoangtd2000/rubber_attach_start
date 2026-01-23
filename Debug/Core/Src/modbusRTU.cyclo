@@ -1,0 +1,12 @@
+../Core/Src/modbusRTU.c:15:10:crc16	4
+../Core/Src/modbusRTU.c:110:6:sendData	1
+../Core/Src/modbusRTU.c:120:6:modbusException	1
+../Core/Src/modbusRTU.c:132:9:readHoldingRegs	5
+../Core/Src/modbusRTU.c:171:9:readInputRegs	5
+../Core/Src/modbusRTU.c:210:9:readCoils	8
+../Core/Src/modbusRTU.c:276:9:readInputs	8
+../Core/Src/modbusRTU.c:342:9:writeHoldingRegs	5
+../Core/Src/modbusRTU.c:386:9:writeSingleReg	2
+../Core/Src/modbusRTU.c:418:9:writeSingleCoil	6
+../Core/Src/modbusRTU.c:465:9:writeMultiCoils	8
+../Core/Src/modbusRTU.c:541:6:HAL_UARTEx_RxEventCallback	11

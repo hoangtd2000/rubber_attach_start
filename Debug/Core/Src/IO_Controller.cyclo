@@ -1,0 +1,8 @@
+../Core/Src/IO_Controller.c:19:6:SetBips	1
+../Core/Src/IO_Controller.c:23:6:BipControl	10
+../Core/Src/IO_Controller.c:54:6:SetPickRubber	2
+../Core/Src/IO_Controller.c:65:6:SetReleaseRubber	2
+../Core/Src/IO_Controller.c:76:6:PickRubber1	22
+../Core/Src/IO_Controller.c:166:6:ReleaseRubber1	22
+../Core/Src/IO_Controller.c:257:9:PickRubber	5
+../Core/Src/IO_Controller.c:287:9:ReleaseRubber	5

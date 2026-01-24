@@ -131,6 +131,7 @@ uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
 void Handle(void)
 {
+	Tab_main_indicator->bits.stop =  0 ;
 	Tab_main->bits.start = 0;
 	Tab_main_indicator->bits.start =  1 ;
 	Input_Registers_Database[3] = count_tray[0];
@@ -386,7 +387,7 @@ void Handle(void)
 		}
     }
 	SystemFlag.is_stop = 0 ;
-	Tab_main_indicator->bits.stop =  0 ;
+
 	SetBips(5);
 	ON_LED_GREEN;
 	wait_handler_stop();

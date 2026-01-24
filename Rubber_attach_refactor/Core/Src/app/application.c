@@ -190,6 +190,9 @@ void task_timer7(){
 	PickRubber1(1);
 	ReleaseRubber1(0);
 	ReleaseRubber1(1);
+	  if(Tab_main->bits.stop){
+		  Handle_stop();
+	  }
 //	if(DOOR_OPEN()){
 //		Open_Popup(popup_door);
 //	}
@@ -218,9 +221,6 @@ void application_run_main(void){
 		  TOGGLE_LED_RED;
 		//  TOGGLE_BUZZ;
 	  }
-	  if(Tab_main->bits.stop){
-		  Handle_stop();
-	  }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -241,6 +241,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	else if(GPIO_Pin == i5_stop_Pin){
 		if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){
 			SystemFlag.is_stop = 1 ;
+			Tab_main_indicator->bits.stop =  1 ;
 		}else{
 
 		}

@@ -1,0 +1,571 @@
+/*
+ * modbus_rtu.c
+ *
+ *  Created on: Jan 24, 2026
+ *      Author: Admin
+ */
+
+#include "modbus_rtu.h"
+ uint8_t RxData[256];
+ uint8_t TxData[256];
+extern UART_HandleTypeDef huart2;
+
+
+uint16_t Input_Registers_Database[50]={
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   // 0-9   30001-30010
+		0, 0, 0, 10234, 19876, 13579, 10293, 19827, 13456, 14567,  // 10-19 30011-30020
+		21345, 22345, 24567, 25678, 26789, 24680, 20394, 29384, 26937, 27654,  // 20-29 30021-30030
+		31245, 31456, 34567, 35678, 36789, 37890, 30948, 34958, 35867, 36092,  // 30-39 30031-30040
+		45678, 46789, 47890, 41235, 42356, 43567, 40596, 49586, 48765, 41029,  // 40-49 30041-30050
+};
+
+uint8_t Inputs_Database[50]={
+		0, 0, 0, 0, 0,    // 0-39    10001-10040
+		0, 0, 0, 0, 0,    // 40-79   10041-10080
+		0, 0, 0, 0, 0,    // 80-119  10081-10120
+		0, 0, 0, 0, 0,    // 120-159 10121-10160
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+		0, 0, 0, 0, 0,    // 160-199 10161-10200
+};
+
+uint8_t Coils_Database[25]={
+		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 0-39    1-40
+		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 40-79   41-80
+		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 80-119  81-120
+		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 120-159 121-160
+		0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,    // 160-199 161-200
+};
+uint16_t Holding_Registers_Database[300]={
+		0, 	0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	0-9   	40001-40010
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	10-19 	40011-40020
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	20-29 	40021-40030
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	30-39 	40031-40040
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	40-49 	40041-40050
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  //	50-59 	40051-40060
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	60-69	40061-40070
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	70-79 	40071-40080
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	80-89 	40081-40090
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	90-99 	40091-40100
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  //	100-109	40101-40110
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	110-119 40111-40120
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	120-129 40121-40130
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	130-139 40131-40140
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	140-149 40141-40150
+		0, 	0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	150-159 40151-40160
+		0, 	0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	160-169 40161-40170
+		0, 	0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	170-179 40171-40180
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	180-189 40181-40190
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	190-199 40191-40200
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	200-209 40201-40210
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	210-219 40211-40220
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	220-229 40221-40230
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	230-239 40231-40240
+		0,  0,  0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	240-249 40241-40250
+		0,  0, 	0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	250-259 40251-40260
+		0,  0, 	0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	260-269 40261-40270
+		0,  0, 	0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	270-279 40271-40280
+		0,  0, 	0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	280-289 40281-40290
+		0,  0, 	0, 	0,  	0, 		0,  	0,  	0,  	0,  	0,  // 	290-299 40291-40300
+};
+
+
+
+
+
+
+///* Table of CRC values for high-order byte */
+uint16_t crc16(uint8_t *buffer, uint16_t buffer_length)
+{
+    uint16_t crc = 0xFFFF;
+
+    for (uint16_t i = 0; i < buffer_length; i++)
+    {
+        crc ^= buffer[i];
+        for (uint8_t bit = 0; bit < 8; bit++)
+        {
+            if (crc & 0x0001)
+                crc = (crc >> 1) ^ 0xA001;   //
+            else
+                crc >>= 1;
+        }
+    }
+
+    return crc;
+}
+
+
+void sendData (uint8_t *data, int size)
+{
+	// we will calculate the CRC in this function itself
+	uint16_t crc = crc16(data, size);
+	data[size] = crc&0xFF;   // CRC LOW
+	data[size+1] = (crc>>8)&0xFF;  // CRC HIGH
+
+	HAL_UART_Transmit(&huart2, data, size+2, 1000);
+}
+
+void modbusException (uint8_t exceptioncode)
+{
+	//| SLAVE_ID | FUNCTION_CODE | Exception code | CRC     |
+	//| 1 BYTE   |  1 BYTE       |    1 BYTE      | 2 BYTES |
+
+	TxData[0] = RxData[0];       // slave ID
+	TxData[1] = RxData[1]|0x80;  // adding 1 to the MSB of the function code
+	TxData[2] = exceptioncode;   // Load the Exception code
+	sendData(TxData, 3);         // send Data... CRC will be calculated in the function
+}
+
+
+uint8_t readHoldingRegs (void)
+{
+	uint16_t startAddr = ((RxData[2]<<8)|RxData[3]);  // start Register Address
+
+	uint16_t numRegs = ((RxData[4]<<8)|RxData[5]);   // number to registers master has requested
+	if ((numRegs<Min_NumRegs)||(numRegs>Max_NumRegs))  // maximum no. of Registers as per the PDF
+	{
+		modbusException (ILLEGAL_DATA_VALUE);  // send an exception
+		return 0;
+	}
+
+	uint16_t endAddr = startAddr+numRegs-1;  // end Register
+	if (endAddr>Max_NumRegs)  // end Register can not be more than 299 as we only have record of 300 Registers in total
+	{
+		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
+		return 0;
+	}
+
+	// Prepare TxData buffer
+
+	//| SLAVE_ID | FUNCTION_CODE | BYTE COUNT | DATA      | CRC     |
+	//| 1 BYTE   |  1 BYTE       |  1 BYTE    | N*2 BYTES | 2 BYTES |
+
+	TxData[0] = SLAVE_ID;  // slave ID
+	TxData[1] = RxData[1];  // function code
+	TxData[2] = numRegs*2;  // Byte count
+	int indx = 3;  // we need to keep track of how many bytes has been stored in TxData Buffer
+
+	for (int i=0; i<numRegs; i++)   // Load the actual data into TxData buffer
+	{
+		TxData[indx++] = (Holding_Registers_Database[startAddr]>>8)&0xFF;  // extract the higher byte
+		TxData[indx++] = (Holding_Registers_Database[startAddr])&0xFF;   // extract the lower byte
+		startAddr++;  // increment the register address
+	}
+
+	sendData(TxData, indx);  // send data... CRC will be calculated in the function itself
+	return 1;   // success
+}
+
+uint8_t readInputRegs (void)
+{
+	uint16_t startAddr = ((RxData[2]<<8)|RxData[3]);  // start Register Address
+
+	uint16_t numRegs = ((RxData[4]<<8)|RxData[5]);   // number to registers master has requested
+	if ((numRegs<Min_NumRegs)||(numRegs>Max_NumRegs))  // maximum no. of Registers as per the PDF
+	{
+		modbusException (ILLEGAL_DATA_VALUE);  // send an exception
+		return 0;
+	}
+
+	uint16_t endAddr = startAddr+numRegs-1;  // end Register
+	if (endAddr>Max_NumRegs)  // end Register can not be more than 49 as we only have record of 50 Registers in total
+	{
+		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
+		return 0;
+	}
+
+	// Prepare TxData buffer
+
+	//| SLAVE_ID | FUNCTION_CODE | BYTE COUNT | DATA      | CRC     |
+	//| 1 BYTE   |  1 BYTE       |  1 BYTE    | N*2 BYTES | 2 BYTES |
+
+	TxData[0] = SLAVE_ID;  // slave ID
+	TxData[1] = RxData[1];  // function code
+	TxData[2] = numRegs*2;  // Byte count
+	int indx = 3;  // we need to keep track of how many bytes has been stored in TxData Buffer
+
+	for (int i=0; i<numRegs; i++)   // Load the actual data into TxData buffer
+	{
+		TxData[indx++] = (Input_Registers_Database[startAddr]>>8)&0xFF;  // extract the higher byte
+		TxData[indx++] = (Input_Registers_Database[startAddr])&0xFF;   // extract the lower byte
+		startAddr++;  // increment the register address
+	}
+
+	sendData(TxData, indx);  // send data... CRC will be calculated in the function itself
+	return 1;   // success
+}
+
+uint8_t readCoils (void)
+{
+	uint16_t startAddr = ((RxData[2]<<8)|RxData[3]);  // start Coil Address
+
+	uint16_t numCoils = ((RxData[4]<<8)|RxData[5]);   // number to coils master has requested
+	if ((numCoils<1)||(numCoils>2000))  // maximum no. of coils as per the PDF
+	{
+		modbusException (ILLEGAL_DATA_VALUE);  // send an exception
+		return 0;
+	}
+
+	uint16_t endAddr = startAddr+numCoils-1;  // Last coils address
+	if (endAddr>199)  // end coil can not be more than 199 as we only have record of 200 (0-199) coils in total
+	{
+		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
+		return 0;
+	}
+
+
+	//reset TxData buffer
+	memset (TxData, '\0', 256);
+
+	// Prepare TxData buffer
+
+	//| SLAVE_ID | FUNCTION_CODE | BYTE COUNT | DATA      | CRC     |
+	//| 1 BYTE   |  1 BYTE       |  1 BYTE    | N*2 BYTES | 2 BYTES |
+
+	TxData[0] = SLAVE_ID;  // slave ID
+	TxData[1] = RxData[1];  // function code
+	TxData[2] = (numCoils/8) + ((numCoils%8)>0 ? 1:0);  // Byte count
+	int indx = 3;  // we need to keep track of how many bytes has been stored in TxData Buffer
+
+	/* The approach is simple. We will read 1 bit at a time and store them in the Txdata buffer.
+	 * First find the offset in the first byte we read from, for eg- if the start coil is 13,
+	 * we will read from database[1] with an offset of 5. This bit will be stored in the TxData[0] at 0th position.
+	 * Then we will keep shifting the database[1] to the right and read the bits.
+	 * Once the bitposition has crossed the value 7, we will increment the startbyte
+	 * When the indxposition exceeds 7, we increment the indx variable, so to copy into the next byte of the TxData
+	 * This keeps going until the number of coils required have been copied
+	 */
+	int startByte = startAddr/8;  // which byte we have to start extracting the data from
+	uint16_t bitPosition = startAddr%8;  // The shift position in the first byte
+	int indxPosition = 0;  // The shift position in the current indx of the TxData buffer
+
+	// Load the actual data into TxData buffer
+	for (int i=0; i<numCoils; i++)
+	{
+		TxData[indx] |= ((Coils_Database[startByte] >> bitPosition) &0x01) << indxPosition;
+		indxPosition++; bitPosition++;
+		if (indxPosition>7)  // if the indxposition exceeds 7, we have to copy the data into the next byte position
+		{
+			indxPosition = 0;
+			indx++;
+		}
+		if (bitPosition>7)  // if the bitposition exceeds 7, we have to increment the startbyte
+		{
+			bitPosition=0;
+			startByte++;
+		}
+	}
+
+	if (numCoils%8 != 0)indx++;  // increment the indx variable, only if the numcoils is not a multiple of 8
+	sendData(TxData, indx);  // send data... CRC will be calculated in the function itself
+	return 1;   // success
+}
+
+uint8_t readInputs (void)
+{
+	uint16_t startAddr = ((RxData[2]<<8)|RxData[3]);  // start Register Address
+
+	uint16_t numCoils = ((RxData[4]<<8)|RxData[5]);   // number to coils master has requested
+	if ((numCoils<1)||(numCoils>2000))  // maximum no. of coils as per the PDF
+	{
+		modbusException (ILLEGAL_DATA_VALUE);  // send an exception
+		return 0;
+	}
+
+	uint16_t endAddr = startAddr+numCoils-1;  // Last coils address
+	if (endAddr>400)  // end coil can not be more than 199 as we only have record of 200 (0-199) coils in total
+	{
+		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
+		return 0;
+	}
+
+
+	//reset TxData buffer
+	memset (TxData, '\0', 256);
+
+	// Prepare TxData buffer
+
+	//| SLAVE_ID | FUNCTION_CODE | BYTE COUNT | DATA      | CRC     |
+	//| 1 BYTE   |  1 BYTE       |  1 BYTE    | N*2 BYTES | 2 BYTES |
+
+	TxData[0] = SLAVE_ID;  // slave ID
+	TxData[1] = RxData[1];  // function code
+	TxData[2] = (numCoils/8) + ((numCoils%8)>0 ? 1:0);  // Byte count
+	int indx = 3;  // we need to keep track of how many bytes has been stored in TxData Buffer
+
+	/* The approach is simple. We will read 1 bit at a time and store them in the Txdata buffer.
+	 * First find the offset in the first byte we read from, for eg- if the start coil is 13,
+	 * we will read from database[1] with an offset of 5. This bit will be stored in the TxData[0] at 0th position.
+	 * Then we will keep shifting the database[1] to the right and read the bits.
+	 * Once the bitposition has crossed the value 7, we will increment the startbyte
+	 * When the indxposition exceeds 7, we increment the indx variable, so to copy into the next byte of the TxData
+	 * This keeps going until the number of coils required have been copied
+	 */
+	int startByte = startAddr/8;  // which byte we have to start extracting the data from
+	uint16_t bitPosition = startAddr%8;  // The shift position in the first byte
+	int indxPosition = 0;  // The shift position in the current indx of the TxData buffer
+
+	// Load the actual data into TxData buffer
+	for (int i=0; i<numCoils; i++)
+	{
+		TxData[indx] |= ((Inputs_Database[startByte] >> bitPosition) &0x01) << indxPosition;
+		indxPosition++; bitPosition++;
+		if (indxPosition>7)  // if the indxposition exceeds 7, we have to copy the data into the next byte position
+		{
+			indxPosition = 0;
+			indx++;
+		}
+		if (bitPosition>7)  // if the bitposition exceeds 7, we have to increment the startbyte
+		{
+			bitPosition=0;
+			startByte++;
+		}
+	}
+
+	if (numCoils%8 != 0)indx++;  // increment the indx variable, only if the numcoils is not a multiple of 8
+	sendData(TxData, indx);  // send data... CRC will be calculated in the function itself
+	return 1;   // success
+}
+
+uint8_t writeHoldingRegs (void)
+{
+	uint16_t startAddr = ((RxData[2]<<8)|RxData[3]);  // start Register Address
+
+	uint16_t numRegs = ((RxData[4]<<8)|RxData[5]);   // number to registers master has requested
+	if ((numRegs<Min_NumRegs)||(numRegs>Max_NumRegs))  // maximum no. of Registers as per the PDF
+	{
+		modbusException (ILLEGAL_DATA_VALUE);  // send an exception
+		return 0;
+	}
+
+	uint16_t endAddr = startAddr+numRegs-1;  // end Register
+	if (endAddr>Max_NumRegs)  // end Register can not be more than 49 as we only have record of 50 Registers in total
+	{
+		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
+		return 0;
+	}
+
+	/* start saving 16 bit data
+	 * Data starts from RxData[7] and we need to combine 2 bytes together
+	 * 16 bit Data = firstByte<<8|secondByte
+	 */
+	int indx = 7;  // we need to keep track of index in RxData
+	for (int i=0; i<numRegs; i++)
+	{
+		Holding_Registers_Database[startAddr++] = (RxData[indx++]<<8)|RxData[indx++];
+	}
+
+	// Prepare Response
+
+	//| SLAVE_ID | FUNCTION_CODE | Start Addr | num of Regs    | CRC     |
+	//| 1 BYTE   |  1 BYTE       |  2 BYTE    | 2 BYTES      | 2 BYTES |
+
+	TxData[0] = SLAVE_ID;    // slave ID
+	TxData[1] = RxData[1];   // function code
+	TxData[2] = RxData[2];   // Start Addr HIGH Byte
+	TxData[3] = RxData[3];   // Start Addr LOW Byte
+	TxData[4] = RxData[4];   // num of Regs HIGH Byte
+	TxData[5] = RxData[5];   // num of Regs LOW Byte
+
+	sendData(TxData, 6);  // send data... CRC will be calculated in the function itself
+	return 1;   // success
+}
+
+uint8_t writeSingleReg (void)
+{
+	uint16_t startAddr = ((RxData[2]<<8)|RxData[3]);  // start Register Address
+
+	if (startAddr>Max_NumRegs)  // The Register Address can not be more than 299 as we only have record of 300 Registers in total
+	{
+		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
+		return 0;
+	}
+
+	/* Save the 16 bit data
+	 * Data is the combination of 2 bytes, RxData[4] and RxData[5]
+	 */
+
+	Holding_Registers_Database[startAddr] = (RxData[4]<<8)|RxData[5];
+
+	// Prepare Response
+
+	//| SLAVE_ID | FUNCTION_CODE | Start Addr | Data     | CRC     |
+	//| 1 BYTE   |  1 BYTE       |  2 BYTE    | 2 BYTES  | 2 BYTES |
+
+	TxData[0] = SLAVE_ID;    // slave ID
+	TxData[1] = RxData[1];   // function code
+	TxData[2] = RxData[2];   // Start Addr HIGH Byte
+	TxData[3] = RxData[3];   // Start Addr LOW Byte
+	TxData[4] = RxData[4];   // Reg Data HIGH Byte
+	TxData[5] = RxData[5];   // Reg Data LOW  Byte
+
+	sendData(TxData, 6);  // send data... CRC will be calculated in the function itself
+	return 1;   // success
+}
+
+uint8_t writeSingleCoil (void)
+{
+	uint16_t startAddr = ((RxData[2]<<8)|RxData[3]);  // start Coil Address
+
+	if (startAddr>199)  // The Coil Address can not be more than 199 as we only have record of 200 Coils in total
+	{
+		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
+		return 0;
+	}
+
+	/* Calculation for the bit in the database, where the modification will be done */
+	int startByte = startAddr/8;  // which byte we have to start writing the data into
+	uint16_t bitPosition = startAddr%8;  // The shift position in the first byte
+
+
+	/* The next 2 bytes in the RxData determines the state of the coil
+	 * A value of FF 00 hex requests the coil to be ON.
+	 * A value of 00 00 requests it to be OFF.
+	 * All other values are illegal and will not affect the coil.
+	 */
+
+	if ((RxData[4] == 0xFF) && (RxData[5] == 0x00))
+	{
+		Coils_Database[startByte] |= 1<<bitPosition; // Replace that bit with 1
+	}
+
+	else if ((RxData[4] == 0x00) && (RxData[5] == 0x00))
+	{
+		Coils_Database[startByte] &= ~(1<<bitPosition); // Replace that bit with 0
+	}
+
+	// Prepare Response
+
+	//| SLAVE_ID | FUNCTION_CODE | Start Addr | Data     | CRC     |
+	//| 1 BYTE   |  1 BYTE       |  2 BYTE    | 2 BYTES  | 2 BYTES |
+
+	TxData[0] = SLAVE_ID;    // slave ID
+	TxData[1] = RxData[1];   // function code
+	TxData[2] = RxData[2];   // Start Addr HIGH Byte
+	TxData[3] = RxData[3];   // Start Addr LOW Byte
+	TxData[4] = RxData[4];   // Coil Data HIGH Byte
+	TxData[5] = RxData[5];   // Coil Data LOW  Byte
+
+	sendData(TxData, 6);  // send data... CRC will be calculated in the function itself
+	return 1;   // success
+}
+
+uint8_t writeMultiCoils (void)
+{
+	uint16_t startAddr = ((RxData[2]<<8)|RxData[3]);  // start Coil Address
+
+	uint16_t numCoils = ((RxData[4]<<8)|RxData[5]);   // number to coils master has requested
+	if ((numCoils<1)||(numCoils>1968))  // maximum no. of coils as per the PDF
+	{
+		modbusException (ILLEGAL_DATA_VALUE);  // send an exception
+		return 0;
+	}
+
+	uint16_t endAddr = startAddr+numCoils-1;  // Last coils address
+	if (endAddr>199)  // end coil can not be more than 199 as we only have record of 200 (0-199) coils in total
+	{
+		modbusException(ILLEGAL_DATA_ADDRESS);   // send an exception
+		return 0;
+	}
+
+	/* Calculation for the bit in the database, where the modification will be done */
+	int startByte = startAddr/8;  // which byte we have to start writing the data into
+	uint16_t bitPosition = startAddr%8;  // The shift position in the first byte
+	int indxPosition = 0;  // The shift position in the current indx of the RxData buffer
+
+	int indx = 7;  // we need to keep track of index in RxData
+
+	/* The approach is simple. We will read 1 bit (starting from the very first bit in the RxData Buffer)
+	 * at a time and store them in the Database.
+	 * First find the offset in the first byte we write into, for eg- if the start coil is 13,
+	 * we will Write into database[1] with an offset of 5. This bit is read from the RxData[indx] at 0th indxposition.
+	 * Then we will keep shifting the RxData[indx] to the right and read the bits.
+	 * Once the bitposition has crossed the value 7, we will increment the startbyte and start modifying the next byte in the database
+	 * When the indxposition exceeds 7, we increment the indx variable, so to copy from the next byte of the RxData
+	 * This keeps going until the number of coils required have been modified
+	 */
+
+	// Modify the bits as per the Byte received
+	for (int i=0; i<numCoils; i++)
+	{
+		if (((RxData[indx]>>indxPosition)&0x01) == 1)
+		{
+			Coils_Database[startByte] |= 1<<bitPosition;  // replace that bit with 1
+		}
+		else
+		{
+			Coils_Database[startByte] &= ~(1<<bitPosition);  // replace that bit with 0
+		}
+
+		bitPosition++; indxPosition++;
+
+		if (indxPosition>7)  // if the indxposition exceeds 7, we have to copy the data into the next byte position
+		{
+			indxPosition = 0;
+			indx++;
+		}
+		if (bitPosition>7)  // if the bitposition exceeds 7, we have to increment the startbyte
+		{
+			bitPosition=0;
+			startByte++;
+		}
+	}
+
+	// Prepare Response
+
+	//| SLAVE_ID | FUNCTION_CODE | Start Addr | Data     | CRC     |
+	//| 1 BYTE   |  1 BYTE       |  2 BYTE    | 2 BYTES  | 2 BYTES |
+
+	TxData[0] = SLAVE_ID;    // slave ID
+	TxData[1] = RxData[1];   // function code
+	TxData[2] = RxData[2];   // Start Addr HIGH Byte
+	TxData[3] = RxData[3];   // Start Addr LOW Byte
+	TxData[4] = RxData[4];   // num of coils HIGH Byte
+	TxData[5] = RxData[5];   // num of coils LOW  Byte
+
+	sendData(TxData, 6);  // send data... CRC will be calculated in the function itself
+	return 1;   // success
+}
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+
+	if(huart-> Instance == USART2){
+	if (RxData[0] == SLAVE_ID)
+		{
+			switch (RxData[1]){
+			case 0x01:
+				readCoils();
+				break;
+			case 0x02:
+				readInputs();
+				break;
+			case 0x03:
+				readHoldingRegs();
+				break;
+			case 0x04:
+				readInputRegs();
+				break;
+			case 0x05:
+				writeSingleCoil();
+				break;
+			case 0x06:
+				writeSingleReg();
+				break;
+			case 0x0F:
+				writeMultiCoils();
+				break;
+			case 0x10:
+				writeHoldingRegs();
+				break;
+			default:
+				modbusException(ILLEGAL_FUNCTION);
+				break;
+			}
+		}
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
+	}
+}

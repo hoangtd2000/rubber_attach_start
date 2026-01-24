@@ -5,11 +5,11 @@
  *      Author: CongChuc
  */
 
-#include "ScanMap.h"
+#include "scan_map.h"
 
 extern Axis_t AxisX, AxisY, AxisZ;
 extern uint16_t* Mark;
-
+extern volatile SystemFlag_t SystemFlag;
 Item Rubber_Tray[400] = { [0 ... 399] = { .State = Not_Empty } };;
 Item Tray1[30];
 Item Tray2[30];
@@ -45,7 +45,6 @@ void Read_Tray_Data(){
 	Mark[3] = Rubber_Mark[1].y;
 	Mark[4] = Rubber_Mark[2].x;
 	Mark[5] = Rubber_Mark[2].y;
-//	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, Rubber_TrayPos.row, Rubber_TrayPos.col);
 	Tray1_Mark[0].raw = data[3];
 	Tray1_Mark[1].raw = data[4];
 	Tray1_Mark[2].raw = data[5];
@@ -55,7 +54,6 @@ void Read_Tray_Data(){
 	Mark[9] = Tray1_Mark[1].y;
 	Mark[10] = Tray1_Mark[2].x;
 	Mark[11] = Tray1_Mark[2].y;
-
 	Tray2_Mark[0].raw = data[6];
 	Tray2_Mark[1].raw = data[7];
 	Tray2_Mark[2].raw = data[8];
@@ -65,7 +63,6 @@ void Read_Tray_Data(){
 	Mark[15] = Tray2_Mark[1].y;
 	Mark[16] = Tray2_Mark[2].x;
 	Mark[17] = Tray2_Mark[2].y;
-//	Calculate_Tray2_Point(Tray2, Tray2_Mark, Tray2Pos.row, Tray2Pos.col);
 	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
 	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
 	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
@@ -145,7 +142,7 @@ void Handle(void)
 	if(rubber_pair == 0){
 		Mark_all_rubber();
 	}
-	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !flag_Stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !SystemFlag.is_stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		Tab_main->bits.start = 0;
 	    if(DOOR_OPEN() && machine_state != ST_PAUSE_DOOR)
@@ -236,7 +233,10 @@ void Handle(void)
 				    Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 				    machine_state = ST_PLACE1;
 			    }
-			    else if(Handle_Pick[1].result == NG){
+
+			    if (rubber_pair % 10 == 0){
+			   // else if(Handle_Pick[1].result == NG){
+			    	SystemFlag.is_err = 1 ;
 			    	SetReleaseRubber(0);
 			        Open_Popup(popup_err);
 			        SetBips(3);
@@ -348,6 +348,7 @@ void Handle(void)
 					TOGGLE_LED_RED;
 				}
 				if(Tab_main->bits.start == 1){
+
 					Tab_main->bits.start = 0;
 					machine_state = ST_MOVE_TO_RUBBER;
 				}
@@ -384,7 +385,8 @@ void Handle(void)
 				break;
 		}
     }
-	flag_Stop = 0;
+	SystemFlag.is_stop = 0 ;
+	Tab_main_indicator->bits.stop =  0 ;
 	SetBips(5);
 	ON_LED_GREEN;
 	wait_handler_stop();

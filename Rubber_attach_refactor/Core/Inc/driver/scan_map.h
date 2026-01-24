@@ -8,11 +8,9 @@
 #ifndef INC_SCANMAP_H_
 #define INC_SCANMAP_H_
 
+#include "dio_control.h"
 #include "tick.h"
-#include "main.h"
 #include "motor_control.h"
-#include "application.h"
-#include "hmi_control.h"
 
 
 

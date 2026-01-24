@@ -6,10 +6,9 @@
  */
 
 #include "modbus_rtu.h"
- uint8_t RxData[256];
- uint8_t TxData[256];
-extern UART_HandleTypeDef huart2;
 
+ uint8_t TxData[256];
+ uint8_t RxData[256];
 
 uint16_t Input_Registers_Database[50]={
 		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   // 0-9   30001-30010
@@ -530,42 +529,4 @@ uint8_t writeMultiCoils (void)
 	return 1;   // success
 }
 
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
-{
 
-	if(huart-> Instance == USART2){
-	if (RxData[0] == SLAVE_ID)
-		{
-			switch (RxData[1]){
-			case 0x01:
-				readCoils();
-				break;
-			case 0x02:
-				readInputs();
-				break;
-			case 0x03:
-				readHoldingRegs();
-				break;
-			case 0x04:
-				readInputRegs();
-				break;
-			case 0x05:
-				writeSingleCoil();
-				break;
-			case 0x06:
-				writeSingleReg();
-				break;
-			case 0x0F:
-				writeMultiCoils();
-				break;
-			case 0x10:
-				writeHoldingRegs();
-				break;
-			default:
-				modbusException(ILLEGAL_FUNCTION);
-				break;
-			}
-		}
-	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
-	}
-}

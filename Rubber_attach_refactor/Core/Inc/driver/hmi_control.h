@@ -8,14 +8,14 @@
 #ifndef INC_DRIVER_HMI_CONTROL_H_
 #define INC_DRIVER_HMI_CONTROL_H_
 
+#include <dio_control.h>
+#include <scan_map.h>
 #include "modbus_rtu.h"
 #include "main.h"
 #include "flash.h"
 #include "stdbool.h"
 #include "cmsis_gcc.h"
 #include "motor_control.h"
-#include "IO_Controller.h"
-#include "ScanMap.h"
 
 
 typedef union {
@@ -134,7 +134,14 @@ typedef union {
     uint8_t all;
 } Control_Vacum_Indicator_t;
 
-
+typedef struct
+{
+    uint8_t is_homing : 1;   // Đang về HOME
+    uint8_t is_stop   : 1;   // Dừng hệ thống
+    uint8_t is_start  : 1;   // Bắt đầu chạy
+    uint8_t is_err	  : 1; 	 // Gắp sịt
+    uint8_t reserved  : 4;   // Dự phòng (bắt buộc để đủ 1 byte)
+} SystemFlag_t;
 
 #define Mark_all_rubber()  		(SetBit(&Inputs_Database[3], 0, 200))
 #define Mark_rubber(f) 			(SetBit(&Inputs_Database[3], f, 1))

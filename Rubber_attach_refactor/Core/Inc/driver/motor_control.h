@@ -9,7 +9,6 @@
 #define INC_MOTOR_CONTROL_H_
 
 #include "modbus_rtu.h"
-#include "main.h"
 #include "flash.h"
 #include "stdbool.h"
 #include "cmsis_gcc.h"
@@ -162,7 +161,6 @@ extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim8;
 extern TIM_HandleTypeDef htim9;
-extern UART_HandleTypeDef huart2;
 
 
 

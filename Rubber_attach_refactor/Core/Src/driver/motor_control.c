@@ -5,8 +5,8 @@
  *      Author: TranHoang
  */
 
+#include <dio_control.h>
 #include "motor_control.h"
-#include "IO_Controller.h"
 
 #define truc_z_len_het
 #define truc_z_len_sau

@@ -27,6 +27,13 @@ extern Item Rubber_Tray[400];
 extern Item Tray1[30];
 extern Item Tray2[30];
 
+volatile SystemFlag_t SystemFlag={
+		.is_homing = 0 ,
+		.is_start = 0,
+		.is_stop= 0,
+		.is_err = 0,
+};
+
 ActionHandler_t Move_tray_table[] =  {
 		 Move_tray_rubber_p1,
 		 Move_tray_rubber_p2,
@@ -125,6 +132,7 @@ void Handle_Set(void){
 	}
 }
 void Handle_Home(void){
+	SystemFlag.is_homing = 1 ;
 	Open_Popup(popup_home);
 	 Cylinder1_Go_Up;
 	 Cylinder2_Go_Up;
@@ -151,11 +159,12 @@ void Handle_Home(void){
 			}
 	}
 	  wait_handler_stop();
+	  SystemFlag.is_homing = 0 ;
 	  Close_Popup(popup_home);
 }
 
 
-//Cylinder_and_save
+
 void Handle_pick_handler1(void){
 	Control_Vacum_Indicator->bits.pick1 = PickRubber(1);
 }
@@ -168,6 +177,22 @@ void Handle_pick_handler2(void){
 void Handle_release_handler2(void){
 	Control_Vacum_Indicator->bits.release2 = ReleaseRubber(2);
 }
+
+/**
+ * @brief Nhóm hàm lưu các điểm chuẩn Rubber, Tray1, Tray2 (P1, P2, P3)
+ *
+ * Chức năng:
+ * - Dựa vào bit đang active trong Rubber_and_tray_indicator->all
+ * - Lấy vị trí hiện tại của trục X/Y
+ * - Lưu vào mảng Rubber_Mark tương ứng
+ * - Ghi giá trị X/Y vào Holding Register (Mark[])
+ * - Ghi dữ liệu raw xuống Flash
+ * - Sau khi đủ điểm, tính toán lại tọa độ điểm
+ *
+ * Điều kiện:
+ * - Chỉ xử lý 1 bit active tại một thời điểm
+ * - Mapping Holding Register bắt đầu từ Mark[0]
+ */
 void Handle_save1(void){
 
 	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
@@ -258,111 +283,145 @@ void Handle_save3(void){
 	}
 	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
 }
-
-//Rubber_and_tray
+/**
+ * @brief Nhóm hàm chọn điểm chuẩn Tray/Rubber từ HMI
+ *
+ * Chức năng chung:
+ * - Xóa toàn bộ trạng thái trong Rubber_and_tray_indicator
+ * - Kích hoạt duy nhất 1 bit indicator tương ứng với điểm được chọn (P1 / P2 / P3)
+ * - Reset bit lệnh từ HMI (Rubber_and_tray) sau khi xử lý
+ *
+ * Mục đích:
+ * - Đảm bảo chỉ có một điểm chuẩn được chọn tại một thời điểm
+ * - Làm điều kiện cho các thao tác Save / Load / Move tiếp theo
+ *
+ * Lưu ý:
+ * - Các hàm trong nhóm này có cùng logic, chỉ khác bit indicator được set
+ * - Không xử lý chuyển động trục trong các hàm này
+ */
 void Handle_tray_rubber_p1(void){
-//	Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray_rubber_p1 = 1;
 	Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
 }
 void Handle_tray_rubber_p2(void){
-//	Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray_rubber_p2 = 1;
 	Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
 }
 void Handle_tray_rubber_p3(void){
-	//Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray_rubber_p3 = 1;
 	Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
 }
 void Handle_tray1_p1(void){
-	//Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray1_p1 = 1;
 	Rubber_and_tray->bits.tray1_p1 = 0 ;
 }
 void Handle_tray1_p2(void){
-	//Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray1_p2 = 1;
 	Rubber_and_tray->bits.tray1_p2 = 0 ;
 }
 void Handle_tray1_p3(void){
-//	Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray1_p3 = 1;
 	Rubber_and_tray->bits.tray1_p3 = 0 ;
 }
 void Handle_tray2_p1(void){
-	//Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray2_p1 = 1;
 	Rubber_and_tray->bits.tray2_p1 = 0 ;
 }
 void Handle_tray2_p2(void){
-//	Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray2_p2 = 1;
 	Rubber_and_tray->bits.tray2_p2 = 0 ;
 }
 void Handle_tray2_p3(void){
-//	Rubber_and_tray_indicator->all &= (~0x1ff);
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray2_p3 = 1;
 	Rubber_and_tray->bits.tray2_p3 = 0 ;
 }
 
+
+
+/**
+ * @brief Nhóm hàm di chuyển trục tới các điểm Tray/Rubber đã lưu
+ *
+ * Chức năng chung:
+ * - Xóa bit lệnh di chuyển tương ứng từ HMI (Rubber_and_tray)
+ * - Đọc tọa độ X/Y đã lưu trong Holding Register (Mark[])
+ * - Gọi hàm move_axis() để di chuyển các trục tới vị trí đã chọn
+ * - Giữ nguyên vị trí trục Z hiện tại
+ *
+ * Mapping:
+ * - Mỗi hàm tương ứng với 1 điểm (P1 / P2 / P3) của Rubber, Tray1 hoặc Tray2
+ * - Tọa độ được lấy theo cặp Mark[index], Mark[index+1]
+ *
+ * Lưu ý:
+ * - Các hàm trong nhóm này có cùng logic, chỉ khác offset của Mark[]
+ * - Không kiểm tra trạng thái trục (được kiểm soát ở tầng gọi)
+ */
 void Move_tray_rubber_p1(void){
 		Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
 		move_axis(Mark[0], Mark[1], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray_rubber_p1 = 0 ;
 }
 void Move_tray_rubber_p2(void){
 		Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
 		move_axis(Mark[2], Mark[3], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray_rubber_p2 = 0 ;
 }
 void Move_tray_rubber_p3(void){
 		Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
 		move_axis(Mark[4], Mark[5], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray_rubber_p3 = 0 ;
 }
 void Move_tray1_p1(void){
 		Rubber_and_tray->bits.tray1_p1 = 0 ;
 		move_axis(Mark[6], Mark[7], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray1_p1 = 0 ;
 }
 void Move_tray1_p2(void){
 		Rubber_and_tray->bits.tray1_p2 = 0 ;
 		move_axis(Mark[8], Mark[9], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray1_p2 = 0 ;
 }
 void Move_tray1_p3(void){
 		Rubber_and_tray->bits.tray1_p3 = 0 ;
 		move_axis(Mark[10], Mark[11], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray1_p3 = 0 ;
 }
 void Move_tray2_p1(void){
 		Rubber_and_tray->bits.tray2_p1 = 0 ;
 		move_axis(Mark[12], Mark[13], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray2_p1 = 0 ;
 }
 void Move_tray2_p2(void){
 		Rubber_and_tray->bits.tray2_p2 = 0 ;
 		move_axis(Mark[14], Mark[15], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray2_p2 = 0 ;
 }
 void Move_tray2_p3(void){
 		Rubber_and_tray->bits.tray2_p3 = 0 ;
 		move_axis(Mark[16], Mark[17], AxisZ.current_pos);
-	//	Rubber_and_tray_indicator->bits.tray2_p3 = 0 ;
 }
 
+/**
+ * @brief Thực hiện thao tác LOAD theo vị trí Tray/Rubber được chọn
+ *
+ * Chức năng:
+ * - Đọc bit chỉ thị đang active trong Rubber_and_tray_indicator->all
+ * - Xác định index tương ứng trong bảng hàm Move_tray_table
+ * - Chỉ thực hiện khi tất cả các trục (X, Y, Z) đang ở trạng thái STOP
+ * - Gọi hàm di chuyển tương ứng để đưa cơ cấu tới vị trí đã lưu
+ * - Chờ quá trình di chuyển hoàn tất
+ * - Xóa bit chỉ thị sau khi load xong
+ * - Reset cờ LOAD từ HMI/Cylinder
+ *
+ * Điều kiện an toàn:
+ * - Chỉ cho phép 1 bit indicator được bật tại một thời điểm
+ * - Không thực hiện load khi bất kỳ trục nào đang chuyển động
+ *
+ * Lưu ý:
+ * - __builtin_ffs() trả về vị trí bit đầu tiên = 1 (bắt đầu từ 1)
+ * - test_builtin1 được giảm 1 để map đúng index mảng Move_tray_table[]
+ */
 void Handle_load(void){
-
 	int test_builtin1 = __builtin_ffs(Rubber_and_tray_indicator->all);
 		if (test_builtin1 > 0) {
 		    test_builtin1 -= 1;
@@ -371,9 +430,7 @@ void Handle_load(void){
 		    		Move_tray_table[test_builtin1]();
 		    		wait_handler_stop();
 		    		Clear_Rubber_and_tray_indicator();
-		    		//Rubber_and_tray_indicator->all &= (~0x1ff);
 		        	Cylinder_and_save->bits.load = 0;
-
 				}
 		    }
 		}

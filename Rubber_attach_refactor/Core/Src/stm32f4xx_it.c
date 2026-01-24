@@ -23,15 +23,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "application.h"
-#include "motor_control.h"
-#include "ScanMap.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 uint32_t Tick = 0;
-uint8_t SS_Door_Left = 0;
-uint8_t SS_Door_Right = 0;
+
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -47,8 +44,7 @@ uint8_t SS_Door_Right = 0;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 extern Axis_t AxisX, AxisY, AxisZ;
-extern PickState_t machine_state ;
-extern PickState_t prev_state ;
+extern  uint8_t RxData[256];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -514,5 +510,43 @@ void TIM7_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
 
+	if(huart-> Instance == USART2){
+	if (RxData[0] == SLAVE_ID)
+		{
+			switch (RxData[1]){
+			case 0x01:
+				readCoils();
+				break;
+			case 0x02:
+				readInputs();
+				break;
+			case 0x03:
+				readHoldingRegs();
+				break;
+			case 0x04:
+				readInputRegs();
+				break;
+			case 0x05:
+				writeSingleCoil();
+				break;
+			case 0x06:
+				writeSingleReg();
+				break;
+			case 0x0F:
+				writeMultiCoils();
+				break;
+			case 0x10:
+				writeHoldingRegs();
+				break;
+			default:
+				modbusException(ILLEGAL_FUNCTION);
+				break;
+			}
+		}
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
+	}
+}
 /* USER CODE END 1 */

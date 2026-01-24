@@ -7,13 +7,13 @@
 
 #ifndef INC_APPLICATION_H_
 #define INC_APPLICATION_H_
+#include "dio_control.h"
+#include "scan_map.h"
 #include "modbus_rtu.h"
 #include "motor_control.h"
 #include "stm32f4xx_ll_tim.h"
-#include "ScanMap.h"
 #include "flash.h"
 #include "common.h"
-#include "IO_Controller.h"
 #include "hmi_control.h"
 
 void application_init(void);
@@ -32,8 +32,8 @@ void Handle_start(void);
 void Handle_stop(void);
 void Handle_empty(void);
 
-void Popup_handle_next(void);
-void Popup_handle_stop(void);
+//void Popup_handle_next(void);
+//void Popup_handle_stop(void);
 
 
 

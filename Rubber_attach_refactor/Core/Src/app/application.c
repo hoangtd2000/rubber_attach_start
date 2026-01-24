@@ -93,10 +93,10 @@ void application_init(){
 		Try_go_home();
 }
 void Try_go_home(){
-	SystemFlag.is_homing = 1 ;
-	Open_Popup(popup_home);
-	 Cylinder1_Go_Up;
-	 Cylinder2_Go_Up;
+		SystemFlag.is_homing = 1 ;
+		Open_Popup(popup_home);
+		Cylinder1_Go_Up;
+		Cylinder2_Go_Up;
 	  if(get_home_z() == home_z){
 		  AxisZ.mode = MOVE_HOME2;
 	  }else {
@@ -117,17 +117,11 @@ void Try_go_home(){
 	  wait_handler_stop();
 	  Close_Popup(popup_home);
 	  SystemFlag.is_homing = 0 ;
+	  SystemFlag.is_err = 0 ;
+	  SystemFlag.is_start = 0 ;
+	  SystemFlag.is_stop = 0;
 }
 
-//void Handle_popup(void){
-//	uint8_t builtin_Handle_popup = __builtin_ffs(Tab_popup->all);
-//		if (builtin_Handle_popup > 0) {
-//			builtin_Handle_popup -= 1;
-//		    if (builtin_Handle_popup < (int)(sizeof(Tab_popup_table) / sizeof(Tab_popup_table[0]))) {
-//		    	Tab_popup_table[builtin_Handle_popup]();
-//		    }
-//		}
-//}
 
 void Handle_main(void){
 	uint8_t builtin_Handle_main = __builtin_ffs(Tab_main->all);
@@ -172,17 +166,6 @@ void Handle_stop(void){
 	SystemFlag.is_stop = 1 ;
 }
 
-//void Popup_handle_next(void){
-//	//Tab_popup->bits.next = 0;
-//	//st_continue = 1;
-//	//Close_Popup(0);
-//}
-//
-//void Popup_handle_stop(void){
-//	//Tab_popup->bits.stop = 0;
-//	//st_stop = 1;
-//	//Close_Popup(0);
-//}
 
 void task_timer6(){
 //	if(!DOOR_OPEN()){
@@ -235,6 +218,9 @@ void application_run_main(void){
 		  TOGGLE_LED_RED;
 		//  TOGGLE_BUZZ;
 	  }
+	  if(Tab_main->bits.stop){
+		  Handle_stop();
+	  }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -255,7 +241,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	else if(GPIO_Pin == i5_stop_Pin){
 		if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){
 			SystemFlag.is_stop = 1 ;
-			//flag_Stop = 1;
 		}else{
 
 		}

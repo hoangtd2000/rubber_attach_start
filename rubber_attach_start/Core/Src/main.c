@@ -119,13 +119,7 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-
-//  while(DOOR_OPEN());
-//  {
-//
-//  }
   application_init();
-  //SetBips(3);
 
   /* USER CODE END 2 */
 
@@ -136,43 +130,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	LL_TIM_SetAutoReload( TIM5, 4);
-//	LL_TIM_SetAutoReload( TIM9, 5);
-//	LL_TIM_SetAutoReload( TIM2, 6);
-//	HAL_TIM_OC_Start(&htim8, TIM_CHANNEL_1);
-//	HAL_TIM_OC_Start(&htim3, TIM_CHANNEL_3);
-//	HAL_TIM_OC_Start(&htim1, TIM_CHANNEL_1);
-//	Set_Speed_Motor_x(fx , frequency_x_max);
-//	Set_Speed_Motor_y(fy , 60000);
-//	Set_Speed_Motor_z(fz , 60000);
-//	fx += 10000;
-//	fy += 10000;
-//	fz += 10000;
-//	  HAL_Delay(500);
-	//  application_run();
-//	  task_timer6();
 	  application_run_main();
-
-
-//  HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
-//	  HAL_GPIO_TogglePin(O2_GPIO_Port, O2_Pin);
-//	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
-//	  HAL_GPIO_TogglePin(O4_GPIO_Port, O4_Pin);
-//	  HAL_GPIO_TogglePin(O5_GPIO_Port, O5_Pin);
-//	  HAL_GPIO_TogglePin(O6_GPIO_Port, O6_Pin);
-//	  HAL_GPIO_TogglePin(O7_GPIO_Port, O7_Pin);
-//	  HAL_GPIO_TogglePin(O8_GPIO_Port, O8_Pin);
-//	  HAL_GPIO_TogglePin(O9_GPIO_Port, O9_Pin);
-//	  HAL_GPIO_TogglePin(O10_GPIO_Port, O10_Pin);
-//	  HAL_GPIO_TogglePin(O11_GPIO_Port, O11_Pin);
-//	  HAL_GPIO_TogglePin(O12_GPIO_Port, O12_Pin);
-//	  HAL_GPIO_TogglePin(O13_GPIO_Port, O13_Pin);
-//	  HAL_GPIO_TogglePin(O14_GPIO_Port, O14_Pin);
-//	  HAL_GPIO_TogglePin(O15_GPIO_Port, O15_Pin);
-//	  HAL_GPIO_TogglePin(O16_GPIO_Port, O16_Pin);
-//	  HAL_GPIO_TogglePin(O17_GPIO_Port, O17_Pin);
-//	  HAL_GPIO_TogglePin(O18_GPIO_Port, O18_Pin);
-//	  HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }

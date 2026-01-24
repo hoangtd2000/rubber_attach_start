@@ -226,8 +226,8 @@ void application_run_main(void){
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if(GPIO_Pin == i16_start_Pin){
-		if(HAL_GPIO_ReadPin(i16_start_GPIO_Port, i16_start_Pin)){
+	if(GPIO_Pin == i4_start_Pin){
+		if(HAL_GPIO_ReadPin(i4_start_GPIO_Port, i4_start_Pin)){
 			Tab_main->bits.start = 1;
 			if(Taskbar->bits.motor ==  1){
 				Tab_main->bits.start = 0;
@@ -235,11 +235,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 		}
 	}
-	else if(GPIO_Pin == i4_estop_Pin){
-		if(HAL_GPIO_ReadPin(i4_estop_GPIO_Port, i4_estop_Pin)){
-			NVIC_SystemReset();
-		}
-	}
+
 	else if(GPIO_Pin == i5_stop_Pin){
 		if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){ // mo
 			flag_Stop = 1;

@@ -80,9 +80,9 @@ void Error_Handler(void);
 #define i3_home_z_Pin GPIO_PIN_2
 #define i3_home_z_GPIO_Port GPIOC
 #define i3_home_z_EXTI_IRQn EXTI2_IRQn
-#define i4_estop_Pin GPIO_PIN_3
-#define i4_estop_GPIO_Port GPIOC
-#define i4_estop_EXTI_IRQn EXTI3_IRQn
+#define i4_start_Pin GPIO_PIN_3
+#define i4_start_GPIO_Port GPIOC
+#define i4_start_EXTI_IRQn EXTI3_IRQn
 #define i5_stop_Pin GPIO_PIN_4
 #define i5_stop_GPIO_Port GPIOC
 #define i5_stop_EXTI_IRQn EXTI4_IRQn
@@ -101,9 +101,6 @@ void Error_Handler(void);
 #define i15_Door_R_Pin GPIO_PIN_13
 #define i15_Door_R_GPIO_Port GPIOE
 #define i15_Door_R_EXTI_IRQn EXTI15_10_IRQn
-#define i16_start_Pin GPIO_PIN_14
-#define i16_start_GPIO_Port GPIOE
-#define i16_start_EXTI_IRQn EXTI15_10_IRQn
 #define i17_reset_Pin GPIO_PIN_15
 #define i17_reset_GPIO_Port GPIOE
 #define i17_reset_EXTI_IRQn EXTI15_10_IRQn

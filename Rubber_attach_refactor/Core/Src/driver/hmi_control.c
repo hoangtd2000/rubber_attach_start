@@ -17,7 +17,7 @@ Cylinder_and_save_t* Cylinder_and_save = (Cylinder_and_save_t*)&Coils_Database[2
 Rubber_and_tray_t* Rubber_and_tray  = (Rubber_and_tray_t*)&Coils_Database[3];
 Rubber_and_tray_indicator_t* Rubber_and_tray_indicator = (Rubber_and_tray_indicator_t*)&Inputs_Database[1];
 Control_Vacum_Indicator_t* Control_Vacum_Indicator = (Control_Vacum_Indicator_t*)&Inputs_Database[2];
-
+Popup_Indicator_t* Popup_Indicator = (Popup_Indicator_t*)&Inputs_Database[34];
 Point2D Rubber_Mark[3];
 Point2D Tray1_Mark[3];
 Point2D Tray2_Mark[3];
@@ -144,7 +144,7 @@ void Handle_start(void){
 	Handle();
 }
 void Handle_stop(void){
-	if(!SystemFlag.is_err  ){
+	if(!SystemFlag.is_err  && !Tab_main_indicator->bits.stop){
 	Tab_main_indicator->bits.stop =  1 ;
 	SystemFlag.is_stop = 1 ;
 	}

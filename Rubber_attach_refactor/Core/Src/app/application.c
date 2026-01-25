@@ -31,7 +31,7 @@ extern Point2D Tray2_Mark[3];
 extern uint32_t data[10];
 extern Tab_main_t* Tab_main_indicator;
 extern Tab_popup_t* Tab_popup;
-
+extern Popup_Indicator_t* Popup_Indicator ;
 
 PickState_t machine_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
@@ -240,24 +240,28 @@ void Handle(void)
 			}
 			case ST_WAIT_POPUP:
 			{
-				if(Timer_Check(1, 500) && Inputs_Database[34]){
+//				if(Timer_Check(1, 500) && Inputs_Database[34]){
+				if(Timer_Check(1, 500) && Popup_Indicator->bits.err){
 					OFF_LED_GREEN;
 					TOGGLE_LED_RED;
 				}
 				if(Tab_popup->bits.stop ==  1)
-				{
-					Tab_popup->bits.stop = 0;
-					Close_Popup(popup_err);
-					rubber_pair++;   // bỏ cả cặp lỗi
-					machine_state = ST_STOP;
-				}
-				if(Tab_popup->bits.next ==  1)
-				{
-					Tab_popup->bits.next = 0;
-					Close_Popup(popup_err);
-					rubber_pair++;   // bỏ cả cặp lỗi
-					machine_state = ST_MOVE_TO_RUBBER;
-				}
+					{
+						SystemFlag.is_err = 0 ;
+						Tab_popup->bits.stop = 0;
+						Tab_main_indicator->bits.stop =  1 ;
+						Close_Popup(popup_err);
+						rubber_pair++;   // bỏ cả cặp lỗi
+						machine_state = ST_STOP;
+					}
+					if(Tab_popup->bits.next ==  1)
+					{
+						SystemFlag.is_err = 0 ;
+						Tab_popup->bits.next = 0;
+						Close_Popup(popup_err);
+						rubber_pair++;   // bỏ cả cặp lỗi
+						machine_state = ST_MOVE_TO_RUBBER;
+					}
 				break;
 			}
 			case ST_PLACE1:

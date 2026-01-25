@@ -133,6 +133,18 @@ typedef union {
     uint8_t all;
 } Control_Vacum_Indicator_t;
 
+
+typedef union {
+    struct {
+    	uint8_t err            		: 1;
+        uint8_t door				: 1;
+        uint8_t home 				: 1;
+        uint8_t reserver			: 5;
+    } bits;
+    uint8_t all;
+} Popup_Indicator_t;
+
+
 typedef struct
 {
     uint8_t is_homing : 1;   // Đang về HOME

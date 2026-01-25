@@ -344,7 +344,7 @@ void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
 	if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){
-		if(!SystemFlag.is_err  ){
+		if(!SystemFlag.is_err && !Tab_main_indicator->bits.stop ){
 			SystemFlag.is_stop = 1 ;
 			Tab_main_indicator->bits.stop =  1 ;
 		}

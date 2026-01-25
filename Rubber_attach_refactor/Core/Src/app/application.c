@@ -132,8 +132,10 @@ void Handle(void)
 	Tab_main->bits.start = 0;
 	Tab_main_indicator->bits.stop =  0 ;
 	Tab_main_indicator->bits.start =  1 ;
-	Mark_rubber_working(count_tray[0]);
-	Mark_tray1_working(count_tray[1]);
+	 Input_Registers_Database[3] = count_tray[0];
+	 Input_Registers_Database[4] = count_tray[1];
+//	Mark_rubber_working(count_tray[0]);
+//	Mark_tray1_working(count_tray[1]);
 	if(tray_index == 0){
 		Clear_all_tray1();
 		Clear_all_tray2();
@@ -411,11 +413,13 @@ void PlaceToTray(Item *tray, uint8_t tray_id, int index)
     count_tray[tray_id]++;
     if(tray_id == 0){
         Mark_tray1(index);
-        Mark_tray1_working(count_tray[0]);
+        Input_Registers_Database[3] = count_tray[0];
+  //      Mark_tray1_working(count_tray[0]);
 
     } else {
         Mark_tray2(index);
-        Mark_tray2_working(count_tray[1]) ;
+    //    Mark_tray2_working(count_tray[1]) ;
+        Input_Registers_Database[4] = count_tray[1];
     }
     move_axis1(tray[index].x, tray[index].y, max_z_tray);
     wait_handler_stop();

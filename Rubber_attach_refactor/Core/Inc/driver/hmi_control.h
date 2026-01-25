@@ -9,7 +9,6 @@
 #define INC_DRIVER_HMI_CONTROL_H_
 
 #include <dio_control.h>
-#include <scan_map.h>
 #include "modbus_rtu.h"
 #include "main.h"
 #include "flash.h"
@@ -176,7 +175,14 @@ uint16_t Get_HMI_X_Axis(void);
 uint16_t Get_HMI_Y_Axis(void);
 uint16_t Get_HMI_Z_Axis(void);
 
-
+//taskbar
+void Handle_main(void);
+void Handle_motor(void);
+void Handle_setting(void);
+//tab main
+void Handle_reset(void);
+void Handle_start(void);
+void Handle_stop(void);
 //tab_motor
 void Handle_X_Left (void);
 void Handle_X_Right (void);

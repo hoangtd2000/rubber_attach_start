@@ -8,7 +8,10 @@
 
 #include "hmi_control.h"
 
-
+Taskbar_t* Taskbar = (Taskbar_t*)&Coils_Database[0];
+Tab_popup_t* Tab_popup = (Tab_popup_t*)&Coils_Database[6];
+Tab_main_t* Tab_main = (Tab_main_t*)&Coils_Database[5];
+Tab_main_t* Tab_main_indicator = (Tab_main_t*) &Inputs_Database[0];
 Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[1];
 Cylinder_and_save_t* Cylinder_and_save = (Cylinder_and_save_t*)&Coils_Database[2];
 Rubber_and_tray_t* Rubber_and_tray  = (Rubber_and_tray_t*)&Coils_Database[3];
@@ -33,6 +36,43 @@ volatile SystemFlag_t SystemFlag={
 		.is_stop= 0,
 		.is_err = 0,
 };
+
+
+ActionHandler_t Tab_main_table[] =  {
+		 Handle_reset,
+		 Handle_start,
+		 Handle_stop,
+};
+
+
+ActionHandler_t Tab_motor_table[] =  {
+		 Handle_X_Left,
+		 Handle_X_Right,
+		 Handle_Y_Backward,
+		 Handle_Y_Forward,
+		 Handle_Z_Up,
+		 Handle_Z_Down,
+		 Handle_Set,
+		 Handle_Home,
+		 Handle_pick_handler1,
+		 Handle_release_handler1,
+		 Handle_pick_handler2,
+		 Handle_release_handler2,
+		 Handle_save1,
+		 Handle_save2,
+		 Handle_save3,
+		 Handle_load,
+		 Handle_tray_rubber_p1,
+		 Handle_tray_rubber_p2,
+		 Handle_tray_rubber_p3,
+		 Handle_tray1_p1,
+		 Handle_tray1_p2,
+		 Handle_tray1_p3,
+		 Handle_tray2_p1,
+		 Handle_tray2_p2,
+		 Handle_tray2_p3,
+};
+
 
 ActionHandler_t Move_tray_table[] =  {
 		 Move_tray_rubber_p1,
@@ -66,9 +106,50 @@ uint16_t Get_HMI_Z_Axis(void){
 	return Holding_Registers_Database[2];
 }
 
+// taskbar
+void Handle_main(void){
+	uint8_t builtin_Handle_main = __builtin_ffs(Tab_main->all);
+		if (builtin_Handle_main > 0) {
+			builtin_Handle_main -= 1;
+		    if (builtin_Handle_main < (int)(sizeof(Tab_main_table) / sizeof(Tab_main_table[0]))) {
+		    	Tab_main_table[builtin_Handle_main]();
+		    }
+		}
+}
+void Handle_motor(void){
+	uint8_t builtin_Handle_motor = __builtin_ffs(Rubber_and_tray->all << 16 | Cylinder_and_save->all<< 8 | Control_motor->all);
+		if (builtin_Handle_motor > 0) {
+			builtin_Handle_motor -= 1;
+		    if (builtin_Handle_motor < (int)(sizeof(Tab_motor_table) / sizeof(Tab_motor_table[0]))) {
+		    	Tab_motor_table[builtin_Handle_motor]();
+		    }
+		}
+}
+void Handle_setting(void){
+
+}
 
 
+// tab main
+void Handle_reset(void){
+	Tab_main_indicator->bits.reset =  1 ;
+}
+void Handle_start(void){
+	if(SystemFlag.is_homing){
+		Tab_main->bits.start = 0;
+		return ;
+	}
+	SystemFlag.is_err = 0 ;
+	Tab_main_indicator->bits.start =  1 ;
+	Handle();
+}
+void Handle_stop(void){
+	Tab_main_indicator->bits.stop =  1 ;
+	SystemFlag.is_stop = 1 ;
+}
 
+
+// tab motor
 void Handle_X_Left (void){
 	if(AxisX.current_pos <= 0) {
 		return;

@@ -45,6 +45,10 @@ uint32_t Tick = 0;
 /* USER CODE BEGIN PV */
 extern Axis_t AxisX, AxisY, AxisZ;
 extern  uint8_t RxData[256];
+extern volatile SystemFlag_t SystemFlag;
+extern Tab_main_t* Tab_main;
+extern Tab_main_t* Tab_main_indicator ;
+extern Taskbar_t* Taskbar;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -214,7 +218,7 @@ void SysTick_Handler(void)
 void EXTI0_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI0_IRQn 0 */
-//	if(get_home_x() == home_x){
+	if(get_home_x() == home_x){
 	//	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
 		switch(AxisX.mode){
 		case MOVE_HOME1:
@@ -234,7 +238,7 @@ void EXTI0_IRQHandler(void)
 			AxisX.old_pos = 0;
 			break;
 	  }
- // }
+ }
   /* USER CODE END EXTI0_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i1_home_x_Pin);
   /* USER CODE BEGIN EXTI0_IRQn 1 */
@@ -316,7 +320,16 @@ void EXTI2_IRQHandler(void)
 void EXTI3_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI3_IRQn 0 */
-
+	if(HAL_GPIO_ReadPin(i4_start_GPIO_Port, i4_start_Pin)){
+		if(SystemFlag.is_homing){
+			return ;
+		}
+		SystemFlag.is_err = 0 ;
+		Tab_main->bits.start = 1;
+		if(Taskbar->bits.motor ==  1){
+			Tab_main->bits.start = 0;
+		}
+	}
   /* USER CODE END EXTI3_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i4_start_Pin);
   /* USER CODE BEGIN EXTI3_IRQn 1 */
@@ -330,7 +343,10 @@ void EXTI3_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-
+	if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){
+			SystemFlag.is_stop = 1 ;
+			Tab_main_indicator->bits.stop =  1 ;
+		}
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i5_stop_Pin);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
@@ -486,7 +502,6 @@ void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
 	task_timer6();
-
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */

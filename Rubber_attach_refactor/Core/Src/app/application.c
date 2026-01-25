@@ -10,68 +10,432 @@
 extern  uint8_t RxData[256];
 extern UART_HandleTypeDef huart2;
 extern volatile SystemFlag_t SystemFlag;
-
-extern Control_motor_t* Control_motor;
-extern Cylinder_and_save_t* Cylinder_and_save;
-extern Rubber_and_tray_t* Rubber_and_tray;
 extern Axis_t AxisX, AxisY, AxisZ;
-extern uint16_t Input_Registers_Database[50];
-extern uint8_t Inputs_Database[50];
+extern Tab_main_t* Tab_main;
+extern Taskbar_t* Taskbar;
 extern uint16_t* Mark;
+Item Rubber_Tray[400] = { [0 ... 399] = { .State = Not_Empty } };;
+Item Tray1[30];
+Item Tray2[30];
+
+//TrayPos Rubber_TrayPos;
+//TrayPos Tray1Pos;
+//TrayPos Tray2Pos;
 extern const uint32_t FlashStart;
 
+extern Point2D Rubber_Mark[3];
+extern Point2D Tray1_Mark[3];
+extern Point2D Tray2_Mark[3];
 
-Taskbar_t* Taskbar = (Taskbar_t*)&Coils_Database[0];
-Tab_main_t* Tab_main = (Tab_main_t*)&Coils_Database[5];
-Tab_popup_t* Tab_popup = (Tab_popup_t*)&Coils_Database[6];
+const Item* Rubber = Rubber_Tray;
+const Item* Tray_1 = Tray1;
+const Item* Tray_2 = Tray2;
 
-Tab_main_t* Tab_main_indicator = (Tab_main_t*) &Inputs_Database[0];
-Tab_popup_t* Tab_popup_indicator = (Tab_popup_t*) &Inputs_Database[35];
+extern uint32_t data[10];
+extern Tab_main_t* Tab_main_indicator;
+extern Tab_popup_t* Tab_popup;
 
-//volatile uint8_t flag_Stop = 0;
+
+PickState_t machine_state = ST_IDLE;
+PickState_t prev_state = ST_IDLE;
+
+uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
+uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
+Item *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
+uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
 
-ActionHandler_t Tab_main_table[] =  {
-		 Handle_reset,
-		 Handle_start,
-		 Handle_stop,
-};
 
-//ActionHandler_t Tab_popup_table[] =  {
-//		 Popup_handle_stop,
-//		 Popup_handle_next,
-//};
 
-ActionHandler_t Tab_motor_table[] =  {
-		 Handle_X_Left,
-		 Handle_X_Right,
-		 Handle_Y_Backward,
-		 Handle_Y_Forward,
-		 Handle_Z_Up,
-		 Handle_Z_Down,
-		 Handle_Set,
-		 Handle_Home,
-		 Handle_pick_handler1,
-		 Handle_release_handler1,
-		 Handle_pick_handler2,
-		 Handle_release_handler2,
-		 Handle_save1,
-		 Handle_save2,
-		 Handle_save3,
-		 Handle_load,
-		 Handle_tray_rubber_p1,
-		 Handle_tray_rubber_p2,
-		 Handle_tray_rubber_p3,
-		 Handle_tray1_p1,
-		 Handle_tray1_p2,
-		 Handle_tray1_p3,
-		 Handle_tray2_p1,
-		 Handle_tray2_p2,
-		 Handle_tray2_p3,
-};
+void Read_Tray_Data(){
+	Flash_Read_Data( FlashStart, data, 10);
+
+	Rubber_Mark[0].raw = data[0];
+	Rubber_Mark[1].raw = data[1];
+	Rubber_Mark[2].raw = data[2];
+	Mark[0] = Rubber_Mark[0].x;
+	Mark[1] = Rubber_Mark[0].y;
+	Mark[2] = Rubber_Mark[1].x;
+	Mark[3] = Rubber_Mark[1].y;
+	Mark[4] = Rubber_Mark[2].x;
+	Mark[5] = Rubber_Mark[2].y;
+	Tray1_Mark[0].raw = data[3];
+	Tray1_Mark[1].raw = data[4];
+	Tray1_Mark[2].raw = data[5];
+	Mark[6] = Tray1_Mark[0].x;
+	Mark[7] = Tray1_Mark[0].y;
+	Mark[8] = Tray1_Mark[1].x;
+	Mark[9] = Tray1_Mark[1].y;
+	Mark[10] = Tray1_Mark[2].x;
+	Mark[11] = Tray1_Mark[2].y;
+	Tray2_Mark[0].raw = data[6];
+	Tray2_Mark[1].raw = data[7];
+	Tray2_Mark[2].raw = data[8];
+	Mark[12] = Tray2_Mark[0].x;
+	Mark[13] = Tray2_Mark[0].y;
+	Mark[14] = Tray2_Mark[1].x;
+	Mark[15] = Tray2_Mark[1].y;
+	Mark[16] = Tray2_Mark[2].x;
+	Mark[17] = Tray2_Mark[2].y;
+	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
+	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
+	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
+}
+
+void Calculate_TrayRubber_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col)
+{
+    if (row < 2 || col < 2) return;          // tránh chia 0
+    const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
+    const double dy_row = (double)(point[2].y - point[0].y) / (row - 1);
+    const double dx_col = (double)(point[1].x - point[0].x) / (col - 1);
+    const double dy_col = (double)(point[1].y - point[0].y) / (col - 1);
+
+    uint16_t index = 0;
+
+    for (uint8_t i = 0; i < row; ++i) {
+        for (uint8_t j = 0; j < col; ++j) {
+        	tray[index].y = point[0].y + i * dy_row + j * dy_col;
+            tray[index].x = point[0].x + i * dx_row + j * dx_col;
+            ++index;
+        }
+    }
+}
+
+void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col)
+{
+    if (row < 2 || col < 2) return;          // tránh chia 0
+    const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
+    const double dy_row = (double)(point[2].y - point[0].y) / (row - 1);
+    const double dx_col = (double)(point[1].x - point[0].x) / (col - 1);
+    const double dy_col = (double)(point[1].y - point[0].y) / (col - 1);
+
+    uint16_t index = 0;
+
+    for (uint8_t i = 0; i < row; ++i) {
+        for (uint8_t j = 0; j < col; ++j) {
+        	if(i % 2 == 0){
+        		tray[index].y = point[0].y + i * dy_row + j * dy_col;
+        		tray[index].x = point[0].x + i * dx_row + j * dx_col;
+        	}
+        	else{
+        		tray[index].y = point[0].y + i * dy_row + j * dy_col - Y_Calibrator;
+        		tray[index].x = point[0].x + i * dx_row + j * dx_col - X_Calibrator;
+        	}
+            ++index;
+        }
+    }
+}
+
+
+
+void Handle(void)
+{
+	Tab_main->bits.start = 0;
+	Tab_main_indicator->bits.stop =  0 ;
+	Tab_main_indicator->bits.start =  1 ;
+//	Input_Registers_Database[3] = count_tray[0];
+//	Input_Registers_Database[4] = count_tray[1];
+	Mark_rubber_working(count_tray[0]);
+	Mark_tray1_working(count_tray[1]);
+	if(tray_index == 0){
+		Clear_all_tray1();
+		Clear_all_tray2();
+	}
+	if(rubber_pair == 0){
+		Mark_all_rubber();
+	}
+	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !SystemFlag.is_stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+    {
+		Tab_main->bits.start = 0;
+	    if(DOOR_OPEN() && machine_state != ST_PAUSE_DOOR)
+	    {
+	        prev_state = machine_state;
+	        machine_state = ST_PAUSE_DOOR;
+	    }
+		switch(machine_state)
+		{
+			case ST_IDLE:
+			{
+				Tab_main_indicator->bits.start =  1 ;
+				Close_Popup(popup_err);
+				machine_state = ST_MOVE_TO_RUBBER;
+				break;
+			}
+			case ST_MOVE_TO_RUBBER:
+			{
+				OFF_LED_RED;
+				ON_LED_GREEN;
+				Tab_main_indicator->bits.start =  1 ;
+				if(tray_index >= MAX_PAIRS || rubber_pair >= RUBBER_TOTAL_PAIRS)
+				{
+					machine_state = ST_STOP;
+					break;
+				}
+
+				int pair_row = rubber_pair / RUBBER_COLS;
+				int pair_col = rubber_pair % RUBBER_COLS;
+
+				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+				int ry = pair_row * 2;
+
+				// ===== Pick Rubber =====
+				wait_handler_stop();
+				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber - 8000);
+				delay_us(1000);
+
+				wait_handler_stop();
+
+				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
+				delay_us(1000);
+				machine_state = ST_PICK1;
+				break;
+			}
+			case ST_PICK1:
+			{
+				SetPickRubber(0);
+				SetPickRubber(1);
+			    machine_state = ST_WAIT_PICK1;
+			    break;
+			}
+			case ST_WAIT_PICK1:
+			{
+			    if (Handle_Pick[0].result == OK)
+			    {
+			        int pair_row = rubber_pair / RUBBER_COLS;
+			        int pair_col = rubber_pair % RUBBER_COLS;
+
+			        int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+			        int ry = pair_row * 2;
+
+			        Clear_mark_rubber(ry * RUBBER_COLS + rx);
+			        machine_state = ST_PICK2;
+			    }
+			    else if (Handle_Pick[0].result == NG){
+					Open_Popup(0);
+					SetBips(3);
+					machine_state = ST_WAIT_POPUP;
+			    }
+				break;
+			}
+			case ST_PICK2:
+			{
+				//SetPickRubber(1);
+				machine_state = ST_WAIT_PICK2;
+			    break;
+			}
+			case ST_WAIT_PICK2:
+			{
+			    if (Handle_Pick[1].result == OK)
+			    {
+					int pair_row = rubber_pair / RUBBER_COLS;
+					int pair_col = rubber_pair % RUBBER_COLS;
+
+					int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+					int ry = pair_row * 2;
+				    Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
+				    machine_state = ST_PLACE1;
+			    }
+
+			    if (rubber_pair % 10 == 0){
+			   // else if(Handle_Pick[1].result == NG){
+			    	SystemFlag.is_err = 1 ;
+			    	SetReleaseRubber(0);
+			        Open_Popup(popup_err);
+			        SetBips(3);
+			        machine_state = ST_WAIT_POPUP;
+			    }
+				break;
+			}
+			case ST_WAIT_POPUP:
+			{
+				if(Timer_Check(1, 500) && Inputs_Database[34]){
+					OFF_LED_GREEN;
+					TOGGLE_LED_RED;
+				}
+				if(Tab_popup->bits.stop ==  1)
+				{
+					Tab_popup->bits.stop = 0;
+					Close_Popup(popup_err);
+					rubber_pair++;   // bỏ cả cặp lỗi
+					machine_state = ST_STOP;
+				}
+				if(Tab_popup->bits.next ==  1)
+				{
+					Tab_popup->bits.next = 0;
+					Close_Popup(popup_err);
+					rubber_pair++;   // bỏ cả cặp lỗi
+					machine_state = ST_MOVE_TO_RUBBER;
+				}
+				break;
+			}
+			case ST_PLACE1:
+			{
+			    uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
+			    uint8_t tray_pair = tray_index % PAIRS_PER_TRAY;
+
+			    int tx = tray_pair % TRAY_COLS;
+			    int ty = (tray_pair / TRAY_COLS) * 2;
+
+			    Item *tray = TrayList[tray_id];
+
+			    PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
+			    machine_state = ST_RELEASE1;
+			    break;
+			}
+			case ST_RELEASE1:
+			{
+				SetReleaseRubber(0);
+				machine_state = ST_WAIT_RELEASE1;
+			    break;
+			}
+			case ST_WAIT_RELEASE1:
+			{
+				if(Handle_Release[0].result == OK){
+					machine_state = ST_PLACE2;
+				}
+			    else if (Handle_Release[0].result == NG)
+			    {
+			        // OpenPopup
+			    }
+			    break;
+			}
+			case ST_PLACE2:
+			{
+			    uint8_t tray_id   = tray_index / PAIRS_PER_TRAY;
+			    uint8_t tray_pair = tray_index % PAIRS_PER_TRAY;
+
+			    int tx = tray_pair % TRAY_COLS;
+			    int ty = (tray_pair / TRAY_COLS) * 2;
+
+			    Item *tray = TrayList[tray_id];
+
+			    PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
+			    machine_state = ST_RELEASE2;
+			    break;
+			}
+			case ST_RELEASE2:
+			{
+				SetReleaseRubber(1);
+				//ReleaseRubber(2);
+			    machine_state = ST_WAIT_RELEASE2;
+			    break;
+			}
+			case ST_WAIT_RELEASE2:
+			{
+			    if (Handle_Release[1].result == OK)
+			    {
+			        machine_state = ST_NEXT_PAIR;
+			    }
+			    else if (Handle_Release[1].result == NG)
+			    {
+			    	// OpenPopup();
+			    }
+			    break;
+			}
+			case ST_NEXT_PAIR:
+			{
+				rubber_pair++;
+				tray_index++;
+				machine_state = ST_MOVE_TO_RUBBER;
+				break;
+			}
+			case ST_STOP:
+			{
+				wait_handler_stop();
+				move_axis(0, 0, 0);
+				wait_handler_stop();
+				Tab_main_indicator->bits.start = 0;
+				if(Timer_Check(1, 500)){
+					OFF_LED_GREEN;
+					TOGGLE_LED_RED;
+				}
+				if(Tab_main->bits.start == 1){
+
+					Tab_main->bits.start = 0;
+					machine_state = ST_MOVE_TO_RUBBER;
+				}
+				break;
+			}
+			case ST_PAUSE_DOOR:
+			{
+				wait_handler_stop();
+				Tab_main_indicator->bits.start = 0;
+			    if(Timer_Check(1, 500))
+			    {
+			        OFF_LED_GREEN;
+			        TOGGLE_LED_RED;
+			        TOGGLE_BUZZ;
+			    }
+			    if (!DOOR_OPEN())
+			    {
+			        OFF_BUZZ;
+			        if (prev_state == ST_WAIT_POPUP)
+			        {
+			            machine_state = ST_WAIT_POPUP;
+			        }
+			        else if (Tab_main->bits.start == 1)
+			        {
+			            ON_LED_GREEN;
+			            OFF_LED_RED;
+			            Tab_main_indicator->bits.start = 1;
+			            machine_state = prev_state;
+			        }
+			    }
+			    break;
+			}
+			default:
+				break;
+		}
+    }
+	SystemFlag.is_stop = 0 ;
+
+	SetBips(5);
+	ON_LED_GREEN;
+	wait_handler_stop();
+	move_axis(0, 0, 0);
+	wait_handler_stop();
+	Tab_main_indicator->bits.start =  0 ;
+	if(rubber_pair >= RUBBER_TOTAL_PAIRS){
+		rubber_pair  = 0;
+	}
+	if(tray_index >= MAX_PAIRS){
+		tray_index  = 0;
+		count_tray[0] = 0;
+		count_tray[1] = 0;
+	}
+}
+
+void PlaceToTray(Item *tray, uint8_t tray_id, int index)
+{
+    wait_handler_stop();
+    move_axis(tray[index].x, tray[index].y, max_z_tray - 8000);
+
+    delay_us(500);
+    wait_handler_stop();
+    count_tray[tray_id]++;
+    if(tray_id == 0){
+        Mark_tray1(index);
+     //   Input_Registers_Database[3] = count_tray[0];
+        Mark_tray1_working(count_tray[0]);
+
+    } else {
+        Mark_tray2(index);
+      //  Input_Registers_Database[4] = count_tray[1];
+        Mark_tray2_working(count_tray[1]) ;
+    }
+    move_axis1(tray[index].x, tray[index].y, max_z_tray);
+    wait_handler_stop();
+    delay_us(1000);
+}
+
+
+
+
+
+
 
 void application_init(){
-		HAL_Delay(6000);
+		HAL_Delay(5000);
 		Mark_all_rubber();
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
 		Taskbar->bits.home = 1 ;
@@ -79,8 +443,8 @@ void application_init(){
 		HAL_TIM_Base_Start_IT(&htim5); //x
 		HAL_TIM_Base_Start_IT(&htim9); //y
 		HAL_TIM_Base_Start_IT(&htim2); //z
-		HAL_TIM_Base_Start_IT(&htim6);
-		HAL_TIM_Base_Start_IT(&htim7);
+		HAL_TIM_Base_Start_IT(&htim6); // kiem tra hmi
+		HAL_TIM_Base_Start_IT(&htim7); // kiem tra trang thai x, y, z
 		Set_Speed_Motor_x( speed_default, speed_x_max);
 		Set_Speed_Motor_y( speed_default, speed_y_max);
 		Set_Speed_Motor_z( speed_default, speed_z_max);
@@ -122,64 +486,26 @@ void Try_go_home(){
 	  SystemFlag.is_stop = 0;
 }
 
-
-void Handle_main(void){
-	uint8_t builtin_Handle_main = __builtin_ffs(Tab_main->all);
-		if (builtin_Handle_main > 0) {
-			builtin_Handle_main -= 1;
-		    if (builtin_Handle_main < (int)(sizeof(Tab_main_table) / sizeof(Tab_main_table[0]))) {
-		    	Tab_main_table[builtin_Handle_main]();
-		    }
-		}
-}
-void Handle_motor(void){
-	uint8_t builtin_Handle_motor = __builtin_ffs(Rubber_and_tray->all << 16 | Cylinder_and_save->all<< 8 | Control_motor->all);
-		if (builtin_Handle_motor > 0) {
-			builtin_Handle_motor -= 1;
-		    if (builtin_Handle_motor < (int)(sizeof(Tab_motor_table) / sizeof(Tab_motor_table[0]))) {
-		    	Tab_motor_table[builtin_Handle_motor]();
-		    }
-		}
-}
-void Handle_setting(void){
-
-}
-
-
-void Handle_reset(void){
-	Tab_main_indicator->bits.reset =  1 ;
-}
-
-void Handle_start(void){
-	if(SystemFlag.is_homing){
-		Tab_main->bits.start = 0;
-		return ;
-	}
-	SystemFlag.is_err = 0 ;
-	Tab_main_indicator->bits.start =  1 ;
-
-	Handle();
-
-}
-void Handle_stop(void){
-	Tab_main_indicator->bits.stop =  1 ;
-	SystemFlag.is_stop = 1 ;
+void application_run_main(void){
+	  if(Timer_Check(0, 500)){
+		  OFF_LED_RED;
+	//	  OFF_BUZZ;
+		  TOGGLE_LED_GREEN;
+	  }
+	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
+		  OFF_LED_GREEN;
+		  TOGGLE_LED_RED;
+		//  TOGGLE_BUZZ;
+	  }
 }
 
 
 void task_timer6(){
-//	if(!DOOR_OPEN()){
-		if(Taskbar->bits.home){
-			Handle_main();
-		}else if(Taskbar->bits.motor){
-			Handle_motor();
-		}
-	//	Handle_popup();
-//	}
-
-//	else if(Taskbar->bits.SETTING == 1){
-//
-//	}
+	if(Taskbar->bits.home){
+		Handle_main();
+	}else if(Taskbar->bits.motor){
+		Handle_motor();
+	}
 }
 void task_timer7(){
 	Control_motor_y();
@@ -193,58 +519,11 @@ void task_timer7(){
 	  if(Tab_main->bits.stop){
 		  Handle_stop();
 	  }
-//	if(DOOR_OPEN()){
-//		Open_Popup(popup_door);
-//	}
-//	else Close_Popup(popup_door);
 }
 
 
-void application_run_main(void){
-//	  if(Timer_Check(0, 500) && !DOOR_OPEN()){
-//		  OFF_LED_RED;
-//		  OFF_BUZZ;
-//		  TOGGLE_LED_GREEN;
-//	  }
-//	  else if(Timer_Check(2, 500) && DOOR_OPEN()){
-//		  OFF_LED_GREEN;
-//		  TOGGLE_LED_RED;
-//		  TOGGLE_BUZZ;
-//	  }
-	  if(Timer_Check(0, 500)){
-		  OFF_LED_RED;
-	//	  OFF_BUZZ;
-		  TOGGLE_LED_GREEN;
-	  }
-	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
-		  OFF_LED_GREEN;
-		  TOGGLE_LED_RED;
-		//  TOGGLE_BUZZ;
-	  }
-}
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	if(GPIO_Pin == i4_start_Pin){
-		if(HAL_GPIO_ReadPin(i4_start_GPIO_Port, i4_start_Pin)){
-			if(SystemFlag.is_homing){
-				return ;
-			}
-			SystemFlag.is_err = 0 ;
-			Tab_main->bits.start = 1;
-			if(Taskbar->bits.motor ==  1){
-				Tab_main->bits.start = 0;
-			}
 
-		}
-	}
-	else if(GPIO_Pin == i5_stop_Pin){
-		if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){
-			SystemFlag.is_stop = 1 ;
-			Tab_main_indicator->bits.stop =  1 ;
-		}else{
 
-		}
-	}
-}
+
 

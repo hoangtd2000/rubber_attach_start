@@ -137,11 +137,15 @@ void Handle(void)
 //	Mark_rubber_working(count_tray[0]);
 //	Mark_tray1_working(count_tray[1]);
 	if(tray_index == 0){
+		if(!Tab_main_indicator->bits.stop){
 		Clear_all_tray1();
 		Clear_all_tray2();
+		}
 	}
 	if(rubber_pair == 0){
+		if(!Tab_main_indicator->bits.stop){
 		Mark_all_rubber();
+		}
 	}
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !SystemFlag.is_stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {

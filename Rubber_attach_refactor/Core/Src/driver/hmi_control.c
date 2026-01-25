@@ -144,7 +144,7 @@ void Handle_start(void){
 	Handle();
 }
 void Handle_stop(void){
-	if(!SystemFlag.is_err  && !Tab_main_indicator->bits.stop){
+	if(!SystemFlag.is_err  && !Tab_main_indicator->bits.stop && Tab_main_indicator->bits.start){
 	Tab_main_indicator->bits.stop =  1 ;
 	SystemFlag.is_stop = 1 ;
 	}

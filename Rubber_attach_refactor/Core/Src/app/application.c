@@ -17,19 +17,16 @@ extern uint16_t* Mark;
 Item Rubber_Tray[400] = { [0 ... 399] = { .State = Not_Empty } };;
 Item Tray1[30];
 Item Tray2[30];
+const Item* Rubber = Rubber_Tray;
+const Item* Tray_1 = Tray1;
+const Item* Tray_2 = Tray2;
 
-//TrayPos Rubber_TrayPos;
-//TrayPos Tray1Pos;
-//TrayPos Tray2Pos;
 extern const uint32_t FlashStart;
 
 extern Point2D Rubber_Mark[3];
 extern Point2D Tray1_Mark[3];
 extern Point2D Tray2_Mark[3];
 
-const Item* Rubber = Rubber_Tray;
-const Item* Tray_1 = Tray1;
-const Item* Tray_2 = Tray2;
 
 extern uint32_t data[10];
 extern Tab_main_t* Tab_main_indicator;
@@ -59,6 +56,7 @@ void Read_Tray_Data(){
 	Mark[3] = Rubber_Mark[1].y;
 	Mark[4] = Rubber_Mark[2].x;
 	Mark[5] = Rubber_Mark[2].y;
+
 	Tray1_Mark[0].raw = data[3];
 	Tray1_Mark[1].raw = data[4];
 	Tray1_Mark[2].raw = data[5];
@@ -68,6 +66,7 @@ void Read_Tray_Data(){
 	Mark[9] = Tray1_Mark[1].y;
 	Mark[10] = Tray1_Mark[2].x;
 	Mark[11] = Tray1_Mark[2].y;
+
 	Tray2_Mark[0].raw = data[6];
 	Tray2_Mark[1].raw = data[7];
 	Tray2_Mark[2].raw = data[8];
@@ -133,8 +132,6 @@ void Handle(void)
 	Tab_main->bits.start = 0;
 	Tab_main_indicator->bits.stop =  0 ;
 	Tab_main_indicator->bits.start =  1 ;
-//	Input_Registers_Database[3] = count_tray[0];
-//	Input_Registers_Database[4] = count_tray[1];
 	Mark_rubber_working(count_tray[0]);
 	Mark_tray1_working(count_tray[1]);
 	if(tray_index == 0){
@@ -147,11 +144,6 @@ void Handle(void)
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !SystemFlag.is_stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		Tab_main->bits.start = 0;
-	    if(DOOR_OPEN() && machine_state != ST_PAUSE_DOOR)
-	    {
-	        prev_state = machine_state;
-	        machine_state = ST_PAUSE_DOOR;
-	    }
 		switch(machine_state)
 		{
 			case ST_IDLE:
@@ -415,24 +407,16 @@ void PlaceToTray(Item *tray, uint8_t tray_id, int index)
     count_tray[tray_id]++;
     if(tray_id == 0){
         Mark_tray1(index);
-     //   Input_Registers_Database[3] = count_tray[0];
         Mark_tray1_working(count_tray[0]);
 
     } else {
         Mark_tray2(index);
-      //  Input_Registers_Database[4] = count_tray[1];
         Mark_tray2_working(count_tray[1]) ;
     }
     move_axis1(tray[index].x, tray[index].y, max_z_tray);
     wait_handler_stop();
     delay_us(1000);
 }
-
-
-
-
-
-
 
 void application_init(){
 		HAL_Delay(5000);

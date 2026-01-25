@@ -154,9 +154,9 @@ typedef struct
 #define Mark_tray2(f) 			(SetBit(&Inputs_Database[31], f, 1))
 #define Clear_mark_tray2(f) 	(ClearBit(&Inputs_Database[31], f, 1))
 
-#define Mark_rubber_working(f)  Input_Registers_Database[3] =  f+1
-#define Mark_tray1_working(f)  Input_Registers_Database[4] =  f+1
-#define Mark_tray2_working(f)  Input_Registers_Database[5] =  f+1
+#define Mark_rubber_working(f)  Input_Registers_Database[0] =  f+1
+#define Mark_tray1_working(f)  Input_Registers_Database[1] =  f+1
+#define Mark_tray2_working(f)  Input_Registers_Database[2] =  f+1
 
 #define Close_Popup(f) 		(ClearBit(&Inputs_Database[34], f, 1))
 #define Open_Popup(f) 			(SetBit(&Inputs_Database[34], f, 1))

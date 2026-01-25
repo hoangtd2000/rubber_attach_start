@@ -321,14 +321,14 @@ void EXTI3_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI3_IRQn 0 */
 	if(HAL_GPIO_ReadPin(i4_start_GPIO_Port, i4_start_Pin)){
-		if(SystemFlag.is_homing){
-			return ;
-		}
-		SystemFlag.is_err = 0 ;
-		Tab_main->bits.start = 1;
-		if(Taskbar->bits.motor ==  1){
-			Tab_main->bits.start = 0;
-		}
+//		if(!SystemFlag.is_homing){
+//			SystemFlag.is_err = 0 ;
+			if(Taskbar->bits.motor ==  1){
+				Tab_main->bits.start = 0;
+			}else{
+			Tab_main->bits.start = 1;
+			}
+//		}
 	}
   /* USER CODE END EXTI3_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i4_start_Pin);
@@ -344,9 +344,11 @@ void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
 	if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){
+		if(!SystemFlag.is_err  ){
 			SystemFlag.is_stop = 1 ;
 			Tab_main_indicator->bits.stop =  1 ;
 		}
+	}
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i5_stop_Pin);
   /* USER CODE BEGIN EXTI4_IRQn 1 */

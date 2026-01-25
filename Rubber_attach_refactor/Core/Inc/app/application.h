@@ -28,7 +28,7 @@
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 
 
-#define Y_Calibrator 1000U  //2500
+#define Y_Calibrator 0U  //2500
 #define X_Calibrator 0U     //2500
 
 // Vị trí từng Rubber

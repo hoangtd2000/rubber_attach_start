@@ -8,7 +8,7 @@
 #ifndef INC_DRIVER_HMI_CONTROL_H_
 #define INC_DRIVER_HMI_CONTROL_H_
 
-#include <dio_control.h>
+#include "dio_control.h"
 #include "modbus_rtu.h"
 #include "main.h"
 #include "flash.h"

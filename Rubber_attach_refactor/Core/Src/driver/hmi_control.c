@@ -26,9 +26,9 @@ uint32_t data[10];
 const uint32_t FlashStart = 0x0800C000;
 
 extern Axis_t AxisX, AxisY, AxisZ;
-extern Item Rubber_Tray[400];
-extern Item Tray1[30];
-extern Item Tray2[30];
+extern Point2D Rubber_Tray[200];
+extern Point2D Tray1[30];
+extern Point2D Tray2[30];
 
 volatile SystemFlag_t SystemFlag={
 		.is_homing = 0 ,

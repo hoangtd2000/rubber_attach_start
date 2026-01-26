@@ -13,32 +13,30 @@ extern volatile SystemFlag_t SystemFlag;
 extern Axis_t AxisX, AxisY, AxisZ;
 extern Tab_main_t* Tab_main;
 extern Taskbar_t* Taskbar;
+extern Tab_main_t* Tab_main_indicator;
+extern Tab_popup_t* Tab_popup;
+extern Popup_Indicator_t* Popup_Indicator ;
 extern uint16_t* Mark;
-Item Rubber_Tray[400] = { [0 ... 399] = { .State = Not_Empty } };;
-Item Tray1[30];
-Item Tray2[30];
-const Item* Rubber = Rubber_Tray;
-const Item* Tray_1 = Tray1;
-const Item* Tray_2 = Tray2;
+Point2D Rubber_Tray[200] ;
+Point2D Tray1[30];
+Point2D Tray2[30];
+const Point2D* Rubber = Rubber_Tray;
+const Point2D* Tray_1 = Tray1;
+const Point2D* Tray_2 = Tray2;
+Point2D *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 
+extern uint32_t data[10];
 extern const uint32_t FlashStart;
 
 extern Point2D Rubber_Mark[3];
 extern Point2D Tray1_Mark[3];
 extern Point2D Tray2_Mark[3];
 
-
-extern uint32_t data[10];
-extern Tab_main_t* Tab_main_indicator;
-extern Tab_popup_t* Tab_popup;
-extern Popup_Indicator_t* Popup_Indicator ;
-
 PickState_t machine_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
 
 uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
 uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
-Item *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
 
@@ -81,7 +79,7 @@ void Read_Tray_Data(){
 	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
 }
 
-void Calculate_TrayRubber_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col)
+void Calculate_TrayRubber_Point(Point2D* tray, const Point2D* point,uint8_t row, uint8_t col)
 {
     if (row < 2 || col < 2) return;          // tránh chia 0
     const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
@@ -100,7 +98,7 @@ void Calculate_TrayRubber_Point(Item* tray, const Point2D* point,uint8_t row, ui
     }
 }
 
-void Calculate_Tray_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col)
+void Calculate_Tray_Point(Point2D* tray, const Point2D* point,uint8_t row, uint8_t col)
 {
     if (row < 2 || col < 2) return;          // tránh chia 0
     const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
@@ -278,7 +276,7 @@ void Handle(void)
 			    int tx = tray_pair % TRAY_COLS;
 			    int ty = (tray_pair / TRAY_COLS) * 2;
 
-			    Item *tray = TrayList[tray_id];
+			    Point2D *tray = TrayList[tray_id];
 
 			    PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
 			    machine_state = ST_RELEASE1;
@@ -309,7 +307,7 @@ void Handle(void)
 			    int tx = tray_pair % TRAY_COLS;
 			    int ty = (tray_pair / TRAY_COLS) * 2;
 
-			    Item *tray = TrayList[tray_id];
+			    Point2D *tray = TrayList[tray_id];
 
 			    PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
 			    machine_state = ST_RELEASE2;
@@ -407,7 +405,7 @@ void Handle(void)
 	}
 }
 
-void PlaceToTray(Item *tray, uint8_t tray_id, int index)
+void PlaceToTray(Point2D *tray, uint8_t tray_id, int index)
 {
     wait_handler_stop();
     move_axis(tray[index].x, tray[index].y, max_z_tray - 8000);

@@ -31,17 +31,7 @@
 #define Y_Calibrator 0U  //2500
 #define X_Calibrator 0U     //2500
 
-// Vị trí từng Rubber
-typedef enum {
-	Empty,
-	Not_Empty,
-} ItemState;
 
-typedef struct {
-	uint16_t x;
-	uint16_t y;
-	ItemState State;
-}Item;
 
 typedef enum {
     ST_IDLE,
@@ -75,9 +65,9 @@ void Handle(void);
 void wait_handler_stop();
 void Read_Tray_Data();
 
-void Calculate_Tray_Point(Item* tray, const Point2D* point, uint8_t row, uint8_t col);
-void Calculate_TrayRubber_Point(Item* tray, const Point2D* point,uint8_t row, uint8_t col);
-void PlaceToTray(Item *tray, uint8_t tray_id, int index);
+void Calculate_Tray_Point(Point2D* tray, const Point2D* point, uint8_t row, uint8_t col);
+void Calculate_TrayRubber_Point(Point2D* tray, const Point2D* point,uint8_t row, uint8_t col);
+void PlaceToTray(Point2D *tray, uint8_t tray_id, int index);
 
 
 void application_init(void);

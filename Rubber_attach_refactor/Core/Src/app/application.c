@@ -128,7 +128,7 @@ void Calculate_Tray_Point(Point2D* tray, const Point2D* point,uint8_t row, uint8
 void Handle(void)
 {
 	Tab_main->bits.start = 0;
-	Tab_main_indicator->bits.stop =  0 ;
+
 	Tab_main_indicator->bits.start =  1 ;
 	 Input_Registers_Database[3] = count_tray[0];
 	 Input_Registers_Database[4] = count_tray[1];
@@ -145,9 +145,14 @@ void Handle(void)
 		Mark_all_rubber();
 		}
 	}
-	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS && !SystemFlag.is_stop) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+	Tab_main_indicator->bits.stop =  0 ;
+	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		Tab_main->bits.start = 0;
+		if(SystemFlag.is_stop && machine_state != ST_PAUSE){
+			prev_state = machine_state;
+			machine_state = ST_PAUSE;
+		}
 		switch(machine_state)
 		{
 			case ST_IDLE:
@@ -176,18 +181,20 @@ void Handle(void)
 
 				// ===== Pick Rubber =====
 				wait_handler_stop();
-				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber - 8000);
-				delay_us(1000);
+				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber - z_up);
+				//delay_us(1000);
 
 				wait_handler_stop();
 
 				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
-				delay_us(1000);
+				wait_handler_stop();
+			//	delay_us(1000);
 				machine_state = ST_PICK1;
 				break;
 			}
 			case ST_PICK1:
 			{
+				delay_us(500);
 				SetPickRubber(0);
 				SetPickRubber(1);
 			    machine_state = ST_WAIT_PICK1;
@@ -195,18 +202,20 @@ void Handle(void)
 			}
 			case ST_WAIT_PICK1:
 			{
+				int pair_row = rubber_pair / RUBBER_COLS;
+				int pair_col = rubber_pair % RUBBER_COLS;
+
+				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+				int ry = pair_row * 2;
 			    if (Handle_Pick[0].result == OK)
 			    {
-			        int pair_row = rubber_pair / RUBBER_COLS;
-			        int pair_col = rubber_pair % RUBBER_COLS;
-
-			        int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
-			        int ry = pair_row * 2;
-
 			        Clear_mark_rubber(ry * RUBBER_COLS + rx);
 			        machine_state = ST_PICK2;
 			    }
 			    else if (Handle_Pick[0].result == NG){
+			    	Mark_rubber(ry * RUBBER_COLS + rx);
+			    	SetReleaseRubber(0);
+			    	SetReleaseRubber(1);
 					Open_Popup(0);
 					SetBips(3);
 					machine_state = ST_WAIT_POPUP;
@@ -221,21 +230,22 @@ void Handle(void)
 			}
 			case ST_WAIT_PICK2:
 			{
+				int pair_row = rubber_pair / RUBBER_COLS;
+				int pair_col = rubber_pair % RUBBER_COLS;
+
+				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+				int ry = pair_row * 2;
 			    if (Handle_Pick[1].result == OK)
 			    {
-					int pair_row = rubber_pair / RUBBER_COLS;
-					int pair_col = rubber_pair % RUBBER_COLS;
-
-					int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
-					int ry = pair_row * 2;
 				    Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 				    machine_state = ST_PLACE1;
 			    }
-
-			    if (rubber_pair % 10 == 0){
-			   // else if(Handle_Pick[1].result == NG){
+			    else if(Handle_Pick[1].result == NG){
 			    	SystemFlag.is_err = 1 ;
+			    	Mark_rubber(ry * RUBBER_COLS + rx);
+			    	Mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
 			    	SetReleaseRubber(0);
+			    	SetReleaseRubber(1);
 			        Open_Popup(popup_err);
 			        SetBips(3);
 			        machine_state = ST_WAIT_POPUP;
@@ -284,6 +294,8 @@ void Handle(void)
 			}
 			case ST_RELEASE1:
 			{
+				wait_handler_stop();
+				delay_us(200);
 				SetReleaseRubber(0);
 				machine_state = ST_WAIT_RELEASE1;
 			    break;
@@ -315,8 +327,9 @@ void Handle(void)
 			}
 			case ST_RELEASE2:
 			{
+				wait_handler_stop();
+				delay_us(200);
 				SetReleaseRubber(1);
-				//ReleaseRubber(2);
 			    machine_state = ST_WAIT_RELEASE2;
 			    break;
 			}
@@ -336,6 +349,7 @@ void Handle(void)
 			{
 				rubber_pair++;
 				tray_index++;
+				delay_us(200);
 				machine_state = ST_MOVE_TO_RUBBER;
 				break;
 			}
@@ -350,11 +364,44 @@ void Handle(void)
 					TOGGLE_LED_RED;
 				}
 				if(Tab_main->bits.start == 1){
-
 					Tab_main->bits.start = 0;
+				Tab_main_indicator->bits.stop =  0 ;
 					machine_state = ST_MOVE_TO_RUBBER;
 				}
 				break;
+			}
+			case ST_PAUSE:
+			{
+				wait_handler_stop();
+				  Vacum1_Pick_Off;
+				  Vacum1_Release_Off;
+				  Vacum2_Pick_Off;
+				  Vacum2_Release_Off;
+				Tab_main_indicator->bits.start = 0;
+			    if(Timer_Check(1, 500))
+			    {
+			        OFF_LED_GREEN;
+			        TOGGLE_LED_RED;
+			        TOGGLE_BUZZ;
+			    }
+			    SystemFlag.is_stop = 0;
+			    if (!SystemFlag.is_stop)
+			    {
+			        OFF_BUZZ;
+			        if (prev_state == ST_WAIT_POPUP)
+			        {
+			            machine_state = ST_WAIT_POPUP;
+			        }
+			        else if (Tab_main->bits.start == 1)
+			        {
+			            ON_LED_GREEN;
+			            OFF_LED_RED;
+			            Tab_main_indicator->bits.stop = 0 ;
+			            Tab_main_indicator->bits.start = 1;
+			            machine_state = prev_state;
+			        }
+			    }
+			    break;
 			}
 			case ST_PAUSE_DOOR:
 			{
@@ -408,9 +455,9 @@ void Handle(void)
 void PlaceToTray(Point2D *tray, uint8_t tray_id, int index)
 {
     wait_handler_stop();
-    move_axis(tray[index].x, tray[index].y, max_z_tray - 8000);
+    move_axis(tray[index].x, tray[index].y, max_z_tray - z_up);
 
-    delay_us(500);
+//    delay_us(500);
     wait_handler_stop();
     count_tray[tray_id]++;
     if(tray_id == 0){
@@ -425,11 +472,19 @@ void PlaceToTray(Point2D *tray, uint8_t tray_id, int index)
     }
     move_axis1(tray[index].x, tray[index].y, max_z_tray);
     wait_handler_stop();
-    delay_us(1000);
+  //  delay_us(1000);
 }
 
 void application_init(){
-		HAL_Delay(5000);
+//	Cylinder1_Go_Up;
+//	Cylinder2_Go_Up;
+//
+//	  Vacum1_Pick_Off;
+//	  Vacum1_Release_Off;
+//	  Vacum2_Pick_Off;
+//	  Vacum2_Release_Off;
+
+		HAL_Delay(7000);
 		Mark_all_rubber();
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
 		Taskbar->bits.home = 1 ;
@@ -449,18 +504,18 @@ void application_init(){
 		reset_counter_timer_z();
 		reset_counter_timer_slave_z();
 		Try_go_home();
+
 }
 void Try_go_home(){
 		SystemFlag.is_homing = 1 ;
 		Open_Popup(popup_home);
-		Cylinder1_Go_Up;
-		Cylinder2_Go_Up;
+
 	  if(get_home_z() == home_z){
 		  AxisZ.mode = MOVE_HOME2;
 	  }else {
 		  AxisZ.mode = MOVE_HOME1;
 	  }
-		while((AxisZ.mode != MOVE_HOME2));
+		while((AxisZ.mode != MOVE_HOME3));
 
 	  if(get_home_x() == home_x){
 		  AxisX.mode = MOVE_HOME2;

@@ -323,7 +323,7 @@ void EXTI3_IRQHandler(void)
 	if(HAL_GPIO_ReadPin(i4_start_GPIO_Port, i4_start_Pin)){
 //		if(!SystemFlag.is_homing){
 //			SystemFlag.is_err = 0 ;
-			if(Taskbar->bits.motor ==  1){
+			if(Taskbar->bits.motor || Tab_main_indicator->bits.start ){
 				Tab_main->bits.start = 0;
 			}else{
 			Tab_main->bits.start = 1;

@@ -87,13 +87,16 @@ ActionHandler_t Move_tray_table[] =  {
 };
 
  void Set_HMI_X_Axis(uint16_t value){
-	 Input_Registers_Database[11] = value;
+	// Input_Registers_Database[11] = value;
+	 Holding_Registers_Database[0] = value;
 }
  void Set_HMI_Y_Axis(uint16_t value){
-	 Input_Registers_Database[12] = value ;
+	// Input_Registers_Database[12] = value ;
+	 Holding_Registers_Database[1] = value;
 }
 void Set_HMI_Z_Axis(uint16_t value){
-	Input_Registers_Database[13] = value ;
+	//Input_Registers_Database[13] = value ;
+	Holding_Registers_Database[2] = value;
 }
 
 uint16_t Get_HMI_X_Axis(void){
@@ -135,7 +138,7 @@ void Handle_reset(void){
 	Tab_main_indicator->bits.reset =  1 ;
 }
 void Handle_start(void){
-	if(SystemFlag.is_homing){
+	if(SystemFlag.is_homing || Tab_main_indicator->bits.start ){
 		Tab_main->bits.start = 0;
 		return ;
 	}
@@ -249,16 +252,24 @@ void Handle_Home(void){
 
 
 void Handle_pick_handler1(void){
-	Control_Vacum_Indicator->bits.pick1 = PickRubber(1);
+	//PickRubber1(0);
+	SetPickRubber(0);
+	Control_Vacum_Indicator->bits.pick1 = Handle_Pick[0].result ;
+
 }
 void Handle_release_handler1(void){
-	Control_Vacum_Indicator->bits.release1 = ReleaseRubber(1);
+	//ReleaseRubber1(0);
+	SetReleaseRubber(0);
+	Control_Vacum_Indicator->bits.release1 = Handle_Release[0].result;
 }
 void Handle_pick_handler2(void){
-	Control_Vacum_Indicator->bits.pick1 =  PickRubber(2);
+	SetPickRubber(1);
+	Control_Vacum_Indicator->bits.pick2 =  Handle_Pick[1].result;
 }
 void Handle_release_handler2(void){
-	Control_Vacum_Indicator->bits.release2 = ReleaseRubber(2);
+	//ReleaseRubber1(1);
+	SetReleaseRubber(1);
+	Control_Vacum_Indicator->bits.release2 = Handle_Release[1].result;
 }
 
 /**

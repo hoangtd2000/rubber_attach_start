@@ -120,6 +120,7 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
   application_init();
+
   //SetBips(3);
 
   /* USER CODE END 2 */
@@ -686,13 +687,13 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, O1_Pin|O2_Pin|O3_Pin|O4_Pin
-                          |O5_Pin, GPIO_PIN_RESET);
+                          |O5_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, O6_Pin|O7_Pin|O8_Pin|O9_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, O6_Pin|O10_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, O7_Pin|O8_Pin|O9_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : O13_Pin O14_Pin O15_Pin O16_Pin
                            O17_Pin O11_Pin O12_Pin */

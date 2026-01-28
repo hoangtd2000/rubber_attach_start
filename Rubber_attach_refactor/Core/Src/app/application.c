@@ -194,7 +194,7 @@ void Handle(void)
 			}
 			case ST_PICK1:
 			{
-				delay_us(500);
+				delay_us(150);
 				SetPickRubber(0);
 				SetPickRubber(1);
 			    machine_state = ST_WAIT_PICK1;
@@ -349,7 +349,7 @@ void Handle(void)
 			{
 				rubber_pair++;
 				tray_index++;
-				delay_us(200);
+				delay_us(100);
 				machine_state = ST_MOVE_TO_RUBBER;
 				break;
 			}
@@ -484,7 +484,7 @@ void application_init(){
 //	  Vacum2_Pick_Off;
 //	  Vacum2_Release_Off;
 
-		HAL_Delay(7000);
+		HAL_Delay(6000);
 		Mark_all_rubber();
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
 		Taskbar->bits.home = 1 ;

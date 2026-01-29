@@ -260,6 +260,7 @@ void Handle(void)
 		    	delay_us(500);
 				SystemFlag.is_err = 0 ;
 		        rubber_pair++;   // bỏ cả cặp lỗi
+		        //while(Handle_Release[0].state != IDLE && Handle_Release[1].state != IDLE);
 		        machine_state = ST_MOVE_TO_RUBBER;
 				break;
 			}
@@ -306,8 +307,9 @@ void Handle(void)
 			case ST_RELEASE1:
 			{
 				wait_handler_stop();
-				delay_us(200);
+				delay_us(300);
 				SetReleaseRubber(0);
+				//while(Handle_Release[0].state != IDLE);
 				machine_state = ST_WAIT_RELEASE1;
 			    break;
 			}
@@ -339,8 +341,9 @@ void Handle(void)
 			case ST_RELEASE2:
 			{
 				wait_handler_stop();
-				delay_us(200);
+				delay_us(300);
 				SetReleaseRubber(1);
+				//while(Handle_Release[1].state != IDLE);
 			    machine_state = ST_WAIT_RELEASE2;
 			    break;
 			}
@@ -360,7 +363,7 @@ void Handle(void)
 			{
 				rubber_pair++;
 				tray_index++;
-				delay_us(100);
+				delay_us(300);
 				machine_state = ST_MOVE_TO_RUBBER;
 				break;
 			}

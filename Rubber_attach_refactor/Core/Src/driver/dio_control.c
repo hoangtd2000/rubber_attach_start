@@ -78,9 +78,12 @@ void PickRubber1(uint8_t vacum_id)
 	if (vacum_id >= 2) return;
 	switch (Handle_Pick[vacum_id].state)
     {
+
 		case IDLE:
-			Handle_Pick[vacum_id].retry = 0;
+		{
+            Handle_Release[vacum_id].retry = 0;
 			break;
+    	}
 		case CYLINDER_GO_DOWN:
 		{
             if (vacum_id == 0) Cylinder1_Go_Down;
@@ -186,8 +189,10 @@ void ReleaseRubber1(uint8_t vacum_id)
 	switch (Handle_Release[vacum_id].state)
     {
 		case IDLE:
+		{
             Handle_Release[vacum_id].retry = 0;
 			break;
+    	}
 		case CYLINDER_GO_DOWN:
 		{
             if (vacum_id == 0) Cylinder1_Go_Down;

@@ -254,21 +254,25 @@ void Handle_Home(void){
 void Handle_pick_handler1(void){
 	//PickRubber1(0);
 	SetPickRubber(0);
-	Control_Vacum_Indicator->bits.pick1 = Handle_Pick[0].result ;
+	while(Handle_Pick[0].state != IDLE);
+	Control_Vacum_Indicator->bits.pick1 = !Handle_Pick[0].result ;
 
 }
 void Handle_release_handler1(void){
 	//ReleaseRubber1(0);
 	SetReleaseRubber(0);
+	if(Handle_Release[0].state != IDLE);
 	Control_Vacum_Indicator->bits.release1 = Handle_Release[0].result;
 }
 void Handle_pick_handler2(void){
 	SetPickRubber(1);
-	Control_Vacum_Indicator->bits.pick2 =  Handle_Pick[1].result;
+	while(Handle_Pick[1].state != IDLE);
+	Control_Vacum_Indicator->bits.pick2 = !Handle_Pick[1].result;
 }
 void Handle_release_handler2(void){
 	//ReleaseRubber1(1);
 	SetReleaseRubber(1);
+	while(Handle_Release[1].state != IDLE);
 	Control_Vacum_Indicator->bits.release2 = Handle_Release[1].result;
 }
 

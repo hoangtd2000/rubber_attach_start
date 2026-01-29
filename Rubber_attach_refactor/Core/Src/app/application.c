@@ -214,11 +214,11 @@ void Handle(void)
 			    }
 			    else if (Handle_Pick[0].result == NG){
 			    	Mark_rubber(ry * RUBBER_COLS + rx);
-			    	SetReleaseRubber(0);
-			    	SetReleaseRubber(1);
-					Open_Popup(0);
-					SetBips(3);
-					machine_state = ST_WAIT_POPUP;
+//			    	SetReleaseRubber(0);
+//			    	SetReleaseRubber(1);
+					//Open_Popup(0);
+			//		SetBips(3);
+					machine_state = ST_CONTINUE;
 			    }
 				break;
 			}
@@ -244,12 +244,23 @@ void Handle(void)
 			    	SystemFlag.is_err = 1 ;
 			    	Mark_rubber(ry * RUBBER_COLS + rx);
 			    	Mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
-			    	SetReleaseRubber(0);
-			    	SetReleaseRubber(1);
-			        Open_Popup(popup_err);
-			        SetBips(3);
-			        machine_state = ST_WAIT_POPUP;
+//			    	SetReleaseRubber(0);
+//			    	SetReleaseRubber(1);
+
+			    //    Open_Popup(popup_err);
+			 //       SetBips(3);
+			        machine_state = ST_CONTINUE;
 			    }
+				break;
+			}
+			case ST_CONTINUE:
+			{
+		    	SetReleaseRubber(0);
+		    	SetReleaseRubber(1);
+		    	delay_us(500);
+				SystemFlag.is_err = 0 ;
+		        rubber_pair++;   // bỏ cả cặp lỗi
+		        machine_state = ST_MOVE_TO_RUBBER;
 				break;
 			}
 			case ST_WAIT_POPUP:

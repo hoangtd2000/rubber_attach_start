@@ -35,11 +35,9 @@ extern Point2D Tray2_Mark[3];
 PickState_t machine_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
 
-uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
-uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
-uint8_t count_tray[MAX_TRAYS] = {0, 0};
-
-
+volatile uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
+volatile uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
+volatile uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
 
 void Read_Tray_Data(){
@@ -146,6 +144,12 @@ void Handle(void)
 		}
 	}
 	Tab_main_indicator->bits.stop =  0 ;
+//	if(__builtin_ffs(Inputs_Database[3]) - 1 < 0){
+//		rubber_pair = 0;
+//	}
+//	else{
+//		rubber_pair = __builtin_ffs(Inputs_Database[3]) - 1;  // trả về vị trí bit 1 đầu tiên của Inputs_Database[3]
+//	}
 	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		Tab_main->bits.start = 0;

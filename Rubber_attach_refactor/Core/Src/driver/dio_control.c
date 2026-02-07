@@ -7,11 +7,11 @@
 
 
 #include <dio_control.h>
-uint8_t NumberBips = 0;
-uint8_t modeBip = 1;
-uint16_t TIME_SET_BIP_ON = 500;
-uint16_t TIME_SET_BIP_OFF = 500;
-uint16_t TimeDelayBip = 0;
+volatile uint8_t NumberBips = 0;
+volatile uint8_t modeBip = 1;
+volatile uint16_t TIME_SET_BIP_ON = 500;
+volatile uint16_t TIME_SET_BIP_OFF = 500;
+volatile uint16_t TimeDelayBip = 0;
 
 Cylinder_Vacum_Init_t Handle_Pick[2];
 Cylinder_Vacum_Init_t Handle_Release[2];

@@ -28,10 +28,13 @@
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 
 
-#define Y_Calibrator 2600U  //2500
-#define X_Calibrator 0U     //2500
+//#define Y_Calibrator 2600U  //2500
+//#define X_Calibrator 0U     //2500
 
-#define TIME_DOWN 100U
+#define Y_Calibrator 0U  //2500
+#define X_Calibrator 2600U     //2500
+
+#define TIME_DOWN 200U
 #define TIME_UP   200U
 #define TIME_AIR_UP    200U
 #define TIME_AIR_DOWN  200U

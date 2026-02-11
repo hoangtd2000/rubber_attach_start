@@ -157,7 +157,7 @@ void PickRubber1(uint8_t vacum_id)
                 else
                     ok = Is_Vacum2_Pick;
 
-                if (ok)
+                if (!ok)
                     Handle_Pick[vacum_id].state = DONE_OK;
                 else if (++Handle_Pick[vacum_id].retry < 2)
                     Handle_Pick[vacum_id].state = CYLINDER_GO_DOWN;

@@ -396,7 +396,7 @@ void Handle(void)
 			    {
 			        OFF_LED_GREEN;
 			        TOGGLE_LED_RED;
-			        TOGGLE_BUZZ;
+			        //TOGGLE_BUZZ;
 			    }
 			    SystemFlag.is_stop = 0;
 			    if (!SystemFlag.is_stop)
@@ -450,7 +450,7 @@ void Handle(void)
     }
 	SystemFlag.is_stop = 0 ;
 
-	SetBips(5);
+	SetBips(3);
 	ON_LED_GREEN;
 	wait_handler_stop();
 	move_axis(0, 0, 0);
@@ -498,7 +498,7 @@ void application_init(){
 //	  Vacum2_Pick_Off;
 //	  Vacum2_Release_Off;
 
-		HAL_Delay(6000);
+		HAL_Delay(7000);
 		Mark_all_rubber();
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
 		Taskbar->bits.home = 1 ;

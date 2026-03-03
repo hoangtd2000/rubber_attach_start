@@ -133,9 +133,14 @@ void Handle_setting(void){
 }
 
 
+extern uint16_t rubber_pair;
 // tab main
 void Handle_reset(void){
-	Tab_main_indicator->bits.set =  1 ;
+	//Tab_main_indicator->bits.set =  1 ;
+	rubber_pair =  Holding_Registers_Database[3];
+	Holding_Registers_Database[3] = 0 ;
+	Clear_mark_rubber(rubber_pair);
+
 }
 void Handle_start(void){
 	if(SystemFlag.is_homing || Tab_main_indicator->bits.start ){

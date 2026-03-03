@@ -17,20 +17,20 @@ extern Tab_main_t* Tab_main_indicator;
 extern Tab_popup_t* Tab_popup;
 extern Popup_Indicator_t* Popup_Indicator ;
 extern uint16_t* Mark;
-Point2D Rubber_Tray[200] ;
-Point2D Tray1[30];
-Point2D Tray2[30];
-const Point2D* Rubber = Rubber_Tray;
-const Point2D* Tray_1 = Tray1;
-const Point2D* Tray_2 = Tray2;
-Point2D *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
+Point3D Rubber_Tray[200] ;
+Point3D Tray1[30];
+Point3D Tray2[30];
+const Point3D* Rubber = Rubber_Tray;
+const Point3D* Tray_1 = Tray1;
+const Point3D* Tray_2 = Tray2;
+Point3D *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 
-extern uint32_t data[10];
+extern uint64_t data[10];
 extern const uint32_t FlashStart;
 
-extern Point2D Rubber_Mark[3];
-extern Point2D Tray1_Mark[3];
-extern Point2D Tray2_Mark[3];
+extern Point3D Rubber_Mark[3];
+extern Point3D Tray1_Mark[3];
+extern Point3D Tray2_Mark[3];
 
 PickState_t machine_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
@@ -40,89 +40,188 @@ uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
 uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
 
-
+static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count)
+{
+    for(uint8_t i = 0; i < count; i++)
+    {
+        dst[i*3 + 0] = src[i].x;
+        dst[i*3 + 1] = src[i].y;
+        dst[i*3 + 2] = src[i].z;
+    }
+}
 
 void Read_Tray_Data(){
 	Flash_Read_Data( FlashStart, data, 10);
+	// Gán raw
+	    for(uint8_t i = 0; i < 3; i++)
+	    {
+	        Rubber_Mark[i].raw = data[i];
+	        Tray1_Mark[i].raw  = data[i + 3];
+	        Tray2_Mark[i].raw  = data[i + 6];
+	    }
+	    // Copy ra mảng Mark
+	      CopyMarkToArray(&Mark[0],  Rubber_Mark, 3);
+	      CopyMarkToArray(&Mark[9],  Tray1_Mark,  3);
+	      CopyMarkToArray(&Mark[18], Tray2_Mark,  3);
 
-	Rubber_Mark[0].raw = data[0];
-	Rubber_Mark[1].raw = data[1];
-	Rubber_Mark[2].raw = data[2];
-	Mark[0] = Rubber_Mark[0].x;
-	Mark[1] = Rubber_Mark[0].y;
-	Mark[2] = Rubber_Mark[1].x;
-	Mark[3] = Rubber_Mark[1].y;
-	Mark[4] = Rubber_Mark[2].x;
-	Mark[5] = Rubber_Mark[2].y;
-
-	Tray1_Mark[0].raw = data[3];
-	Tray1_Mark[1].raw = data[4];
-	Tray1_Mark[2].raw = data[5];
-	Mark[6] = Tray1_Mark[0].x;
-	Mark[7] = Tray1_Mark[0].y;
-	Mark[8] = Tray1_Mark[1].x;
-	Mark[9] = Tray1_Mark[1].y;
-	Mark[10] = Tray1_Mark[2].x;
-	Mark[11] = Tray1_Mark[2].y;
-
-	Tray2_Mark[0].raw = data[6];
-	Tray2_Mark[1].raw = data[7];
-	Tray2_Mark[2].raw = data[8];
-	Mark[12] = Tray2_Mark[0].x;
-	Mark[13] = Tray2_Mark[0].y;
-	Mark[14] = Tray2_Mark[1].x;
-	Mark[15] = Tray2_Mark[1].y;
-	Mark[16] = Tray2_Mark[2].x;
-	Mark[17] = Tray2_Mark[2].y;
+//	Rubber_Mark[0].raw = data[0];
+//	Rubber_Mark[1].raw = data[1];
+//	Rubber_Mark[2].raw = data[2];
+//	Mark[0] = Rubber_Mark[0].x;
+//	Mark[1] = Rubber_Mark[0].y;
+//	Mark[2] = Rubber_Mark[0].z;
+//	Mark[3] = Rubber_Mark[1].x;
+//	Mark[4] = Rubber_Mark[1].y;
+//	Mark[5] = Rubber_Mark[1].z;
+//	Mark[6] = Rubber_Mark[2].x;
+//	Mark[7]	= Rubber_Mark[2].y;
+//	Mark[8] = Rubber_Mark[2].z;
+//
+//
+//	Tray1_Mark[0].raw = data[3];
+//	Tray1_Mark[1].raw = data[4];
+//	Tray1_Mark[2].raw = data[5];
+//	Mark[9] = Tray1_Mark[0].x;
+//	Mark[10] = Tray1_Mark[0].y;
+//	Mark[11] = Tray1_Mark[0].y;
+//	Mark[12] = Tray1_Mark[1].x;
+//	Mark[13] = Tray1_Mark[1].y;
+//	Mark[14] = Tray1_Mark[1].y;
+//	Mark[15] = Tray1_Mark[2].x;
+//	Mark[16] = Tray1_Mark[2].y;
+//	Mark[17] = Tray1_Mark[2].y;
+//
+//	Tray2_Mark[0].raw = data[6];
+//	Tray2_Mark[1].raw = data[7];
+//	Tray2_Mark[2].raw = data[8];
+//	Mark[18] = Tray2_Mark[0].x;
+//	Mark[19] = Tray2_Mark[0].y;
+//	Mark[20] = Tray2_Mark[1].x;
+//	Mark[21] = Tray2_Mark[1].y;
+//	Mark[22] = Tray2_Mark[1].y;
+//	Mark[23] = Tray2_Mark[2].x;
+//	Mark[24] = Tray2_Mark[2].y;
+//	Mark[25] = Tray2_Mark[2].y;
 	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
 	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
 	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
 }
 
-void Calculate_TrayRubber_Point(Point2D* tray, const Point2D* point,uint8_t row, uint8_t col)
+//void Calculate_TrayRubber_Point(Point3D* tray, const Point3D* point,uint8_t row, uint8_t col)
+//{
+//    if (row < 2 || col < 2) return;          // tránh chia 0
+//    const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
+//    const double dy_row = (double)(point[2].y - point[0].y) / (row - 1);
+//    const double dx_col = (double)(point[1].x - point[0].x) / (col - 1);
+//    const double dy_col = (double)(point[1].y - point[0].y) / (col - 1);
+//
+//    uint16_t index = 0;
+//
+//    for (uint8_t i = 0; i < row; ++i) {
+//        for (uint8_t j = 0; j < col; ++j) {
+//        	tray[index].y = point[0].y + i * dy_row + j * dy_col;
+//            tray[index].x = point[0].x + i * dx_row + j * dx_col;
+//            ++index;
+//        }
+//    }
+//}
+void Calculate_TrayRubber_Point(Point3D* tray,
+                                const Point3D* point,
+                                uint8_t row,
+                                uint8_t col)
 {
-    if (row < 2 || col < 2) return;          // tránh chia 0
-    const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
-    const double dy_row = (double)(point[2].y - point[0].y) / (row - 1);
-    const double dx_col = (double)(point[1].x - point[0].x) / (col - 1);
-    const double dy_col = (double)(point[1].y - point[0].y) / (col - 1);
+    if (row < 2 || col < 2) return;
+
+    const float dx_row = ((float)point[2].x - point[0].x) / (row - 1);
+    const float dy_row = ((float)point[2].y - point[0].y) / (row - 1);
+    const float dz_row = ((float)point[2].z - point[0].z) / (row - 1);
+
+    const float dx_col = ((float)point[1].x - point[0].x) / (col - 1);
+    const float dy_col = ((float)point[1].y - point[0].y) / (col - 1);
+    const float dz_col = ((float)point[1].z - point[0].z) / (col - 1);
 
     uint16_t index = 0;
 
-    for (uint8_t i = 0; i < row; ++i) {
-        for (uint8_t j = 0; j < col; ++j) {
-        	tray[index].y = point[0].y + i * dy_row + j * dy_col;
-            tray[index].x = point[0].x + i * dx_row + j * dx_col;
-            ++index;
+    for (uint8_t i = 0; i < row; ++i)
+    {
+        for (uint8_t j = 0; j < col; ++j)
+        {
+            float x = point[0].x + i * dx_row + j * dx_col;
+            float y = point[0].y + i * dy_row + j * dy_col;
+            float z = point[0].z + i * dz_row + j * dz_col;
+
+            tray[index].x = (uint16_t)x;
+            tray[index].y = (uint16_t)y;
+            tray[index].z = (uint16_t)z;
+
+            index++;
         }
     }
 }
-
-void Calculate_Tray_Point(Point2D* tray, const Point2D* point,uint8_t row, uint8_t col)
+//void Calculate_Tray_Point(Point3D* tray, const Point3D* point,uint8_t row, uint8_t col)
+//{
+//    if (row < 2 || col < 2) return;          // tránh chia 0
+//    const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
+//    const double dy_row = (double)(point[2].y - point[0].y) / (row - 1);
+//    const double dx_col = (double)(point[1].x - point[0].x) / (col - 1);
+//    const double dy_col = (double)(point[1].y - point[0].y) / (col - 1);
+//
+//    uint16_t index = 0;
+//
+//    for (uint8_t i = 0; i < row; ++i) {
+//        for (uint8_t j = 0; j < col; ++j) {
+//        	if(i % 2 == 0){
+//        		tray[index].y = point[0].y + i * dy_row + j * dy_col;
+//        		tray[index].x = point[0].x + i * dx_row + j * dx_col;
+//        	}
+//        	else{
+//        		tray[index].y = point[0].y + i * dy_row + j * dy_col - Y_Calibrator;
+//        		tray[index].x = point[0].x + i * dx_row + j * dx_col - X_Calibrator;
+//        	}
+//            ++index;
+//        }
+//    }
+//}
+void Calculate_Tray_Point(Point3D* tray,
+                          const Point3D* point,
+                          uint8_t row,
+                          uint8_t col)
 {
-    if (row < 2 || col < 2) return;          // tránh chia 0
-    const double dx_row = (double)(point[2].x - point[0].x) / (row - 1);
-    const double dy_row = (double)(point[2].y - point[0].y) / (row - 1);
-    const double dx_col = (double)(point[1].x - point[0].x) / (col - 1);
-    const double dy_col = (double)(point[1].y - point[0].y) / (col - 1);
+    if (row < 2 || col < 2) return;
+
+    const float dx_row = ((float)point[2].x - point[0].x) / (row - 1);
+    const float dy_row = ((float)point[2].y - point[0].y) / (row - 1);
+    const float dz_row = ((float)point[2].z - point[0].z) / (row - 1);
+
+    const float dx_col = ((float)point[1].x - point[0].x) / (col - 1);
+    const float dy_col = ((float)point[1].y - point[0].y) / (col - 1);
+    const float dz_col = ((float)point[1].z - point[0].z) / (col - 1);
 
     uint16_t index = 0;
 
-    for (uint8_t i = 0; i < row; ++i) {
-        for (uint8_t j = 0; j < col; ++j) {
-        	if(i % 2 == 0){
-        		tray[index].y = point[0].y + i * dy_row + j * dy_col;
-        		tray[index].x = point[0].x + i * dx_row + j * dx_col;
-        	}
-        	else{
-        		tray[index].y = point[0].y + i * dy_row + j * dy_col - Y_Calibrator;
-        		tray[index].x = point[0].x + i * dx_row + j * dx_col - X_Calibrator;
-        	}
-            ++index;
+    for (uint8_t i = 0; i < row; ++i)
+    {
+        for (uint8_t j = 0; j < col; ++j)
+        {
+            float x = point[0].x + i * dx_row + j * dx_col;
+            float y = point[0].y + i * dy_row + j * dy_col;
+            float z = point[0].z + i * dz_row + j * dz_col;
+
+            if (i % 2 != 0)
+            {
+                x -= X_Calibrator;
+                y -= Y_Calibrator;
+                z -= Z_Calibrator;
+            }
+
+            tray[index].x = (uint16_t)x;
+            tray[index].y = (uint16_t)y;
+            tray[index].z = (uint16_t)z;
+
+            index++;
         }
     }
 }
-
 
 
 void Handle(void)
@@ -181,12 +280,13 @@ void Handle(void)
 
 				// ===== Pick Rubber =====
 				wait_handler_stop();
-				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber - z_up);
-				//delay_us(1000);
-
-				wait_handler_stop();
-
-				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
+//				move_axis(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber - z_up);
+//				//delay_us(1000);
+//
+//				wait_handler_stop();
+//
+//				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
+				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, Rubber[ry * RUBBER_COLS + rx].z);
 				wait_handler_stop();
 			//	delay_us(1000);
 				machine_state = ST_PICK1;
@@ -298,7 +398,7 @@ void Handle(void)
 			    int tx = tray_pair % TRAY_COLS;
 			    int ty = (tray_pair / TRAY_COLS) * 2;
 
-			    Point2D *tray = TrayList[tray_id];
+			    Point3D *tray = TrayList[tray_id];
 
 			    PlaceToTray(tray, tray_id, ty * TRAY_COLS + tx);
 			    machine_state = ST_RELEASE1;
@@ -332,7 +432,7 @@ void Handle(void)
 			    int tx = tray_pair % TRAY_COLS;
 			    int ty = (tray_pair / TRAY_COLS) * 2;
 
-			    Point2D *tray = TrayList[tray_id];
+			    Point3D *tray = TrayList[tray_id];
 
 			    PlaceToTray(tray, tray_id, (ty + 1) * TRAY_COLS + tx);
 			    machine_state = ST_RELEASE2;
@@ -466,10 +566,10 @@ void Handle(void)
 	}
 }
 
-void PlaceToTray(Point2D *tray, uint8_t tray_id, int index)
+void PlaceToTray(Point3D *tray, uint8_t tray_id, int index)
 {
     wait_handler_stop();
-    move_axis(tray[index].x, tray[index].y, max_z_tray - z_up);
+    move_axis(tray[index].x, tray[index].y,tray[index].z - z_up);
 
 //    delay_us(500);
     wait_handler_stop();
@@ -484,7 +584,7 @@ void PlaceToTray(Point2D *tray, uint8_t tray_id, int index)
     //    Mark_tray2_working(count_tray[1]) ;
         Input_Registers_Database[4] = count_tray[1];
     }
-    move_axis1(tray[index].x, tray[index].y, max_z_tray);
+    move_axis1(tray[index].x, tray[index].y, tray[index].z);
     wait_handler_stop();
   //  delay_us(1000);
 }
@@ -517,7 +617,7 @@ void application_init(){
 		reset_counter_timer_slave_y();
 		reset_counter_timer_z();
 		reset_counter_timer_slave_z();
-		Try_go_home();
+		//Try_go_home();
 
 }
 void Try_go_home(){
@@ -530,7 +630,7 @@ void Try_go_home(){
 		  AxisZ.mode = MOVE_HOME1;
 	  }
 		while((AxisZ.mode != MOVE_HOME3));
-
+	  while((AxisZ.mode != STOP));
 	  if(get_home_x() == home_x){
 		  AxisX.mode = MOVE_HOME2;
 	  }else{
@@ -550,25 +650,39 @@ void Try_go_home(){
 }
 
 void application_run_main(void){
+//	  if(Timer_Check(0, 500)){
+//		  OFF_LED_RED;
+//		  TOGGLE_LED_GREEN;
+//	  }
+//	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
+//		  OFF_LED_GREEN;
+//		  TOGGLE_LED_RED;
+//	  }
+		if(Taskbar->bits.home){
+			Handle_main();
+		}else if(Taskbar->bits.motor){
+			Handle_motor();
+		}else if(Taskbar->bits.setting){
+			Handle_setting();
+		}
+
+}
+
+
+void task_timer6(){
+//	if(Taskbar->bits.home){
+//		Handle_main();
+//	}else if(Taskbar->bits.motor){
+//		Handle_motor();
+//	}
 	  if(Timer_Check(0, 500)){
 		  OFF_LED_RED;
-	//	  OFF_BUZZ;
 		  TOGGLE_LED_GREEN;
 	  }
 	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
 		  OFF_LED_GREEN;
 		  TOGGLE_LED_RED;
-		//  TOGGLE_BUZZ;
 	  }
-}
-
-
-void task_timer6(){
-	if(Taskbar->bits.home){
-		Handle_main();
-	}else if(Taskbar->bits.motor){
-		Handle_motor();
-	}
 }
 void task_timer7(){
 	Control_motor_y();

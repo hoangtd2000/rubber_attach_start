@@ -107,7 +107,7 @@ typedef union {
 
 typedef union {
     struct {
-        uint8_t reset				: 1;
+        uint8_t set				: 1;
         uint8_t start				: 1;
         uint8_t stop				: 1;
     } bits;

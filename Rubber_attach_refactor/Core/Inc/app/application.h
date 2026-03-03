@@ -28,11 +28,11 @@
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 
 
-//#define Y_Calibrator 2600U  //2500
-//#define X_Calibrator 0U     //2500
-
-#define Y_Calibrator 0U  //2500
-#define X_Calibrator 2600U     //2500
+#define Y_Calibrator 2600U  //2500
+#define X_Calibrator 0U     //2500
+#define Z_Calibrator 0U
+//#define Y_Calibrator 0U  //2500
+//#define X_Calibrator 2600U     //2500
 
 #define TIME_DOWN 200U
 #define TIME_UP   200U
@@ -66,17 +66,20 @@ typedef union {
     struct {
         uint16_t x;
         uint16_t y;
+        uint16_t z;
+        uint16_t reserve;
     };
-    uint32_t raw;
-} Point2D;
+    uint64_t raw;
+} Point3D;
 
 void Handle(void);
 void wait_handler_stop();
+static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count);
 void Read_Tray_Data();
 
-void Calculate_Tray_Point(Point2D* tray, const Point2D* point, uint8_t row, uint8_t col);
-void Calculate_TrayRubber_Point(Point2D* tray, const Point2D* point,uint8_t row, uint8_t col);
-void PlaceToTray(Point2D *tray, uint8_t tray_id, int index);
+void Calculate_Tray_Point(Point3D* tray, const Point3D* point, uint8_t row, uint8_t col);
+void Calculate_TrayRubber_Point(Point3D* tray, const Point3D* point,uint8_t row, uint8_t col);
+void PlaceToTray(Point3D *tray, uint8_t tray_id, int index);
 
 
 void application_init(void);

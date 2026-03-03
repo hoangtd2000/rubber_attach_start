@@ -18,17 +18,17 @@ Rubber_and_tray_t* Rubber_and_tray  = (Rubber_and_tray_t*)&Coils_Database[3];
 Rubber_and_tray_indicator_t* Rubber_and_tray_indicator = (Rubber_and_tray_indicator_t*)&Inputs_Database[1];
 Control_Vacum_Indicator_t* Control_Vacum_Indicator = (Control_Vacum_Indicator_t*)&Inputs_Database[2];
 Popup_Indicator_t* Popup_Indicator = (Popup_Indicator_t*)&Inputs_Database[34];
-Point2D Rubber_Mark[3];
-Point2D Tray1_Mark[3];
-Point2D Tray2_Mark[3];
+Point3D Rubber_Mark[3];
+Point3D Tray1_Mark[3];
+Point3D Tray2_Mark[3];
 uint16_t* Mark = &Holding_Registers_Database[6];
-uint32_t data[10];
-const uint32_t FlashStart = 0x0800C000;
+uint64_t data[10];
+const uint32_t FlashStart = 0x08010000;
 
 extern Axis_t AxisX, AxisY, AxisZ;
-extern Point2D Rubber_Tray[200];
-extern Point2D Tray1[30];
-extern Point2D Tray2[30];
+extern Point3D Rubber_Tray[200];
+extern Point3D Tray1[30];
+extern Point3D Tray2[30];
 
 volatile SystemFlag_t SystemFlag={
 		.is_homing = 0 ,
@@ -135,7 +135,7 @@ void Handle_setting(void){
 
 // tab main
 void Handle_reset(void){
-	Tab_main_indicator->bits.reset =  1 ;
+	Tab_main_indicator->bits.set =  1 ;
 }
 void Handle_start(void){
 	if(SystemFlag.is_homing || Tab_main_indicator->bits.start ){
@@ -291,94 +291,160 @@ void Handle_release_handler2(void){
  * - Chỉ xử lý 1 bit active tại một thời điểm
  * - Mapping Holding Register bắt đầu từ Mark[0]
  */
+
+static uint8_t SaveMark(Point3D *markArray,
+                     uint8_t markIndex,
+                     uint16_t markOffset,
+                     uint8_t dataIndex)
+{
+    markArray[markIndex].x = AxisX.current_pos;
+    markArray[markIndex].y = AxisY.current_pos;
+    markArray[markIndex].z = AxisZ.current_pos;
+
+    Mark[markOffset + 0] = markArray[markIndex].x;
+    Mark[markOffset + 1] = markArray[markIndex].y;
+    Mark[markOffset + 2] = markArray[markIndex].z;
+
+    data[dataIndex] = markArray[markIndex].raw;
+
+    return Flash_Write_Data(FlashStart, (uint64_t*)data, 10);
+}
+
 void Handle_save1(void){
 
-	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
-	case 1:
-		Rubber_Mark[0].x = AxisX.current_pos;
-		Rubber_Mark[0].y = AxisY.current_pos;
-		Mark[0] =  Rubber_Mark[0].x;
-		Mark[1] =  Rubber_Mark[0].y;
-		data[0] =  Rubber_Mark[0].raw;
+//	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
+//	case 1:
+//		Rubber_Mark[0].x = AxisX.current_pos;
+//		Rubber_Mark[0].y = AxisY.current_pos;
+//		Mark[0] =  Rubber_Mark[0].x;
+//		Mark[1] =  Rubber_Mark[0].y;
+//		data[0] =  Rubber_Mark[0].raw;
+//
+//		Rubber_and_tray_indicator->bits.tray_rubber_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//		break;
+//	case 2:
+//		Rubber_Mark[1].x = AxisX.current_pos;
+//		Rubber_Mark[1].y = AxisY.current_pos;
+//		Mark[2] =  Rubber_Mark[1].x;
+//		Mark[3] =  Rubber_Mark[1].y;
+//		data[1] =  Rubber_Mark[1].raw;
+//		Rubber_and_tray_indicator->bits.tray_rubber_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//		break;
+//	case 3:
+//		Rubber_Mark[2].x = AxisX.current_pos;
+//		Rubber_Mark[2].y = AxisY.current_pos;
+//		Mark[4] =  Rubber_Mark[2].x;
+//		Mark[5] =  Rubber_Mark[2].y;
+//		data[2] =  Rubber_Mark[2].raw;
+//		Rubber_and_tray_indicator->bits.tray_rubber_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//		break;
+//	}
+//	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
+	 switch(__builtin_ffs(Rubber_and_tray_indicator->all))
+	    {
+	        case 1:
+	            Rubber_and_tray_indicator->bits.tray_rubber_p1 = SaveMark(Rubber_Mark, 0, 0, 0);
+	            break;
+	        case 2:
+	            Rubber_and_tray_indicator->bits.tray_rubber_p2 = SaveMark(Rubber_Mark, 1, 3, 1);
+	            break;
+	        case 3:
+	            Rubber_and_tray_indicator->bits.tray_rubber_p3 =  SaveMark(Rubber_Mark, 2, 6, 2);
+	            break;
+	        default:
+	            return;
+	    }
 
-		Rubber_and_tray_indicator->bits.tray_rubber_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-		break;
-	case 2:
-		Rubber_Mark[1].x = AxisX.current_pos;
-		Rubber_Mark[1].y = AxisY.current_pos;
-		Mark[2] =  Rubber_Mark[1].x;
-		Mark[3] =  Rubber_Mark[1].y;
-		data[1] =  Rubber_Mark[1].raw;
-		Rubber_and_tray_indicator->bits.tray_rubber_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-		break;
-	case 3:
-		Rubber_Mark[2].x = AxisX.current_pos;
-		Rubber_Mark[2].y = AxisY.current_pos;
-		Mark[4] =  Rubber_Mark[2].x;
-		Mark[5] =  Rubber_Mark[2].y;
-		data[2] =  Rubber_Mark[2].raw;
-		Rubber_and_tray_indicator->bits.tray_rubber_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-		break;
-	}
-	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
+	    Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark,
+	                               RUBBER_ROWS, RUBBER_COLS);
 }
 void Handle_save2(void){
-	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
-	case 4:
-				Tray1_Mark[0].x = AxisX.current_pos;
-				Tray1_Mark[0].y = AxisY.current_pos;
-				Mark[6] =  Tray1_Mark[0].x;
-				Mark[7] =  Tray1_Mark[0].y;
-				data[3] =  Tray1_Mark[0].raw;
-				Rubber_and_tray_indicator->bits.tray1_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
+//	case 4:
+//				Tray1_Mark[0].x = AxisX.current_pos;
+//				Tray1_Mark[0].y = AxisY.current_pos;
+//				Mark[6] =  Tray1_Mark[0].x;
+//				Mark[7] =  Tray1_Mark[0].y;
+//				data[3] =  Tray1_Mark[0].raw;
+//				Rubber_and_tray_indicator->bits.tray1_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//
+//		break;
+//	case 5:
+//				Tray1_Mark[1].x = AxisX.current_pos;
+//				Tray1_Mark[1].y = AxisY.current_pos;
+//				Mark[8] =  Tray1_Mark[1].x;
+//				Mark[9] =  Tray1_Mark[1].y;
+//				data[4] =  Tray1_Mark[1].raw;
+//				Rubber_and_tray_indicator->bits.tray1_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//		break;
+//	case 6:
+//				Tray1_Mark[2].x = AxisX.current_pos;
+//				Tray1_Mark[2].y = AxisY.current_pos;
+//				Mark[10] =  Tray1_Mark[2].x;
+//				Mark[11] =  Tray1_Mark[2].y;
+//				data[5] =  Tray1_Mark[2].raw;
+//				Rubber_and_tray_indicator->bits.tray1_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//		break;
+//	}
+	 switch(__builtin_ffs(Rubber_and_tray_indicator->all))
+	    {
+	        case 4:
+	            Rubber_and_tray_indicator->bits.tray1_p1 =  SaveMark(Tray1_Mark, 0, 9, 3);
+	            break;
+	        case 5:
+	            Rubber_and_tray_indicator->bits.tray1_p2 = SaveMark(Tray1_Mark, 1, 12, 4);
+	            break;
+	        case 6:
+	            Rubber_and_tray_indicator->bits.tray1_p3 = SaveMark(Tray1_Mark, 2, 15, 5);
+	            break;
+	        default:
+	            return;
+	    }
 
-		break;
-	case 5:
-				Tray1_Mark[1].x = AxisX.current_pos;
-				Tray1_Mark[1].y = AxisY.current_pos;
-				Mark[8] =  Tray1_Mark[1].x;
-				Mark[9] =  Tray1_Mark[1].y;
-				data[4] =  Tray1_Mark[1].raw;
-				Rubber_and_tray_indicator->bits.tray1_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-		break;
-	case 6:
-				Tray1_Mark[2].x = AxisX.current_pos;
-				Tray1_Mark[2].y = AxisY.current_pos;
-				Mark[10] =  Tray1_Mark[2].x;
-				Mark[11] =  Tray1_Mark[2].y;
-				data[5] =  Tray1_Mark[2].raw;
-				Rubber_and_tray_indicator->bits.tray1_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-		break;
-	}
 	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
 }
 void Handle_save3(void){
-	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
-	case 7:
-				Tray2_Mark[0].x = AxisX.current_pos;
-				Tray2_Mark[0].y = AxisY.current_pos;
-				Mark[12] =  Tray2_Mark[0].x;
-				Mark[13] =  Tray2_Mark[0].y;
-				data[6] =  Tray2_Mark[0].raw;
-				Rubber_and_tray_indicator->bits.tray2_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-		break;
-	case 8:
-				Tray2_Mark[1].x = AxisX.current_pos;
-				Tray2_Mark[1].y = AxisY.current_pos;
-				Mark[14] =  Tray2_Mark[1].x;
-				Mark[15] =  Tray2_Mark[1].y;
-				data[7] =  Tray2_Mark[1].raw;
-				Rubber_and_tray_indicator->bits.tray2_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-		break;
-	case 9:
-				Tray2_Mark[2].x = AxisX.current_pos;
-				Tray2_Mark[2].y = AxisY.current_pos;
-				Mark[16] =  Tray2_Mark[2].x;
-				Mark[17] =  Tray2_Mark[2].y;
-				data[8] =  Tray2_Mark[2].raw;
-				Rubber_and_tray_indicator->bits.tray2_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-		break;
-	}
+//	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
+//	case 7:
+//				Tray2_Mark[0].x = AxisX.current_pos;
+//				Tray2_Mark[0].y = AxisY.current_pos;
+//				Mark[12] =  Tray2_Mark[0].x;
+//				Mark[13] =  Tray2_Mark[0].y;
+//				data[6] =  Tray2_Mark[0].raw;
+//				Rubber_and_tray_indicator->bits.tray2_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//		break;
+//	case 8:
+//				Tray2_Mark[1].x = AxisX.current_pos;
+//				Tray2_Mark[1].y = AxisY.current_pos;
+//				Mark[14] =  Tray2_Mark[1].x;
+//				Mark[15] =  Tray2_Mark[1].y;
+//				data[7] =  Tray2_Mark[1].raw;
+//				Rubber_and_tray_indicator->bits.tray2_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//		break;
+//	case 9:
+//				Tray2_Mark[2].x = AxisX.current_pos;
+//				Tray2_Mark[2].y = AxisY.current_pos;
+//				Mark[16] =  Tray2_Mark[2].x;
+//				Mark[17] =  Tray2_Mark[2].y;
+//				data[8] =  Tray2_Mark[2].raw;
+//				Rubber_and_tray_indicator->bits.tray2_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
+//		break;
+//	}
+	switch(__builtin_ffs(Rubber_and_tray_indicator->all))
+	    {
+	        case 7:
+	            Rubber_and_tray_indicator->bits.tray2_p1 =  SaveMark(Tray2_Mark, 0, 18, 6);
+	            break;
+	        case 8:
+	            Rubber_and_tray_indicator->bits.tray2_p2 =  SaveMark(Tray2_Mark, 1, 21, 7);
+	            break;
+	        case 9:
+	            Rubber_and_tray_indicator->bits.tray2_p3 =  SaveMark(Tray2_Mark, 2, 24, 8);
+	            break;
+	        default:
+	            return;
+	    }
+
 	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
 }
 /**
@@ -464,39 +530,40 @@ void Handle_tray2_p3(void){
  */
 void Move_tray_rubber_p1(void){
 		Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
-		move_axis(Mark[0], Mark[1], AxisZ.current_pos);
+//		move_axis(Mark[0], Mark[1], Mark[2]);
+		move_axis(Rubber_Mark[0].x, Rubber_Mark[0].y, Rubber_Mark[0].z);
 }
 void Move_tray_rubber_p2(void){
 		Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
-		move_axis(Mark[2], Mark[3], AxisZ.current_pos);
+		move_axis(Rubber_Mark[1].x,Rubber_Mark[1].y, Rubber_Mark[1].z);
 }
 void Move_tray_rubber_p3(void){
 		Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
-		move_axis(Mark[4], Mark[5], AxisZ.current_pos);
+		move_axis(Rubber_Mark[2].x, Rubber_Mark[2].y, Rubber_Mark[2].z);
 }
 void Move_tray1_p1(void){
 		Rubber_and_tray->bits.tray1_p1 = 0 ;
-		move_axis(Mark[6], Mark[7], AxisZ.current_pos);
+		move_axis(Tray1_Mark[0].x,Tray1_Mark[0].y,Tray1_Mark[0].z);
 }
 void Move_tray1_p2(void){
 		Rubber_and_tray->bits.tray1_p2 = 0 ;
-		move_axis(Mark[8], Mark[9], AxisZ.current_pos);
+		move_axis(Tray1_Mark[1].x, Tray1_Mark[1].y, Tray1_Mark[1].z);
 }
 void Move_tray1_p3(void){
 		Rubber_and_tray->bits.tray1_p3 = 0 ;
-		move_axis(Mark[10], Mark[11], AxisZ.current_pos);
+		move_axis(Tray1_Mark[2].x, Tray1_Mark[2].y, Tray1_Mark[2].z);
 }
 void Move_tray2_p1(void){
 		Rubber_and_tray->bits.tray2_p1 = 0 ;
-		move_axis(Mark[12], Mark[13], AxisZ.current_pos);
+		move_axis(Tray2_Mark[0].x, Tray2_Mark[0].y, Tray2_Mark[0].z);
 }
 void Move_tray2_p2(void){
 		Rubber_and_tray->bits.tray2_p2 = 0 ;
-		move_axis(Mark[14], Mark[15], AxisZ.current_pos);
+		move_axis(Tray2_Mark[1].x, Tray2_Mark[1].y, Tray2_Mark[1].z);
 }
 void Move_tray2_p3(void){
 		Rubber_and_tray->bits.tray2_p3 = 0 ;
-		move_axis(Mark[16], Mark[17], AxisZ.current_pos);
+		move_axis(Tray2_Mark[2].x, Tray2_Mark[2].y, Tray2_Mark[2].z);
 }
 
 /**

@@ -135,12 +135,69 @@ void Handle_setting(void){
 
 extern uint16_t rubber_pair;
 // tab main
-void Handle_reset(void){
-	//Tab_main_indicator->bits.set =  1 ;
-	rubber_pair =  Holding_Registers_Database[3];
-	Holding_Registers_Database[3] = 0 ;
-	Clear_mark_rubber(rubber_pair);
 
+uint16_t GetRubberPairIndex(int index)
+{
+    if(index < 0 || index >= 200)
+        return RUBBER_TOTAL;
+
+    int row = index / RUBBER_COLS;
+    int col = index % RUBBER_COLS;
+    if(row % 2 != 0)
+    return RUBBER_TOTAL;
+    int pair_row = row / 2;
+
+    return pair_row * RUBBER_COLS + col+1;
+}
+
+void Handle_reset(void){
+	Tab_main->bits.set = 0;
+	uint16_t index = Holding_Registers_Database[3] - 1;
+	uint16_t getrubberpair = GetRubberPairIndex(index);
+	if(getrubberpair >= RUBBER_TOTAL_PAIRS)
+	{
+	    Holding_Registers_Database[3] = 0;
+	    return;
+	}
+	else
+	{
+	    uint16_t tmp = index;
+	    uint16_t tmp1 = index + RUBBER_COLS;
+
+	    uint16_t row = tmp / RUBBER_COLS;
+	    uint16_t col = tmp % RUBBER_COLS;
+
+	    uint16_t pair_row = row / 2;
+
+	    uint16_t row0_start = (row * RUBBER_COLS);
+	    uint16_t row0_end   = row0_start + RUBBER_COLS;
+
+	    uint16_t row1_start = (row + 1) * RUBBER_COLS;
+	    uint16_t row1_end   = row1_start + RUBBER_COLS;
+
+	    Holding_Registers_Database[3] = 0;
+
+	    /* zigzag phải -> trái */
+	    if(pair_row & 1)
+	    {
+	    	rubber_pair = pair_row * RUBBER_COLS + (RUBBER_COLS - 1 - col) ;
+	        Clear_mark_rubber_from2(tmp+1, row1_start);
+	        Clear_mark_rubber_from2(tmp1+1, row1_end);
+	        Clear_mark_rubber_from2(0, row0_start);
+	        Mark_rubber_from2(row0_start, tmp);
+	        Mark_rubber_from2(row1_start, tmp1);
+	        Mark_rubber_from2(row1_end, RUBBER_TOTAL);
+	    }
+	    /* zigzag trái -> phải */
+	    else
+	    {
+	    	rubber_pair = pair_row * RUBBER_COLS + col;
+	        Clear_mark_rubber_from2(0, tmp);
+	        Clear_mark_rubber_from2(row1_start, tmp1);
+	        Mark_rubber_from2(tmp, row1_start);
+	        Mark_rubber_from2(tmp1, RUBBER_TOTAL);
+	    }
+	}
 }
 void Handle_start(void){
 	if(SystemFlag.is_homing || Tab_main_indicator->bits.start ){

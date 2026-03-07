@@ -600,6 +600,8 @@ void application_init(){
 
 		HAL_Delay(7000);
 		Mark_all_rubber();
+//		Clear_all_tray1();
+//		Clear_all_tray1();
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
 		Taskbar->bits.home = 1 ;
 		Read_Tray_Data();
@@ -617,6 +619,7 @@ void application_init(){
 		reset_counter_timer_slave_y();
 		reset_counter_timer_z();
 		reset_counter_timer_slave_z();
+
 		//Try_go_home();
 
 }

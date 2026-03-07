@@ -157,7 +157,13 @@ typedef struct
 #define Mark_all_rubber()  		(SetBit(&Inputs_Database[3], 0, 200))
 #define Mark_rubber(f) 			(SetBit(&Inputs_Database[3], f, 1))
 #define Clear_mark_rubber(f) 	(ClearBit(&Inputs_Database[3], f, 1))
+//#define Clear_mark_rubber_from2(x,y)	(ClearBit(&Inputs_Database[3], (x), (y-x)))
+//#define Mark_rubber_from2(x,y)	(SetBit(&Inputs_Database[3], (x), (y-x)))
+#define Clear_mark_rubber_from2(x,y) \
+    do{ if((y) > (x)) ClearBit(&Inputs_Database[3], (x), (y)-(x)); }while(0)
 
+#define Mark_rubber_from2(x,y) \
+    do{ if((y) > (x)) SetBit(&Inputs_Database[3], (x), (y)-(x)); }while(0)
 #define Clear_all_tray1() 	(ClearBit(&Inputs_Database[28], 0, 24))
 #define Mark_tray1(f) 			(SetBit(&Inputs_Database[28], f, 1))
 #define Clear_mark_tray1(f) 	(ClearBit(&Inputs_Database[28], f, 1))

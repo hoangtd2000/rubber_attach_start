@@ -18,7 +18,7 @@
 
 #define RUBBER_COLS 20
 #define RUBBER_ROWS 10 // luôn là số chẵn
-
+#define RUBBER_TOTAL 200
 #define TRAY_COLS   4
 #define TRAY_ROWS   6
 

@@ -158,6 +158,12 @@ typedef struct
 #define Mark_rubber(f) 			(SetBit(&Inputs_Database[3], f, 1))
 #define Clear_mark_rubber(f) 	(ClearBit(&Inputs_Database[3], f, 1))
 
+#define Set_item_rubber(f)      (SetBit(&Inputs_Database[3], f, 200 - f))
+#define Clear_item_rubber(f)    (ClearBit(&Inputs_Database[3], 0, f - 1))
+
+#define Set_item_tray(f)      (SetBit(&Inputs_Database[4], f, 48 - f))
+#define Clear_item_tray(f)    (ClearBit(&Inputs_Database[4], 0, f - 1))
+
 #define Clear_all_tray1() 	(ClearBit(&Inputs_Database[28], 0, 24))
 #define Mark_tray1(f) 			(SetBit(&Inputs_Database[28], f, 1))
 #define Clear_mark_tray1(f) 	(ClearBit(&Inputs_Database[28], f, 1))
@@ -192,7 +198,7 @@ void Handle_main(void);
 void Handle_motor(void);
 void Handle_setting(void);
 //tab main
-void Handle_reset(void);
+void Handle_set(void);
 void Handle_start(void);
 void Handle_stop(void);
 //tab_motor

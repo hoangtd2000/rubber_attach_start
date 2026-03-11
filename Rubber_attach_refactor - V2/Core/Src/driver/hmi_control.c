@@ -18,19 +18,18 @@ Rubber_and_tray_t* Rubber_and_tray  = (Rubber_and_tray_t*)&Coils_Database[3];
 Rubber_and_tray_indicator_t* Rubber_and_tray_indicator = (Rubber_and_tray_indicator_t*)&Inputs_Database[1];
 Control_Vacum_Indicator_t* Control_Vacum_Indicator = (Control_Vacum_Indicator_t*)&Inputs_Database[2];
 Popup_Indicator_t* Popup_Indicator = (Popup_Indicator_t*)&Inputs_Database[34];
-Point2D Rubber_Mark[3];
-Point2D Tray1_Mark[3];
-Point2D Tray2_Mark[3];
+Point3D Rubber_Mark[3];
+Point3D Tray1_Mark[3];
+Point3D Tray2_Mark[3];
 uint16_t* Mark = &Holding_Registers_Database[6];
 uint32_t data[10];
 const uint32_t FlashStart = 0x0800C000;
 
 extern Axis_t AxisX, AxisY, AxisZ;
-extern Point2D Rubber_Tray[200];
-extern Point2D Tray1[30];
-extern Point2D Tray2[30];
+extern Point3D Rubber_Tray[200];
+extern Point3D Tray1[30];
+extern Point3D Tray2[30];
 
-volatile uint8_t flag_handle = 0;
 volatile SystemFlag_t SystemFlag={
 		.is_homing = 0 ,
 		.is_start = 0,
@@ -38,13 +37,11 @@ volatile SystemFlag_t SystemFlag={
 		.is_err = 0,
 };
 
-
 ActionHandler_t Tab_main_table[] =  {
-		 Handle_reset,
+		 Handle_set,
 		 Handle_start,
 		 Handle_stop,
 };
-
 
 ActionHandler_t Tab_motor_table[] =  {
 		 Handle_X_Left,
@@ -135,7 +132,7 @@ void Handle_setting(void){
 
 
 // tab main
-void Handle_reset(void){
+void Handle_set(void){
 	Tab_main_indicator->bits.reset =  1 ;
 }
 void Handle_start(void){
@@ -145,9 +142,7 @@ void Handle_start(void){
 	}
 	SystemFlag.is_err = 0 ;
 	Tab_main_indicator->bits.start =  1 ;
-
-	flag_handle = 1;
-	//Handle();
+	Handle();
 }
 void Handle_stop(void){
 	if(!SystemFlag.is_err  && !Tab_main_indicator->bits.stop && Tab_main_indicator->bits.start){

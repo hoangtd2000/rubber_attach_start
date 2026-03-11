@@ -44,7 +44,6 @@
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
@@ -71,14 +70,13 @@ static void MX_TIM3_Init(void);
 static void MX_TIM9_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
-static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern volatile uint8_t flag_handle;
+
 /* USER CODE END 0 */
 
 /**
@@ -120,7 +118,6 @@ int main(void)
   MX_TIM9_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
-  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   application_init();
 
@@ -135,25 +132,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	LL_TIM_SetAutoReload( TIM5, 4);
-//	LL_TIM_SetAutoReload( TIM9, 5);
-//	LL_TIM_SetAutoReload( TIM2, 6);
-//	HAL_TIM_OC_Start(&htim8, TIM_CHANNEL_1);
-//	HAL_TIM_OC_Start(&htim3, TIM_CHANNEL_3);
-//	HAL_TIM_OC_Start(&htim1, TIM_CHANNEL_1);
-//	Set_Speed_Motor_x(fx , frequency_x_max);
-//	Set_Speed_Motor_y(fy , 60000);
-//	Set_Speed_Motor_z(fz , 60000);
-//	fx += 10000;
-//	fy += 10000;
-//	fz += 10000;
-//	  HAL_Delay(500);
-	//  application_run();
-//	  task_timer6();
-	  if(flag_handle){
-		  flag_handle = 0;
-		  Handle();
-	  }
 	  application_run_main();
 
 
@@ -250,7 +228,7 @@ static void MX_TIM1_Init(void)
   htim1.Init.Period = 100;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
@@ -359,7 +337,7 @@ static void MX_TIM3_Init(void)
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 100;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -382,51 +360,6 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
-
-}
-
-/**
-  * @brief TIM4 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM4_Init(void)
-{
-
-  /* USER CODE BEGIN TIM4_Init 0 */
-
-  /* USER CODE END TIM4_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM4_Init 1 */
-
-  /* USER CODE END TIM4_Init 1 */
-  htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 83;
-  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 1000;
-  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM4_Init 2 */
-
-  /* USER CODE END TIM4_Init 2 */
 
 }
 
@@ -577,7 +510,7 @@ static void MX_TIM8_Init(void)
   htim8.Init.Period = 100;
   htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim8.Init.RepetitionCounter = 0;
-  htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_PWM_Init(&htim8) != HAL_OK)
   {
     Error_Handler();
@@ -721,8 +654,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, O13_Pin|O11_Pin|O12_Pin, GPIO_PIN_SET);
@@ -763,16 +696,22 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : i1_home_x_Pin i2_home_y_Pin i3_home_z_Pin i4_start_Pin
-                           i5_stop_Pin PC5 */
+                           i5_stop_Pin i6_vacum3_Pin */
   GPIO_InitStruct.Pin = i1_home_x_Pin|i2_home_y_Pin|i3_home_z_Pin|i4_start_Pin
-                          |i5_stop_Pin|GPIO_PIN_5;
+                          |i5_stop_Pin|i6_vacum3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : i9_pressure_Pin PE8 PE9 i12_vacum1_Pin
+  /*Configure GPIO pins : i7_vacum4_Pin i8_vacum5_Pin */
+  GPIO_InitStruct.Pin = i7_vacum4_Pin|i8_vacum5_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : i9_pressure_Pin i10_vacum6_Pin PE9 i12_vacum1_Pin
                            i13_vacum2_Pin i15_Door_R_Pin i17_reset_Pin */
-  GPIO_InitStruct.Pin = i9_pressure_Pin|GPIO_PIN_8|GPIO_PIN_9|i12_vacum1_Pin
+  GPIO_InitStruct.Pin = i9_pressure_Pin|i10_vacum6_Pin|GPIO_PIN_9|i12_vacum1_Pin
                           |i13_vacum2_Pin|i15_Door_R_Pin|i17_reset_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;

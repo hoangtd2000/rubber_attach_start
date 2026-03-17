@@ -78,7 +78,7 @@ typedef struct {
 
 extern Cylinder_Vacum_Init_t Handle_Pick[2];
 extern Cylinder_Vacum_Init_t Handle_Release[2];
-
+void Handler_picker(uint8_t id, uint16_t state);
 void SetBips(uint8_t numBips);
 void BipControl(void);
 void SetPickRubber(uint8_t vacum_id);

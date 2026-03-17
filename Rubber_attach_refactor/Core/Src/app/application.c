@@ -39,6 +39,12 @@ uint16_t rubber_pair  = 0;   // đếm cặp trên khuôn cao su (0..99)
 uint16_t tray_index   = 0;   // đếm số cặp đã bỏ vào tray (0..23)
 uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
+uint32_t t_start = 0;
+uint32_t t_end = 0;
+double t_cycletime = 0;
+uint32_t total = 0;
+
+
 
 static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count)
 {
@@ -47,6 +53,18 @@ static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count)
         dst[i*3 + 0] = src[i].x;
         dst[i*3 + 1] = src[i].y;
         dst[i*3 + 2] = src[i].z;
+    }
+}
+
+void LoadMarkFromFlash(Point3D *mark,
+                       uint32_t *flashData,
+                       uint8_t offset,
+                       uint8_t count)
+{
+    for(uint8_t i = 0; i < count; i++)
+
+    {
+        mark[i].raw = flashData[i + offset];
     }
 }
 
@@ -289,6 +307,7 @@ void Handle(void)
 				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, Rubber[ry * RUBBER_COLS + rx].z);
 				wait_handler_stop();
 			//	delay_us(1000);
+				t_start = Timer_get();
 				machine_state = ST_PICK1;
 				break;
 			}
@@ -451,6 +470,10 @@ void Handle(void)
 			{
 			    if (Handle_Release[1].result == OK)
 			    {
+			    	t_end = Timer_get();
+			    	t_cycletime = (double)(t_end - t_start) / 10.0;
+			    	Holding_Registers_Database[41] = t_cycletime;
+			    	Holding_Registers_Database[42] += 2;
 			        machine_state = ST_NEXT_PAIR;
 			    }
 			    else if (Handle_Release[1].result == NG)
@@ -576,13 +599,13 @@ void PlaceToTray(Point3D *tray, uint8_t tray_id, int index)
     count_tray[tray_id]++;
     if(tray_id == 0){
         Mark_tray1(index);
-        Input_Registers_Database[3] = count_tray[0];
+   //     Input_Registers_Database[3] = count_tray[0];
   //      Mark_tray1_working(count_tray[0]);
 
     } else {
         Mark_tray2(index);
     //    Mark_tray2_working(count_tray[1]) ;
-        Input_Registers_Database[4] = count_tray[1];
+    //    Input_Registers_Database[4] = count_tray[1];
     }
     move_axis1(tray[index].x, tray[index].y, tray[index].z);
     wait_handler_stop();
@@ -603,7 +626,7 @@ void application_init(){
 //		Clear_all_tray1();
 //		Clear_all_tray1();
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
-		Taskbar->bits.home = 1 ;
+		Taskbar->bits.main = 1 ;
 		Read_Tray_Data();
 		HAL_TIM_Base_Start_IT(&htim5); //x
 		HAL_TIM_Base_Start_IT(&htim9); //y
@@ -621,6 +644,10 @@ void application_init(){
 		reset_counter_timer_slave_z();
 
 		//Try_go_home();
+		  SystemFlag.is_homing = 0 ;
+		  SystemFlag.is_err = 0 ;
+		  SystemFlag.is_start = 0 ;
+		  SystemFlag.is_stop = 0;
 
 }
 void Try_go_home(){
@@ -632,18 +659,21 @@ void Try_go_home(){
 	  }else {
 		  AxisZ.mode = MOVE_HOME1;
 	  }
+	  Home_process_z();
 		while((AxisZ.mode != MOVE_HOME3));
-	  while((AxisZ.mode != STOP));
+		while((AxisZ.mode != STOP));
 	  if(get_home_x() == home_x){
 		  AxisX.mode = MOVE_HOME2;
 	  }else{
 		  AxisX.mode = MOVE_HOME1;
 	  }
+	  Home_process_x();
 	  if(get_home_y() == home_y){
 		  AxisY.mode = MOVE_HOME2;
 	  }else{
 		  AxisY.mode = MOVE_HOME1;
 	  }
+	  Home_process_y();
 	  wait_handler_stop();
 	  Close_Popup(popup_home);
 	  SystemFlag.is_homing = 0 ;
@@ -653,15 +683,15 @@ void Try_go_home(){
 }
 
 void application_run_main(void){
-//	  if(Timer_Check(0, 500)){
-//		  OFF_LED_RED;
-//		  TOGGLE_LED_GREEN;
-//	  }
-//	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
-//		  OFF_LED_GREEN;
-//		  TOGGLE_LED_RED;
-//	  }
-		if(Taskbar->bits.home){
+	  if(Timer_Check(0, 500)){
+		  OFF_LED_RED;
+		  TOGGLE_LED_GREEN;
+	  }
+	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
+		  OFF_LED_GREEN;
+		  TOGGLE_LED_RED;
+	  }
+		if(Taskbar->bits.main){
 			Handle_main();
 		}else if(Taskbar->bits.motor){
 			Handle_motor();
@@ -673,19 +703,19 @@ void application_run_main(void){
 
 
 void task_timer6(){
-//	if(Taskbar->bits.home){
-//		Handle_main();
-//	}else if(Taskbar->bits.motor){
-//		Handle_motor();
-//	}
-	  if(Timer_Check(0, 500)){
-		  OFF_LED_RED;
-		  TOGGLE_LED_GREEN;
-	  }
-	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
-		  OFF_LED_GREEN;
-		  TOGGLE_LED_RED;
-	  }
+////	if(Taskbar->bits.home){
+////		Handle_main();
+////	}else if(Taskbar->bits.motor){
+////		Handle_motor();
+////	}
+//	  if(Timer_Check(0, 500)){
+//		  OFF_LED_RED;
+//		  TOGGLE_LED_GREEN;
+//	  }
+//	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
+//		  OFF_LED_GREEN;
+//		  TOGGLE_LED_RED;
+//	  }
 }
 void task_timer7(){
 	Control_motor_y();

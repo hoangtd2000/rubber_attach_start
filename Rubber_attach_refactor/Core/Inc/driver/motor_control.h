@@ -195,6 +195,10 @@ void Stop_motor_x(void);
 void Stop_motor_y(void);
 void Stop_motor_z(void);
 
+void Home_process_x(void);
+void Home_process_y(void);
+void Home_process_z(void);
+
 void wait_handler_stop();
 void move_axis(uint16_t xd, uint16_t yd, uint16_t zd);
 void move_axis1(uint16_t xd, uint16_t yd, uint16_t zd);

@@ -225,6 +225,7 @@ void EXTI0_IRQHandler(void)
 			output_x_pull_stop();
 			reset_counter_timer_slave_x();
 			AxisX.mode = MOVE_HOME2;
+			Home_process_x();
 			AxisX.current_pos = 0;
 			Set_HMI_X_Axis(AxisX.current_pos);
 			AxisX.old_pos = 0;
@@ -259,6 +260,7 @@ void EXTI1_IRQHandler(void)
 			output_y_pull_stop();
 			reset_counter_timer_slave_y();
 			AxisY.mode = MOVE_HOME2;
+			Home_process_y();
 			AxisY.current_pos = 0;
 			Set_HMI_Y_Axis(AxisY.current_pos);
 			AxisY.old_pos = 0;
@@ -293,6 +295,7 @@ void EXTI2_IRQHandler(void)
 			output_z_pull_stop();
 			reset_counter_timer_slave_z();
 			AxisZ.mode = MOVE_HOME2;
+			Home_process_z();
 			AxisZ.current_pos = 0;
 			Set_HMI_Z_Axis(AxisZ.current_pos);
 			AxisZ.old_pos = 0;
@@ -371,23 +374,6 @@ void DMA1_Stream5_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI line[9:5] interrupts.
-  */
-void EXTI9_5_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-
-  /* USER CODE END EXTI9_5_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
-  HAL_GPIO_EXTI_IRQHandler(i9_pressure_Pin);
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
-  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
-
-  /* USER CODE END EXTI9_5_IRQn 1 */
-}
-
-/**
   * @brief This function handles TIM1 break interrupt and TIM9 global interrupt.
   */
 void TIM1_BRK_TIM9_IRQHandler(void)
@@ -440,36 +426,7 @@ void USART2_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-	//dong
-//	if(HAL_GPIO_ReadPin(i14_Door_L_GPIO_Port, i14_Door_L_Pin)){
-//		//		HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin,SET);
-//				 AxisX.mode =  AxisX.pre_mode;
-//				 AxisY.mode =  AxisY.pre_mode;
-//				 AxisZ.mode =  AxisZ.pre_mode;
-//					HAL_TIM_Base_Start_IT(&htim6);
-//					HAL_TIM_Base_Start_IT(&htim7);
-//			}
-//	//mo
-//	else{
-//		//HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin, RESET);
-//		HAL_TIM_Base_Stop_IT(&htim6);
-//		HAL_TIM_Base_Stop_IT(&htim7);
-//		AxisX.pre_mode = AxisX.mode;
-//		AxisY.pre_mode = AxisY.mode;
-//		AxisZ.pre_mode = AxisZ.mode;
-//		if(AxisX.mode == MOVE_AUTO){
-//			AxisX.mode = MOVE_MANUAL;
-//		}
-//		if(AxisY.mode == MOVE_AUTO){
-//			AxisY.mode = MOVE_MANUAL;
-//		}
-//		if(AxisZ.mode == MOVE_AUTO){
-//			AxisZ.mode = MOVE_MANUAL;
-//		}
-//			Stop_motor_x();
-//			Stop_motor_y();
-//			Stop_motor_z();
-//	}
+
   /* USER CODE END EXTI15_10_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(i12_vacum1_Pin);
   HAL_GPIO_EXTI_IRQHandler(i13_vacum2_Pin);
@@ -503,6 +460,7 @@ void TIM5_IRQHandler(void)
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+	Tick++;
 	task_timer6();
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
@@ -517,7 +475,7 @@ void TIM6_DAC_IRQHandler(void)
 void TIM7_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM7_IRQn 0 */
-  Tick++;
+
   task_timer7();
   /* USER CODE END TIM7_IRQn 0 */
   HAL_TIM_IRQHandler(&htim7);

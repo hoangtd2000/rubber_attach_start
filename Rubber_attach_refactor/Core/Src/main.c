@@ -444,7 +444,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 83;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 10000;
+  htim6.Init.Period = 1000;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -669,8 +669,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, O13_Pin|O11_Pin|O12_Pin, GPIO_PIN_SET);
@@ -711,17 +711,33 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : i1_home_x_Pin i2_home_y_Pin i3_home_z_Pin i4_start_Pin
-                           i5_stop_Pin PC5 */
+                           i5_stop_Pin */
   GPIO_InitStruct.Pin = i1_home_x_Pin|i2_home_y_Pin|i3_home_z_Pin|i4_start_Pin
-                          |i5_stop_Pin|GPIO_PIN_5;
+                          |i5_stop_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : i9_pressure_Pin PE8 PE9 i12_vacum1_Pin
-                           i13_vacum2_Pin i15_Door_R_Pin i17_reset_Pin */
-  GPIO_InitStruct.Pin = i9_pressure_Pin|GPIO_PIN_8|GPIO_PIN_9|i12_vacum1_Pin
-                          |i13_vacum2_Pin|i15_Door_R_Pin|i17_reset_Pin;
+  /*Configure GPIO pin : i6_vacum1_Pin */
+  GPIO_InitStruct.Pin = i6_vacum1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(i6_vacum1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : i7_vacum2_Pin i8_vacum3_Pin */
+  GPIO_InitStruct.Pin = i7_vacum2_Pin|i8_vacum3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : i9_vacum4_Pin i10_vacum5_Pin PE9 */
+  GPIO_InitStruct.Pin = i9_vacum4_Pin|i10_vacum5_Pin|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : i12_vacum1_Pin i13_vacum2_Pin i15_Door_R_Pin i17_reset_Pin */
+  GPIO_InitStruct.Pin = i12_vacum1_Pin|i13_vacum2_Pin|i15_Door_R_Pin|i17_reset_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -772,9 +788,6 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI4_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 4, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);

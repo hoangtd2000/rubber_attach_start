@@ -12,4 +12,5 @@
 void delay_us(uint32_t us);
 uint32_t millis(void);
 uint8_t Timer_Check(uint8_t id, uint32_t interval);
+uint32_t Timer_get(void);
 #endif /* INC_TICK_H_ */

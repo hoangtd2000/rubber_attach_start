@@ -9,14 +9,21 @@
 #include "hmi_control.h"
 
 Taskbar_t* Taskbar = (Taskbar_t*)&Coils_Database[0];
-Tab_popup_t* Tab_popup = (Tab_popup_t*)&Coils_Database[6];
-Tab_main_t* Tab_main = (Tab_main_t*)&Coils_Database[5];
-Tab_main_t* Tab_main_indicator = (Tab_main_t*) &Inputs_Database[0];
-Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[1];
-Cylinder_and_save_t* Cylinder_and_save = (Cylinder_and_save_t*)&Coils_Database[2];
-Rubber_and_tray_t* Rubber_and_tray  = (Rubber_and_tray_t*)&Coils_Database[3];
+Tab_main_t* Tab_main = (Tab_main_t*)&Coils_Database[1];
+Control_motor_t* Control_motor = (Control_motor_t*)&Coils_Database[2];
+Savepoint_and_picker_t* Savepoint_and_picker = (Savepoint_and_picker_t*)&Coils_Database[3];
+Tab_setting_t* Tab_setting =  (Tab_setting_t*)&Coils_Database[8];
+Choose_model_t* Choose_model = (Choose_model_t*)&Coils_Database[9];
 Rubber_and_tray_indicator_t* Rubber_and_tray_indicator = (Rubber_and_tray_indicator_t*)&Inputs_Database[1];
-Control_Vacum_Indicator_t* Control_Vacum_Indicator = (Control_Vacum_Indicator_t*)&Inputs_Database[2];
+
+Tab_popup_t* Tab_popup = (Tab_popup_t*)&Coils_Database[6];
+
+Tab_main_t* Tab_main_indicator = (Tab_main_t*) &Inputs_Database[0];
+
+Savepoint_and_picker_indicator_t* Savepoint_and_picker_indicator = (Savepoint_and_picker_indicator_t*)&Inputs_Database[1];
+
+State_picker_t* State_picker = (State_picker_t*)&Holding_Registers_Database[33];
+
 Popup_Indicator_t* Popup_Indicator = (Popup_Indicator_t*)&Inputs_Database[34];
 Point3D Rubber_Mark[3];
 Point3D Tray1_Mark[3];
@@ -39,7 +46,7 @@ volatile SystemFlag_t SystemFlag={
 
 
 ActionHandler_t Tab_main_table[] =  {
-		 Handle_reset,
+		 Handle_set,
 		 Handle_start,
 		 Handle_stop,
 };
@@ -52,16 +59,12 @@ ActionHandler_t Tab_motor_table[] =  {
 		 Handle_Y_Forward,
 		 Handle_Z_Up,
 		 Handle_Z_Down,
-		 Handle_Set,
+		 Handle_Origin,
 		 Handle_Home,
-		 Handle_pick_handler1,
-		 Handle_release_handler1,
-		 Handle_pick_handler2,
-		 Handle_release_handler2,
-		 Handle_save1,
-		 Handle_save2,
-		 Handle_save3,
-		 Handle_load,
+		 Handle_save_trayrubber,
+		 Handle_save_tray1,
+		 Handle_save_tray2,
+		 Handle_move,
 		 Handle_tray_rubber_p1,
 		 Handle_tray_rubber_p2,
 		 Handle_tray_rubber_p3,
@@ -71,6 +74,12 @@ ActionHandler_t Tab_motor_table[] =  {
 		 Handle_tray2_p1,
 		 Handle_tray2_p2,
 		 Handle_tray2_p3,
+		 Handle_picker1,
+		 Handle_picker2,
+		 Handle_picker3,
+		 Handle_picker4,
+		 Handle_picker5,
+		 Handle_picker6,
 };
 
 
@@ -87,15 +96,12 @@ ActionHandler_t Move_tray_table[] =  {
 };
 
  void Set_HMI_X_Axis(uint16_t value){
-	// Input_Registers_Database[11] = value;
 	 Holding_Registers_Database[0] = value;
 }
  void Set_HMI_Y_Axis(uint16_t value){
-	// Input_Registers_Database[12] = value ;
 	 Holding_Registers_Database[1] = value;
 }
 void Set_HMI_Z_Axis(uint16_t value){
-	//Input_Registers_Database[13] = value ;
 	Holding_Registers_Database[2] = value;
 }
 
@@ -120,7 +126,7 @@ void Handle_main(void){
 		}
 }
 void Handle_motor(void){
-	uint8_t builtin_Handle_motor = __builtin_ffs(Rubber_and_tray->all << 16 | Cylinder_and_save->all<< 8 | Control_motor->all);
+	uint8_t builtin_Handle_motor = __builtin_ffs(Savepoint_and_picker->all<< 8 | Control_motor->all);
 		if (builtin_Handle_motor > 0) {
 			builtin_Handle_motor -= 1;
 		    if (builtin_Handle_motor < (int)(sizeof(Tab_motor_table) / sizeof(Tab_motor_table[0]))) {
@@ -129,8 +135,16 @@ void Handle_motor(void){
 		}
 }
 void Handle_setting(void){
-
+	if(Tab_setting->bits.set_model){
+		if(Choose_model->bits.a16){
+		Holding_Registers_Database[39]= 1;
+		}
+		if(Choose_model->bits.a17){
+		Holding_Registers_Database[39]= 2;
+		}
+	}
 }
+
 
 
 extern uint16_t rubber_pair;
@@ -150,7 +164,7 @@ uint16_t GetRubberPairIndex(int index)
     return pair_row * RUBBER_COLS + col+1;
 }
 
-void Handle_reset(void){
+void Handle_set(void){
 	Tab_main->bits.set = 0;
 	uint16_t index = Holding_Registers_Database[3] - 1;
 	uint16_t getrubberpair = GetRubberPairIndex(index);
@@ -274,38 +288,64 @@ void Handle_Z_Down(void){
 
 }
 
-void Handle_Set(void){
+void Handle_Origin(void){
 	if(AxisX.mode == STOP && AxisY.mode == STOP && AxisZ.mode == STOP ){
 	move_axis(Get_HMI_X_Axis(),Get_HMI_Y_Axis(), Get_HMI_Z_Axis());
 	}
 }
 void Handle_Home(void){
+//	SystemFlag.is_homing = 1 ;
+//	Open_Popup(popup_home);
+//	 Cylinder1_Go_Up;
+//	 Cylinder2_Go_Up;
+//	if(get_home_z() != home_z){
+//		if(AxisZ.mode == STOP ){
+//			if(AxisZ.current_pos >0){
+//			AxisZ.mode = MOVE_HOME1;
+//				}
+//			}
+//	}
+//	while(AxisZ.current_pos > 3000);
+//	if(get_home_x() != home_x){
+//		if(AxisX.mode == STOP ){
+//			if(AxisX.current_pos >0){
+//				AxisX.mode = MOVE_HOME1;
+//				}
+//			}
+//	}
+//	if(get_home_y() != home_y){
+//		if(AxisY.mode == STOP ){
+//			if(AxisY.current_pos > 0){
+//			AxisY.mode = MOVE_HOME1;
+//				}
+//			}
+//	}
+//	  wait_handler_stop();
+//	  SystemFlag.is_homing = 0 ;
+//	  Close_Popup(popup_home);
 	SystemFlag.is_homing = 1 ;
-	Open_Popup(popup_home);
-	 Cylinder1_Go_Up;
-	 Cylinder2_Go_Up;
-	if(get_home_z() != home_z){
-		if(AxisZ.mode == STOP ){
-			if(AxisZ.current_pos >0){
-			AxisZ.mode = MOVE_HOME1;
-				}
-			}
-	}
-	while(AxisZ.current_pos > 3000);
-	if(get_home_x() != home_x){
-		if(AxisX.mode == STOP ){
-			if(AxisX.current_pos >0){
-				AxisX.mode = MOVE_HOME1;
-				}
-			}
-	}
-	if(get_home_y() != home_y){
-		if(AxisY.mode == STOP ){
-			if(AxisY.current_pos > 0){
-			AxisY.mode = MOVE_HOME1;
-				}
-			}
-	}
+		Open_Popup(popup_home);
+
+	  if(get_home_z() == home_z){
+		  AxisZ.mode = MOVE_HOME2;
+	  }else {
+		  AxisZ.mode = MOVE_HOME1;
+	  }
+	  Home_process_z();
+		while((AxisZ.mode != MOVE_HOME3));
+		while((AxisZ.mode != STOP));
+	  if(get_home_x() == home_x){
+		  AxisX.mode = MOVE_HOME2;
+	  }else{
+		  AxisX.mode = MOVE_HOME1;
+	  }
+	  Home_process_x();
+	  if(get_home_y() == home_y){
+		  AxisY.mode = MOVE_HOME2;
+	  }else{
+		  AxisY.mode = MOVE_HOME1;
+	  }
+	  Home_process_y();
 	  wait_handler_stop();
 	  SystemFlag.is_homing = 0 ;
 	  Close_Popup(popup_home);
@@ -313,30 +353,30 @@ void Handle_Home(void){
 
 
 
-void Handle_pick_handler1(void){
-	//PickRubber1(0);
-	SetPickRubber(0);
-	while(Handle_Pick[0].state != IDLE);
-	Control_Vacum_Indicator->bits.pick1 = !Handle_Pick[0].result ;
-
-}
-void Handle_release_handler1(void){
-	//ReleaseRubber1(0);
-	SetReleaseRubber(0);
-	if(Handle_Release[0].state != IDLE);
-	Control_Vacum_Indicator->bits.release1 = Handle_Release[0].result;
-}
-void Handle_pick_handler2(void){
-	SetPickRubber(1);
-	while(Handle_Pick[1].state != IDLE);
-	Control_Vacum_Indicator->bits.pick2 = !Handle_Pick[1].result;
-}
-void Handle_release_handler2(void){
-	//ReleaseRubber1(1);
-	SetReleaseRubber(1);
-	while(Handle_Release[1].state != IDLE);
-	Control_Vacum_Indicator->bits.release2 = Handle_Release[1].result;
-}
+//void Handle_pick_handler1(void){
+//	//PickRubber1(0);
+//	SetPickRubber(0);
+//	while(Handle_Pick[0].state != IDLE);
+//	Control_Vacum_Indicator->bits.pick1 = !Handle_Pick[0].result ;
+//
+//}
+//void Handle_release_handler1(void){
+//	//ReleaseRubber1(0);
+//	SetReleaseRubber(0);
+//	if(Handle_Release[0].state != IDLE);
+//	Control_Vacum_Indicator->bits.release1 = Handle_Release[0].result;
+//}
+//void Handle_pick_handler2(void){
+//	SetPickRubber(1);
+//	while(Handle_Pick[1].state != IDLE);
+//	Control_Vacum_Indicator->bits.pick2 = !Handle_Pick[1].result;
+//}
+//void Handle_release_handler2(void){
+//	//ReleaseRubber1(1);
+//	SetReleaseRubber(1);
+//	while(Handle_Release[1].state != IDLE);
+//	Control_Vacum_Indicator->bits.release2 = Handle_Release[1].result;
+//}
 
 /**
  * @brief Nhóm hàm lưu các điểm chuẩn Rubber, Tray1, Tray2 (P1, P2, P3)
@@ -372,36 +412,8 @@ static uint8_t SaveMark(Point3D *markArray,
     return Flash_Write_Data(FlashStart, (uint64_t*)data, 10);
 }
 
-void Handle_save1(void){
-
-//	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
-//	case 1:
-//		Rubber_Mark[0].x = AxisX.current_pos;
-//		Rubber_Mark[0].y = AxisY.current_pos;
-//		Mark[0] =  Rubber_Mark[0].x;
-//		Mark[1] =  Rubber_Mark[0].y;
-//		data[0] =  Rubber_Mark[0].raw;
-//
-//		Rubber_and_tray_indicator->bits.tray_rubber_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//		break;
-//	case 2:
-//		Rubber_Mark[1].x = AxisX.current_pos;
-//		Rubber_Mark[1].y = AxisY.current_pos;
-//		Mark[2] =  Rubber_Mark[1].x;
-//		Mark[3] =  Rubber_Mark[1].y;
-//		data[1] =  Rubber_Mark[1].raw;
-//		Rubber_and_tray_indicator->bits.tray_rubber_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//		break;
-//	case 3:
-//		Rubber_Mark[2].x = AxisX.current_pos;
-//		Rubber_Mark[2].y = AxisY.current_pos;
-//		Mark[4] =  Rubber_Mark[2].x;
-//		Mark[5] =  Rubber_Mark[2].y;
-//		data[2] =  Rubber_Mark[2].raw;
-//		Rubber_and_tray_indicator->bits.tray_rubber_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//		break;
-//	}
-//	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
+void Handle_save_trayrubber(void){
+	Savepoint_and_picker->bits.save_trayrubber = 0 ;
 	 switch(__builtin_ffs(Rubber_and_tray_indicator->all))
 	    {
 	        case 1:
@@ -420,34 +432,8 @@ void Handle_save1(void){
 	    Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark,
 	                               RUBBER_ROWS, RUBBER_COLS);
 }
-void Handle_save2(void){
-//	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
-//	case 4:
-//				Tray1_Mark[0].x = AxisX.current_pos;
-//				Tray1_Mark[0].y = AxisY.current_pos;
-//				Mark[6] =  Tray1_Mark[0].x;
-//				Mark[7] =  Tray1_Mark[0].y;
-//				data[3] =  Tray1_Mark[0].raw;
-//				Rubber_and_tray_indicator->bits.tray1_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//
-//		break;
-//	case 5:
-//				Tray1_Mark[1].x = AxisX.current_pos;
-//				Tray1_Mark[1].y = AxisY.current_pos;
-//				Mark[8] =  Tray1_Mark[1].x;
-//				Mark[9] =  Tray1_Mark[1].y;
-//				data[4] =  Tray1_Mark[1].raw;
-//				Rubber_and_tray_indicator->bits.tray1_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//		break;
-//	case 6:
-//				Tray1_Mark[2].x = AxisX.current_pos;
-//				Tray1_Mark[2].y = AxisY.current_pos;
-//				Mark[10] =  Tray1_Mark[2].x;
-//				Mark[11] =  Tray1_Mark[2].y;
-//				data[5] =  Tray1_Mark[2].raw;
-//				Rubber_and_tray_indicator->bits.tray1_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//		break;
-//	}
+void Handle_save_tray1(void){
+	Savepoint_and_picker->bits.save_tray1 = 0;
 	 switch(__builtin_ffs(Rubber_and_tray_indicator->all))
 	    {
 	        case 4:
@@ -465,33 +451,8 @@ void Handle_save2(void){
 
 	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
 }
-void Handle_save3(void){
-//	switch(__builtin_ffs(Rubber_and_tray_indicator->all)){
-//	case 7:
-//				Tray2_Mark[0].x = AxisX.current_pos;
-//				Tray2_Mark[0].y = AxisY.current_pos;
-//				Mark[12] =  Tray2_Mark[0].x;
-//				Mark[13] =  Tray2_Mark[0].y;
-//				data[6] =  Tray2_Mark[0].raw;
-//				Rubber_and_tray_indicator->bits.tray2_p1 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//		break;
-//	case 8:
-//				Tray2_Mark[1].x = AxisX.current_pos;
-//				Tray2_Mark[1].y = AxisY.current_pos;
-//				Mark[14] =  Tray2_Mark[1].x;
-//				Mark[15] =  Tray2_Mark[1].y;
-//				data[7] =  Tray2_Mark[1].raw;
-//				Rubber_and_tray_indicator->bits.tray2_p2 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//		break;
-//	case 9:
-//				Tray2_Mark[2].x = AxisX.current_pos;
-//				Tray2_Mark[2].y = AxisY.current_pos;
-//				Mark[16] =  Tray2_Mark[2].x;
-//				Mark[17] =  Tray2_Mark[2].y;
-//				data[8] =  Tray2_Mark[2].raw;
-//				Rubber_and_tray_indicator->bits.tray2_p3 = Flash_Write_Data (FlashStart, (uint32_t*)data, 10);
-//		break;
-//	}
+void Handle_save_tray2(void){
+	Savepoint_and_picker->bits.save_tray2 = 0;
 	switch(__builtin_ffs(Rubber_and_tray_indicator->all))
 	    {
 	        case 7:
@@ -528,47 +489,47 @@ void Handle_save3(void){
 void Handle_tray_rubber_p1(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray_rubber_p1 = 1;
-	Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
+	Savepoint_and_picker->bits.tray_rubber_p1 = 0 ;
 }
 void Handle_tray_rubber_p2(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray_rubber_p2 = 1;
-	Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
+	Savepoint_and_picker->bits.tray_rubber_p2 = 0 ;
 }
 void Handle_tray_rubber_p3(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray_rubber_p3 = 1;
-	Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
+	Savepoint_and_picker->bits.tray_rubber_p3 = 0 ;
 }
 void Handle_tray1_p1(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray1_p1 = 1;
-	Rubber_and_tray->bits.tray1_p1 = 0 ;
+	Savepoint_and_picker->bits.tray1_p1 = 0 ;
 }
 void Handle_tray1_p2(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray1_p2 = 1;
-	Rubber_and_tray->bits.tray1_p2 = 0 ;
+	Savepoint_and_picker->bits.tray1_p2 = 0 ;
 }
 void Handle_tray1_p3(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray1_p3 = 1;
-	Rubber_and_tray->bits.tray1_p3 = 0 ;
+	Savepoint_and_picker->bits.tray1_p3 = 0 ;
 }
 void Handle_tray2_p1(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray2_p1 = 1;
-	Rubber_and_tray->bits.tray2_p1 = 0 ;
+	Savepoint_and_picker->bits.tray2_p1 = 0 ;
 }
 void Handle_tray2_p2(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray2_p2 = 1;
-	Rubber_and_tray->bits.tray2_p2 = 0 ;
+	Savepoint_and_picker->bits.tray2_p2 = 0 ;
 }
 void Handle_tray2_p3(void){
 	Clear_Rubber_and_tray_indicator();
 	Rubber_and_tray_indicator->bits.tray2_p3 = 1;
-	Rubber_and_tray->bits.tray2_p3 = 0 ;
+	Savepoint_and_picker->bits.tray2_p3 = 0 ;
 }
 
 
@@ -591,40 +552,39 @@ void Handle_tray2_p3(void){
  * - Không kiểm tra trạng thái trục (được kiểm soát ở tầng gọi)
  */
 void Move_tray_rubber_p1(void){
-		Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
-//		move_axis(Mark[0], Mark[1], Mark[2]);
+		//Rubber_and_tray->bits.tray_rubber_p1 = 0 ;
 		move_axis(Rubber_Mark[0].x, Rubber_Mark[0].y, Rubber_Mark[0].z);
 }
 void Move_tray_rubber_p2(void){
-		Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
+	//	Rubber_and_tray->bits.tray_rubber_p2 = 0 ;
 		move_axis(Rubber_Mark[1].x,Rubber_Mark[1].y, Rubber_Mark[1].z);
 }
 void Move_tray_rubber_p3(void){
-		Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
+		//Rubber_and_tray->bits.tray_rubber_p3 = 0 ;
 		move_axis(Rubber_Mark[2].x, Rubber_Mark[2].y, Rubber_Mark[2].z);
 }
 void Move_tray1_p1(void){
-		Rubber_and_tray->bits.tray1_p1 = 0 ;
+	//	Rubber_and_tray->bits.tray1_p1 = 0 ;
 		move_axis(Tray1_Mark[0].x,Tray1_Mark[0].y,Tray1_Mark[0].z);
 }
 void Move_tray1_p2(void){
-		Rubber_and_tray->bits.tray1_p2 = 0 ;
+		//Rubber_and_tray->bits.tray1_p2 = 0 ;
 		move_axis(Tray1_Mark[1].x, Tray1_Mark[1].y, Tray1_Mark[1].z);
 }
 void Move_tray1_p3(void){
-		Rubber_and_tray->bits.tray1_p3 = 0 ;
+		//Rubber_and_tray->bits.tray1_p3 = 0 ;
 		move_axis(Tray1_Mark[2].x, Tray1_Mark[2].y, Tray1_Mark[2].z);
 }
 void Move_tray2_p1(void){
-		Rubber_and_tray->bits.tray2_p1 = 0 ;
+		//Rubber_and_tray->bits.tray2_p1 = 0 ;
 		move_axis(Tray2_Mark[0].x, Tray2_Mark[0].y, Tray2_Mark[0].z);
 }
 void Move_tray2_p2(void){
-		Rubber_and_tray->bits.tray2_p2 = 0 ;
+		//Rubber_and_tray->bits.tray2_p2 = 0 ;
 		move_axis(Tray2_Mark[1].x, Tray2_Mark[1].y, Tray2_Mark[1].z);
 }
 void Move_tray2_p3(void){
-		Rubber_and_tray->bits.tray2_p3 = 0 ;
+		//Rubber_and_tray->bits.tray2_p3 = 0 ;
 		move_axis(Tray2_Mark[2].x, Tray2_Mark[2].y, Tray2_Mark[2].z);
 }
 
@@ -648,7 +608,7 @@ void Move_tray2_p3(void){
  * - __builtin_ffs() trả về vị trí bit đầu tiên = 1 (bắt đầu từ 1)
  * - test_builtin1 được giảm 1 để map đúng index mảng Move_tray_table[]
  */
-void Handle_load(void){
+void Handle_move(void){
 	int test_builtin1 = __builtin_ffs(Rubber_and_tray_indicator->all);
 		if (test_builtin1 > 0) {
 		    test_builtin1 -= 1;
@@ -657,9 +617,38 @@ void Handle_load(void){
 		    		Move_tray_table[test_builtin1]();
 		    		wait_handler_stop();
 		    		Clear_Rubber_and_tray_indicator();
-		        	Cylinder_and_save->bits.load = 0;
+		    		Rubber_and_tray_indicator->bits.move = 0 ;
 				}
 		    }
 		}
-		Cylinder_and_save->bits.load = 0;
+		Savepoint_and_picker->bits.move = 0;
+}
+
+
+
+
+
+void Handle_picker1(void){
+	Handler_picker(0,State_picker->state_picker1 );
+	State_picker->state_picker1 = 0 ;
+}
+void Handle_picker2(void){
+	Handler_picker(1,State_picker->state_picker2 );
+	State_picker->state_picker2 = 0 ;
+}
+void Handle_picker3(void){
+	Handler_picker(2,State_picker->state_picker3);
+	State_picker->state_picker3 = 0 ;
+}
+void Handle_picker4(void){
+	Handler_picker(3,State_picker->state_picker4);
+	State_picker->state_picker4 = 0 ;
+}
+void Handle_picker5(void){
+	Handler_picker(4,State_picker->state_picker5);
+	State_picker->state_picker5 = 0 ;
+}
+void Handle_picker6(void){
+	Handler_picker(5,State_picker->state_picker6);
+	State_picker->state_picker6 = 0 ;
 }

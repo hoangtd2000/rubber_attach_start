@@ -16,6 +16,61 @@ uint16_t TimeDelayBip = 0;
 Cylinder_Vacum_Init_t Handle_Pick[2];
 Cylinder_Vacum_Init_t Handle_Release[2];
 
+typedef struct
+{
+    GPIO_TypeDef *down_port;
+    uint16_t down_pin;
+
+//    GPIO_TypeDef *up_port;
+//    uint16_t up_pin;
+
+    GPIO_TypeDef *pick_port;
+    uint16_t pick_pin;
+
+//    GPIO_TypeDef *release_port;
+//    uint16_t release_pin;
+} HandlerIO;
+
+HandlerIO handler_io[6] =
+{
+		{O1_GPIO_Port, O1_Pin, O3_GPIO_Port, O3_Pin},
+		{O2_GPIO_Port, O2_Pin, O4_GPIO_Port, O4_Pin},
+		{O13_GPIO_Port, O13_Pin, O5_GPIO_Port, O5_Pin},
+		{O14_GPIO_Port, O14_Pin, O6_GPIO_Port, O6_Pin},
+		{O15_GPIO_Port, O15_Pin, O7_GPIO_Port, O7_Pin},
+		{O16_GPIO_Port, O16_Pin, O8_GPIO_Port, O8_Pin},
+};
+
+void Handler_picker(uint8_t id, uint16_t state)
+{
+    HandlerIO *io = &handler_io[id];
+
+    switch(state)
+    {
+        case 1: // down
+            HAL_GPIO_WritePin(io->down_port, io->down_pin, GPIO_PIN_RESET);
+            break;
+
+        case 2: // up
+        	 HAL_GPIO_WritePin(io->down_port, io->down_pin, GPIO_PIN_SET);
+          //  HAL_GPIO_WritePin(io->up_port, io->up_pin, GPIO_PIN_SET);
+            break;
+
+        case 4: // pick
+            HAL_GPIO_WritePin(io->pick_port, io->pick_pin, GPIO_PIN_RESET);
+            break;
+
+        case 8: // RELEASE
+           // HAL_GPIO_WritePin(io->release_port, io->release_pin, GPIO_PIN_SET);
+        	 HAL_GPIO_WritePin(io->pick_port, io->pick_pin, GPIO_PIN_SET);
+            break;
+    }
+}
+
+
+
+
+
 void SetBips(uint8_t numBips){
 	NumberBips = numBips - 1;
 }

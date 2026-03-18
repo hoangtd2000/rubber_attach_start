@@ -673,10 +673,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, O13_Pin|O11_Pin|O12_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, O14_Pin|O15_Pin|O16_Pin|O17_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, O13_Pin|O14_Pin|O15_Pin|O16_Pin
+                          |O17_Pin|O11_Pin|O12_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, O18_Pin|output_x_sig_Pin|output_z_sig_Pin, GPIO_PIN_RESET);
@@ -689,10 +687,8 @@ static void MX_GPIO_Init(void)
                           |O5_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, O6_Pin|O10_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, O7_Pin|O8_Pin|O9_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, O6_Pin|O7_Pin|O8_Pin|O9_Pin
+                          |O10_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : O13_Pin O14_Pin O15_Pin O16_Pin
                            O17_Pin O11_Pin O12_Pin */

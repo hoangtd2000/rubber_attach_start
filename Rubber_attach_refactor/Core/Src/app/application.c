@@ -643,11 +643,11 @@ void application_init(){
 		reset_counter_timer_z();
 		reset_counter_timer_slave_z();
 
-		//Try_go_home();
-		  SystemFlag.is_homing = 0 ;
-		  SystemFlag.is_err = 0 ;
-		  SystemFlag.is_start = 0 ;
-		  SystemFlag.is_stop = 0;
+		Try_go_home();
+//		  SystemFlag.is_homing = 0 ;
+//		  SystemFlag.is_err = 0 ;
+//		  SystemFlag.is_start = 0 ;
+//		  SystemFlag.is_stop = 0;
 
 }
 void Try_go_home(){

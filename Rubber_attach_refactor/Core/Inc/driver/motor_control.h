@@ -175,6 +175,15 @@ void Set_Speed_Motor_x(uint16_t f, uint16_t f_max);
 void Set_Speed_Motor_y(uint16_t f, uint16_t f_max);
 void Set_Speed_Motor_z(uint16_t f, uint16_t f_max);
 
+uint16_t Get_speed_x(void);
+uint16_t Get_speed_y(void);
+uint16_t Get_speed_z(void);
+
+void Set_speed_x(uint16_t speed);
+void Set_speed_y(uint16_t speed);
+void Set_speed_z(uint16_t speed);
+
+
 void move_x_left(uint16_t d);
 void move_x_right(uint16_t d);
 void move_y_forward(uint16_t d);

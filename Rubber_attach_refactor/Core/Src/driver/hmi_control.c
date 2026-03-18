@@ -135,14 +135,21 @@ void Handle_motor(void){
 		}
 }
 void Handle_setting(void){
-	if(Tab_setting->bits.set_model){
-		if(Choose_model->bits.a16){
-		Holding_Registers_Database[39]= 1;
-		}
-		if(Choose_model->bits.a17){
-		Holding_Registers_Database[39]= 2;
-		}
-	}
+//	if(Tab_setting->bits.set_model){
+//		Tab_setting->bits.set_model = 0;
+//		if(Choose_model->bits.a16){
+//		Holding_Registers_Database[39]= 1;
+//		}
+//		if(Choose_model->bits.a17){
+//		Holding_Registers_Database[39]= 2;
+//		}
+//	}
+
+//	if(Tab_setting->bits.reset_total){
+//		Tab_setting->bits.reset_total = 0;
+//		Holding_Registers_Database[42] = 0;
+//	}
+
 }
 
 

@@ -92,8 +92,9 @@ typedef struct {
 typedef union {
     struct {
         uint8_t set_model					: 1;
-        uint8_t set_speed				: 1;
-        uint8_t reset				: 1;
+        uint8_t reset_total				: 1;
+        uint8_t save_model				: 1;
+        uint8_t save_speed				:1;
     } bits;
     uint8_t all;
 }Tab_setting_t;

@@ -82,17 +82,31 @@
 
 #define max_x 55000U
 #define max_y 33500U
+
+
+
+//may1
 #define max_z_tray 10000U
-#define max_z_rubber 9900U
-#define max_z 	(10000U)
+#define max_z_rubber 9600U
+//may2
+//#define max_z_tray 10700U
+//#define max_z_rubber 9900U
+////may3
+//#define max_z_tray 10000U
+//#define max_z_rubber 9600U
+
+#define max_z 	(12000U)
 #define z_up    0U
+
+
+
 
 #define speed_x_max (50000U)
 #define speed_y_max (50000U)
 #define speed_z_max (5000U)
 
 #define speed_default (50U)
-#define speed_run     (40000U)
+#define speed_run     (25000U)
 #define speed_run_z 	(5000U)
 
 #define speed_home1 	(4000U)

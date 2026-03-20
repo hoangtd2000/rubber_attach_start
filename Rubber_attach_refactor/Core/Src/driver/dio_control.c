@@ -18,12 +18,13 @@ Cylinder_Vacum_Init_t Handle_Release[2];
 
 typedef struct
 {
+	//xilanh
     GPIO_TypeDef *down_port;
     uint16_t down_pin;
 
 //    GPIO_TypeDef *up_port;
 //    uint16_t up_pin;
-
+// vacum
     GPIO_TypeDef *pick_port;
     uint16_t pick_pin;
 
@@ -33,12 +34,12 @@ typedef struct
 
 HandlerIO handler_io[6] =
 {
-		{O1_GPIO_Port, O1_Pin, O3_GPIO_Port, O3_Pin},
-		{O2_GPIO_Port, O2_Pin, O4_GPIO_Port, O4_Pin},
-		{O13_GPIO_Port, O13_Pin, O5_GPIO_Port, O5_Pin},
-		{O14_GPIO_Port, O14_Pin, O6_GPIO_Port, O6_Pin},
-		{O15_GPIO_Port, O15_Pin, O7_GPIO_Port, O7_Pin},
-		{O16_GPIO_Port, O16_Pin, O8_GPIO_Port, O8_Pin},
+		{O1_GPIO_Port, O1_Pin, O7_GPIO_Port, O7_Pin},
+		{O2_GPIO_Port, O2_Pin, O8_GPIO_Port, O8_Pin},
+		{O3_GPIO_Port, O3_Pin, O9_GPIO_Port, O9_Pin},
+		{O4_GPIO_Port, O4_Pin, O10_GPIO_Port, O10_Pin},
+		{O5_GPIO_Port, O5_Pin, O11_GPIO_Port, O11_Pin},
+		{O6_GPIO_Port, O6_Pin, O12_GPIO_Port, O12_Pin},
 };
 
 void Handler_picker(uint8_t id, uint16_t state)

@@ -376,7 +376,7 @@ void Handle(void)
 			{
 		    	SetReleaseRubber(0);
 		    	SetReleaseRubber(1);
-		    	delay_us(500);
+		    	delay_us(800);
 				SystemFlag.is_err = 0 ;
 		        rubber_pair++;   // bỏ cả cặp lỗi
 		        //while(Handle_Release[0].state != IDLE && Handle_Release[1].state != IDLE);

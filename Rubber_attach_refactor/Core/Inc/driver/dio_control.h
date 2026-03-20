@@ -11,35 +11,45 @@
 #include "main.h"
 #include "application.h"
 
-#define ON_BUZZ 			HAL_GPIO_WritePin(O12_GPIO_Port, O12_Pin, 0)
-#define OFF_BUZZ			HAL_GPIO_WritePin(O12_GPIO_Port, O12_Pin, 1)
-#define TOGGLE_BUZZ 		HAL_GPIO_TogglePin(O12_GPIO_Port, O12_Pin)
+#define ON_BUZZ 			HAL_GPIO_WritePin(O15_GPIO_Port, O15_Pin, 0)
+#define OFF_BUZZ			HAL_GPIO_WritePin(O15_GPIO_Port, O15_Pin, 1)
+#define TOGGLE_BUZZ 		HAL_GPIO_TogglePin(O15_GPIO_Port, O15_Pin)
 
-#define ON_LED_RED 			HAL_GPIO_WritePin(O11_GPIO_Port, O11_Pin, 0)
-#define OFF_LED_RED 		HAL_GPIO_WritePin(O11_GPIO_Port, O11_Pin, 1)
-#define TOGGLE_LED_RED 		HAL_GPIO_TogglePin(O11_GPIO_Port, O11_Pin)
+#define ON_LED_RED 			HAL_GPIO_WritePin(O14_GPIO_Port, O14_Pin, 0)
+#define OFF_LED_RED 		HAL_GPIO_WritePin(O14_GPIO_Port, O14_Pin, 1)
+#define TOGGLE_LED_RED 		HAL_GPIO_TogglePin(O14_GPIO_Port, O14_Pin)
 
-#define ON_LED_GREEN 		HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, 0)
-#define OFF_LED_GREEN 		HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, 1)
-#define TOGGLE_LED_GREEN 	HAL_GPIO_TogglePin(O10_GPIO_Port, O10_Pin)
+#define ON_LED_GREEN 		HAL_GPIO_WritePin(O13_GPIO_Port, O13_Pin, 0)
+#define OFF_LED_GREEN 		HAL_GPIO_WritePin(O13_GPIO_Port, O13_Pin, 1)
+#define TOGGLE_LED_GREEN 	HAL_GPIO_TogglePin(O13_GPIO_Port, O13_Pin)
 
 #define Cylinder1_Go_Down 	HAL_GPIO_WritePin(O1_GPIO_Port, O1_Pin, 0)
 #define Cylinder1_Go_Up 	HAL_GPIO_WritePin(O1_GPIO_Port, O1_Pin, 1)
 #define Cylinder2_Go_Down 	HAL_GPIO_WritePin(O2_GPIO_Port, O2_Pin, 0)
 #define Cylinder2_Go_Up 	HAL_GPIO_WritePin(O2_GPIO_Port, O2_Pin, 1)
 
-#define Vacum1_Pick_On		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, 0)
-#define Vacum1_Pick_Off		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, 1)
-#define Vacum1_Release_On	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, 0)
-#define Vacum1_Release_Off	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, 1)
+//#define Vacum1_Pick_On		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, 0)
+//#define Vacum1_Pick_Off		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, 1)
+//#define Vacum1_Release_On	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, 0)
+//#define Vacum1_Release_Off	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, 1)
+//
+//#define Vacum2_Pick_On		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, 0)
+//#define Vacum2_Pick_Off		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, 1)
+//#define Vacum2_Release_On	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 0)
+//#define Vacum2_Release_Off	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 1)
 
-#define Vacum2_Pick_On		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, 0)
-#define Vacum2_Pick_Off		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, 1)
-#define Vacum2_Release_On	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 0)
-#define Vacum2_Release_Off	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, 1)
+#define Vacum1_Pick_On		HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin, 0)
+#define Vacum1_Pick_Off		HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin, 1)
+#define Vacum1_Release_On	HAL_GPIO_WritePin(O9_GPIO_Port, O9_Pin, 0)
+#define Vacum1_Release_Off	HAL_GPIO_WritePin(O9_GPIO_Port, O9_Pin, 1)
 
-#define Is_Vacum1_Pick		HAL_GPIO_ReadPin(i12_vacum1_GPIO_Port, i12_vacum1_Pin)
-#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(i13_vacum2_GPIO_Port, i13_vacum2_Pin)
+#define Vacum2_Pick_On		HAL_GPIO_WritePin(O8_GPIO_Port, O8_Pin, 0)
+#define Vacum2_Pick_Off		HAL_GPIO_WritePin(O8_GPIO_Port, O8_Pin, 1)
+#define Vacum2_Release_On	HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, 0)
+#define Vacum2_Release_Off	HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, 1)
+
+#define Is_Vacum1_Pick		HAL_GPIO_ReadPin(i6_vacum1_GPIO_Port, i6_vacum1_Pin)
+#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(i7_vacum2_GPIO_Port, i7_vacum2_Pin)
 
 //#define DOOR_OPEN()         (!HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) || !HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin))
 #define DOOR_OPEN()         (!HAL_GPIO_ReadPin(i14_Door_L_GPIO_Port, i14_Door_L_Pin))

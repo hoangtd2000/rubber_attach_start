@@ -17,6 +17,7 @@
 #include "motor_control.h"
 
 
+
 typedef union {
     struct {
     	uint8_t main                : 1;
@@ -68,12 +69,18 @@ typedef union {
         uint8_t tray2_p1			: 1;
         uint8_t tray2_p2			: 1;
         uint8_t tray2_p3			: 1;
-        uint8_t picker1				: 1;
-        uint8_t picker2				: 1;
-        uint8_t picker3				: 1;
-        uint8_t picker4				: 1;
-        uint8_t picker5				: 1;
-        uint8_t picker6				: 1;
+        uint8_t xilanh1				: 1;
+        uint8_t xilanh2				: 1;
+        uint8_t xilanh3				: 1;
+        uint8_t xilanh4				: 1;
+        uint8_t xilanh5				: 1;
+        uint8_t xilanh6				: 1;
+        uint8_t vacum1				: 1;
+        uint8_t vacum2				: 1;
+        uint8_t vacum3				: 1;
+        uint8_t vacum4				: 1;
+        uint8_t vacum5				: 1;
+        uint8_t vacum6				: 1;
     } bits;
     uint32_t all;
 }Savepoint_and_picker_t;
@@ -88,6 +95,26 @@ typedef struct {
         uint16_t state_picker5	;
         uint16_t state_picker6	;
 }State_picker_t;
+
+
+typedef union {
+    struct {
+        uint8_t xilanh1					: 1;
+        uint8_t xilanh2					: 1;
+        uint8_t xilanh3					: 1;
+        uint8_t xilanh4					: 1;
+        uint8_t xilanh5					: 1;
+        uint8_t xilanh6					: 1;
+        uint8_t vacum1					: 1;
+        uint8_t vacum2					: 1;
+        uint8_t vacum3					: 1;
+        uint8_t vacum4					: 1;
+        uint8_t vacum5					: 1;
+        uint8_t vacum6					: 1;
+    } bits;
+    uint16_t all;
+}xilanh_and_vacum_indicator_t;
+
 
 typedef union {
     struct {
@@ -261,6 +288,19 @@ void Handle_picker4(void);
 void Handle_picker5(void);
 void Handle_picker6(void);
 
+void Handle_xilanh1(void);
+void Handle_xilanh2(void);
+void Handle_xilanh3(void);
+void Handle_xilanh4(void);
+void Handle_xilanh5(void);
+void Handle_xilanh6(void);
+
+void Handle_vacum1(void);
+void Handle_vacum2(void);
+void Handle_vacum3(void);
+void Handle_vacum4(void);
+void Handle_vacum5(void);
+void Handle_vacum6(void);
 
 
 void Move_tray_rubber_p1(void);
@@ -272,5 +312,9 @@ void Move_tray1_p3(void);
 void Move_tray2_p1(void);
 void Move_tray2_p2(void);
 void Move_tray2_p3(void);
+
+
+void Reset_xilanh(void);
+
 
 #endif /* INC_DRIVER_HMI_CONTROL_H_ */

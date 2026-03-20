@@ -23,7 +23,7 @@ Tab_main_t* Tab_main_indicator = (Tab_main_t*) &Inputs_Database[0];
 Savepoint_and_picker_indicator_t* Savepoint_and_picker_indicator = (Savepoint_and_picker_indicator_t*)&Inputs_Database[1];
 
 State_picker_t* State_picker = (State_picker_t*)&Holding_Registers_Database[33];
-
+xilanh_and_vacum_indicator_t* xilanh_and_vacum_indicator = (xilanh_and_vacum_indicator_t*)&Inputs_Database[35];
 Popup_Indicator_t* Popup_Indicator = (Popup_Indicator_t*)&Inputs_Database[34];
 Point3D Rubber_Mark[3];
 Point3D Tray1_Mark[3];
@@ -61,6 +61,8 @@ ActionHandler_t Tab_motor_table[] =  {
 		 Handle_Z_Down,
 		 Handle_Origin,
 		 Handle_Home,
+};
+ActionHandler_t Save_and_picker_table[] =  {
 		 Handle_save_trayrubber,
 		 Handle_save_tray1,
 		 Handle_save_tray2,
@@ -74,12 +76,18 @@ ActionHandler_t Tab_motor_table[] =  {
 		 Handle_tray2_p1,
 		 Handle_tray2_p2,
 		 Handle_tray2_p3,
-		 Handle_picker1,
-		 Handle_picker2,
-		 Handle_picker3,
-		 Handle_picker4,
-		 Handle_picker5,
-		 Handle_picker6,
+		  Handle_xilanh1,
+		  Handle_xilanh2,
+		  Handle_xilanh3,
+		  Handle_xilanh4,
+		  Handle_xilanh5,
+		  Handle_xilanh6,
+		  Handle_vacum1,
+		  Handle_vacum2,
+		  Handle_vacum3,
+		  Handle_vacum4,
+		  Handle_vacum5,
+		  Handle_vacum6
 };
 
 
@@ -126,13 +134,21 @@ void Handle_main(void){
 		}
 }
 void Handle_motor(void){
-	uint8_t builtin_Handle_motor = __builtin_ffs(Savepoint_and_picker->all<< 8 | Control_motor->all);
+	uint8_t builtin_Handle_motor = __builtin_ffs( Control_motor->all);
 		if (builtin_Handle_motor > 0) {
 			builtin_Handle_motor -= 1;
 		    if (builtin_Handle_motor < (int)(sizeof(Tab_motor_table) / sizeof(Tab_motor_table[0]))) {
 		    	Tab_motor_table[builtin_Handle_motor]();
 		    }
 		}
+
+		uint8_t builtin_Handle_save_and_picker = __builtin_ffs(Savepoint_and_picker->all);
+			if (builtin_Handle_save_and_picker > 0) {
+				builtin_Handle_save_and_picker -= 1;
+			    if (builtin_Handle_save_and_picker < (int)(sizeof(Save_and_picker_table) / sizeof(Save_and_picker_table[0]))) {
+			    	Save_and_picker_table[builtin_Handle_save_and_picker]();
+			    }
+			}
 }
 void Handle_setting(void){
 //	if(Tab_setting->bits.set_model){
@@ -617,10 +633,14 @@ void Move_tray2_p3(void){
  */
 void Handle_move(void){
 	int test_builtin1 = __builtin_ffs(Rubber_and_tray_indicator->all);
+
 		if (test_builtin1 > 0) {
 		    test_builtin1 -= 1;
 		    if (test_builtin1 < (int)(sizeof(Move_tray_table) / sizeof(Move_tray_table[0]))) {
 		    	if(AxisX.mode == STOP && AxisY.mode == STOP && AxisZ.mode == STOP ){
+		    		Reset_xilanh();
+		    		delay_us(200);
+		    		//wait_handler_stop();
 		    		Move_tray_table[test_builtin1]();
 		    		wait_handler_stop();
 		    		Clear_Rubber_and_tray_indicator();
@@ -635,27 +655,116 @@ void Handle_move(void){
 
 
 
-void Handle_picker1(void){
-	Handler_picker(0,State_picker->state_picker1 );
-	State_picker->state_picker1 = 0 ;
+//void Handle_picker1(void){
+//	Handler_picker(0,State_picker->state_picker1 );
+//	//Holding_Registers_Database[33] = 0;
+//	//State_picker->state_picker1 = 0 ;
+//	//Savepoint_and_picker->bits.picker1 = 0 ;
+//}
+//void Handle_picker2(void){
+//	Handler_picker(1,State_picker->state_picker2 );
+//	//Holding_Registers_Database[34] = 0 ;
+//	//State_picker->state_picker2 = 0 ;
+//	//Savepoint_and_picker->bits.picker2 = 0 ;
+//}
+//void Handle_picker3(void){
+//	Handler_picker(2,State_picker->state_picker3);
+//	//Holding_Registers_Database[35]= 0 ;
+//	//State_picker->state_picker3 = 0 ;
+//	//Savepoint_and_picker->bits.picker3 = 0 ;
+//}
+//void Handle_picker4(void){
+//	Handler_picker(3,State_picker->state_picker4);
+////	Holding_Registers_Database[36] = 0 ;
+//	//State_picker->state_picker4 = 0 ;
+//	//Savepoint_and_picker->bits.picker4 = 0 ;
+//}
+//void Handle_picker5(void){
+//	Handler_picker(4,State_picker->state_picker5);
+////	Holding_Registers_Database[37] = 0 ;
+//	//State_picker->state_picker5 = 0 ;
+//	//Savepoint_and_picker->bits.picker5 = 0 ;
+//}
+//void Handle_picker6(void){
+//	Handler_picker(5,State_picker->state_picker6);
+////	Holding_Registers_Database[38] = 0 ;
+////	State_picker->state_picker6 = 0 ;
+//	//Savepoint_and_picker->bits.picker6 = 0 ;
+//}
+
+
+void Handle_xilanh1(void){
+	xilanh_and_vacum_indicator->bits.xilanh1 ^= 1;
+	HAL_GPIO_WritePin(O1_GPIO_Port, O1_Pin, !xilanh_and_vacum_indicator->bits.xilanh1);
+	Savepoint_and_picker->bits.xilanh1 = 0 ;
 }
-void Handle_picker2(void){
-	Handler_picker(1,State_picker->state_picker2 );
-	State_picker->state_picker2 = 0 ;
+void Handle_xilanh2(void){
+	xilanh_and_vacum_indicator->bits.xilanh2 ^= 1;
+	HAL_GPIO_WritePin(O2_GPIO_Port, O2_Pin, !xilanh_and_vacum_indicator->bits.xilanh2);
+	Savepoint_and_picker->bits.xilanh2 = 0 ;
 }
-void Handle_picker3(void){
-	Handler_picker(2,State_picker->state_picker3);
-	State_picker->state_picker3 = 0 ;
+void Handle_xilanh3(void){
+	xilanh_and_vacum_indicator->bits.xilanh3 ^= 1;
+	HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, !xilanh_and_vacum_indicator->bits.xilanh3);
+	Savepoint_and_picker->bits.xilanh3 = 0 ;
 }
-void Handle_picker4(void){
-	Handler_picker(3,State_picker->state_picker4);
-	State_picker->state_picker4 = 0 ;
+void Handle_xilanh4(void){
+	xilanh_and_vacum_indicator->bits.xilanh4 ^= 1;
+	HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, !xilanh_and_vacum_indicator->bits.xilanh4);
+	Savepoint_and_picker->bits.xilanh4 = 0 ;
 }
-void Handle_picker5(void){
-	Handler_picker(4,State_picker->state_picker5);
-	State_picker->state_picker5 = 0 ;
+void Handle_xilanh5(void){
+	xilanh_and_vacum_indicator->bits.xilanh5 ^= 1;
+	HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, !xilanh_and_vacum_indicator->bits.xilanh5);
+	Savepoint_and_picker->bits.xilanh5 = 0 ;
 }
-void Handle_picker6(void){
-	Handler_picker(5,State_picker->state_picker6);
-	State_picker->state_picker6 = 0 ;
+void Handle_xilanh6(void){
+	xilanh_and_vacum_indicator->bits.xilanh6 ^= 1;
+	HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, !xilanh_and_vacum_indicator->bits.xilanh6);
+	Savepoint_and_picker->bits.xilanh6 = 0 ;
+}
+
+void Handle_vacum1(void){
+	xilanh_and_vacum_indicator->bits.vacum1 ^= 1;
+	HAL_GPIO_WritePin(O7_GPIO_Port, O7_Pin, !xilanh_and_vacum_indicator->bits.vacum1);
+	Savepoint_and_picker->bits.vacum1 = 0 ;
+}
+void Handle_vacum2(void){
+	xilanh_and_vacum_indicator->bits.vacum2 ^= 1;
+	HAL_GPIO_WritePin(O8_GPIO_Port, O8_Pin, !xilanh_and_vacum_indicator->bits.vacum2);
+	Savepoint_and_picker->bits.vacum2 = 0 ;
+}
+void Handle_vacum3(void){
+	xilanh_and_vacum_indicator->bits.vacum3 ^= 1;
+	HAL_GPIO_WritePin(O9_GPIO_Port, O9_Pin, !xilanh_and_vacum_indicator->bits.vacum3);
+	Savepoint_and_picker->bits.vacum3 = 0 ;
+}
+void Handle_vacum4(void){
+	xilanh_and_vacum_indicator->bits.vacum4 ^= 1;
+	HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, !xilanh_and_vacum_indicator->bits.vacum4);
+	Savepoint_and_picker->bits.vacum4 = 0 ;
+}
+void Handle_vacum5(void){
+	xilanh_and_vacum_indicator->bits.vacum5 ^= 1;
+	HAL_GPIO_WritePin(O11_GPIO_Port, O11_Pin, !xilanh_and_vacum_indicator->bits.vacum5);
+	Savepoint_and_picker->bits.vacum5 = 0 ;
+}
+void Handle_vacum6(void){
+	xilanh_and_vacum_indicator->bits.vacum6 ^= 1;
+	HAL_GPIO_WritePin(O12_GPIO_Port, O12_Pin, !xilanh_and_vacum_indicator->bits.vacum6);
+	Savepoint_and_picker->bits.vacum6 = 0 ;
+}
+void Reset_xilanh(void){
+		xilanh_and_vacum_indicator->bits.xilanh1 = 0;
+		HAL_GPIO_WritePin(O1_GPIO_Port, O1_Pin, !xilanh_and_vacum_indicator->bits.xilanh1);
+		xilanh_and_vacum_indicator->bits.xilanh2 = 0;
+		HAL_GPIO_WritePin(O2_GPIO_Port, O2_Pin, !xilanh_and_vacum_indicator->bits.xilanh2);
+//		xilanh_and_vacum_indicator->bits.xilanh3 = 0;
+//		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, !xilanh_and_vacum_indicator->bits.xilanh3);
+//		xilanh_and_vacum_indicator->bits.xilanh4 = 0;
+//		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, !xilanh_and_vacum_indicator->bits.xilanh4);
+//		xilanh_and_vacum_indicator->bits.xilanh5 = 0;
+//		HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, !xilanh_and_vacum_indicator->bits.xilanh5);
+//		xilanh_and_vacum_indicator->bits.xilanh6 = 0;
+//		HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, !xilanh_and_vacum_indicator->bits.xilanh6);
 }

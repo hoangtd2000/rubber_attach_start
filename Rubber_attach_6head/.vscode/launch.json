@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/Admin/Desktop/Code/Rubber_attach_start/Core/Src",
-      "program": "c:/Users/Admin/Desktop/Code/Rubber_attach_start/Core/Src/build/Debug/outDebug",
+      "cwd": "c:/Users/Admin/Desktop/Code/Rubber_attach_refactor/Core/Src/driver",
+      "program": "c:/Users/Admin/Desktop/Code/Rubber_attach_refactor/Core/Src/driver/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

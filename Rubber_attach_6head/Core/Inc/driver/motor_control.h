@@ -82,9 +82,16 @@
 
 #define max_x 55000U
 #define max_y 33500U
-#define max_z_tray 10000U
-#define max_z_rubber 9900U
-#define max_z 	(10000U)
+
+//may1
+#define max_z_tray 8000U
+#define max_z_rubber 8000U
+#define max_z 	(9000U)
+
+//#define max_z_tray 5000U
+//#define max_z_rubber 5000U
+//#define max_z 	(5000U)
+
 #define z_up    0U
 
 #define speed_x_max (50000U)
@@ -92,7 +99,7 @@
 #define speed_z_max (5000U)
 
 #define speed_default (50U)
-#define speed_run     (40000U)
+#define speed_run     (20000U)
 #define speed_run_z 	(5000U)
 
 #define speed_home1 	(4000U)
@@ -175,6 +182,15 @@ void Set_Speed_Motor_x(uint16_t f, uint16_t f_max);
 void Set_Speed_Motor_y(uint16_t f, uint16_t f_max);
 void Set_Speed_Motor_z(uint16_t f, uint16_t f_max);
 
+uint16_t Get_speed_x(void);
+uint16_t Get_speed_y(void);
+uint16_t Get_speed_z(void);
+
+void Set_speed_x(uint16_t speed);
+void Set_speed_y(uint16_t speed);
+void Set_speed_z(uint16_t speed);
+
+
 void move_x_left(uint16_t d);
 void move_x_right(uint16_t d);
 void move_y_forward(uint16_t d);
@@ -194,6 +210,10 @@ void Control_motor_z(void);
 void Stop_motor_x(void);
 void Stop_motor_y(void);
 void Stop_motor_z(void);
+
+void Home_process_x(void);
+void Home_process_y(void);
+void Home_process_z(void);
 
 void wait_handler_stop();
 void move_axis(uint16_t xd, uint16_t yd, uint16_t zd);

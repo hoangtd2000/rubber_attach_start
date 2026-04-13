@@ -17,7 +17,7 @@
 #include "tick.h"
 
 #define RUBBER_COLS 20
-#define RUBBER_ROWS 10
+#define RUBBER_ROWS 10 // 10
 #define TOTAL_SLOTS_RUBBER  (RUBBER_COLS * RUBBER_ROWS)  // 200 item
 
 #define TRAY_COLS   4
@@ -61,6 +61,7 @@ typedef enum {
     /* ==== PLACE ==== */
     ST_MOVE_TO_TRAY,
     ST_RELEASE_ALL,
+	ST_CHECK_RELEASE_ALL,
     ST_WAIT_RELEASE,
 
     ST_NEXT_SLOT,

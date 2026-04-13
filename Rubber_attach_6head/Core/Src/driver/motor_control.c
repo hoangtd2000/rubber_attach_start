@@ -243,16 +243,6 @@ void Control_motor_x(){
 			}
 		}
 		break;
-	case MOVE_HOME1:
-		Set_Speed_Motor_x(speed_home1_x, speed_x_max);
-		move_x_left(max_x+1000);
-		break;
-	case MOVE_HOME2:
-		if( get_counter_timer_slave_x() == 0 ){
-		Set_Speed_Motor_x(speed_home2_x, speed_x_max);
-		move_x_right(2000);
-		}
-		break;
 	case MOVE_HOME3:
 		Set_Speed_Motor_x(speed_home3_x, speed_x_max);
 		move_x_left(max_x);
@@ -262,6 +252,26 @@ void Control_motor_x(){
 		break;
 	}
 }
+void Home_process_x(void){
+	switch(AxisX.mode) {
+		case MOVE_HOME1:
+			Set_Speed_Motor_x(speed_home1_x, speed_x_max);
+			move_x_left(max_x+1000);
+			break;
+		case MOVE_HOME2:
+			Set_Speed_Motor_x(speed_home2_x, speed_x_max);
+			move_x_right(2000);
+			break;
+		case MOVE_HOME3:
+			Set_Speed_Motor_x(speed_home3_x, speed_x_max);
+			move_x_left(max_x);
+			break;
+		case STOP:
+
+			break;
+		}
+}
+
 
 void Control_motor_y(){
 	switch(AxisY.mode) {
@@ -279,16 +289,6 @@ void Control_motor_y(){
 					}
 				}
 		break;
-	case MOVE_HOME1:
-		Set_Speed_Motor_y(speed_home1_y, speed_y_max);
-		move_y_backward(max_y + 500);
-		break;
-	case MOVE_HOME2:
-		if( get_counter_timer_slave_y() == 0 ){
-		Set_Speed_Motor_y(speed_home2_y, speed_y_max);
-		move_y_forward(2000);
-		}
-		break;
 	case MOVE_HOME3:
 		Set_Speed_Motor_y(speed_home3_y, speed_y_max);
 		move_y_backward(max_y );
@@ -297,6 +297,28 @@ void Control_motor_y(){
 		break;
 	}
 }
+
+
+void Home_process_y(void){
+	switch(AxisY.mode) {
+		case MOVE_HOME1:
+			Set_Speed_Motor_y(speed_home1_y, speed_y_max);
+			move_y_backward(max_y + 500);
+			break;
+		case MOVE_HOME2:
+			Set_Speed_Motor_y(speed_home2_y, speed_y_max);
+			move_y_forward(2000);
+			break;
+		case MOVE_HOME3:
+			Set_Speed_Motor_y(speed_home3_y, speed_y_max);
+			move_y_backward(max_y );
+			break;
+		case STOP:
+			break;
+		}
+}
+
+
 void Control_motor_z(){
 	switch(AxisZ.mode) {
 	case MOVE_AUTO:
@@ -314,24 +336,36 @@ void Control_motor_z(){
 					}
 				}
 		break;
-	case MOVE_HOME1:
-		Set_Speed_Motor_z(speed_home1_z, speed_z_max);
-		// cộng thêm tránh trường hợp đi từ max vào
-		move_z_up(max_z + 1000);
-		break;
-	case MOVE_HOME2:
-		if( get_counter_timer_slave_z() == 0 ){
-		Set_Speed_Motor_z(speed_home2_z, speed_z_max);
-		move_z_down(2500);
-		}
-		break;
 	case MOVE_HOME3:
 		Set_Speed_Motor_z(speed_home3_z, speed_z_max);
 		move_z_up(max_z);
 		break;
+
 	case STOP:
 		break;
 	}
+}
+
+void Home_process_z(void){
+	switch(AxisZ.mode) {
+		case MOVE_HOME1:
+			Set_Speed_Motor_z(speed_home1_z, speed_z_max);
+			// cộng thêm tránh trường hợp đi từ max vào
+			move_z_up(max_z + 1000);
+			break;
+		case MOVE_HOME2:
+		//	if( get_counter_timer_slave_z() == 0 ){
+			Set_Speed_Motor_z(speed_home2_z, speed_z_max);
+			move_z_down(2500);
+			//}
+			break;
+		case MOVE_HOME3:
+			Set_Speed_Motor_z(speed_home3_z, speed_z_max);
+			move_z_up(max_z);
+			break;
+		case STOP:
+			break;
+		}
 }
 void Stop_motor_x(void)
 {

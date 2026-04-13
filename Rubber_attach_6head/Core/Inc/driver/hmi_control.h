@@ -17,6 +17,26 @@
 #include "motor_control.h"
 
 
+
+typedef union {
+    struct {
+    	uint8_t main                : 1;
+    	uint8_t motor               : 1;
+    	uint8_t setting             : 1;
+    	uint8_t RESERVER1           : 5;
+    } bits;
+    uint8_t all;
+}Taskbar_t;
+
+typedef union {
+    struct {
+        uint8_t set					: 1;
+        uint8_t start				: 1;
+        uint8_t stop				: 1;
+    } bits;
+    uint8_t all;
+}Tab_main_t;
+
 typedef union {
     struct {
 
@@ -26,25 +46,94 @@ typedef union {
         uint8_t y_Backward		: 1;
         uint8_t z_Up		: 1;
         uint8_t z_Down	: 1;
-        uint8_t Set		: 1;
-        uint8_t GoHome	: 1;
+        uint8_t Origin		: 1;
+        uint8_t Home	: 1;
     } bits;
     uint8_t all;
 } Control_motor_t;
+
+
+
 typedef union {
     struct {
-        uint8_t pick_handler1			: 1;
-        uint8_t release_handler1		: 1;
-        uint8_t pick_handler2			: 1;
-        uint8_t release_handler2		: 1;
-        uint8_t save1					: 1;
-        uint8_t save2					: 1;
-        uint8_t save3					: 1;
-        uint8_t load					: 1;
+        uint8_t save_trayrubber		: 1;
+        uint8_t save_tray1			: 1;
+        uint8_t save_tray2			: 1;
+        uint8_t move				: 1;
+        uint8_t tray_rubber_p1		: 1;
+        uint8_t tray_rubber_p2		: 1;
+        uint8_t tray_rubber_p3		: 1;
+        uint8_t tray1_p1			: 1;
+        uint8_t tray1_p2			: 1;
+        uint8_t tray1_p3			: 1;
+        uint8_t tray2_p1			: 1;
+        uint8_t tray2_p2			: 1;
+        uint8_t tray2_p3			: 1;
+        uint8_t xilanh1				: 1;
+        uint8_t xilanh2				: 1;
+        uint8_t xilanh3				: 1;
+        uint8_t xilanh4				: 1;
+        uint8_t xilanh5				: 1;
+        uint8_t xilanh6				: 1;
+        uint8_t vacum1				: 1;
+        uint8_t vacum2				: 1;
+        uint8_t vacum3				: 1;
+        uint8_t vacum4				: 1;
+        uint8_t vacum5				: 1;
+        uint8_t vacum6				: 1;
+    } bits;
+    uint32_t all;
+}Savepoint_and_picker_t;
+
+
+
+typedef struct {
+        uint16_t state_picker1	;
+        uint16_t state_picker2	;
+        uint16_t state_picker3	;
+        uint16_t state_picker4	;
+        uint16_t state_picker5	;
+        uint16_t state_picker6	;
+}State_picker_t;
+
+
+typedef union {
+    struct {
+        uint8_t xilanh1					: 1;
+        uint8_t xilanh2					: 1;
+        uint8_t xilanh3					: 1;
+        uint8_t xilanh4					: 1;
+        uint8_t xilanh5					: 1;
+        uint8_t xilanh6					: 1;
+        uint8_t vacum1					: 1;
+        uint8_t vacum2					: 1;
+        uint8_t vacum3					: 1;
+        uint8_t vacum4					: 1;
+        uint8_t vacum5					: 1;
+        uint8_t vacum6					: 1;
+    } bits;
+    uint16_t all;
+}xilanh_and_vacum_indicator_t;
+
+
+typedef union {
+    struct {
+        uint8_t set_model					: 1;
+        uint8_t reset_total				: 1;
+        uint8_t save_model				: 1;
+        uint8_t save_speed				:1;
     } bits;
     uint8_t all;
-}Cylinder_and_save_t;
+}Tab_setting_t;
 
+typedef union {
+    struct {
+        uint8_t a16					: 1;
+        uint8_t a17				: 1;
+        uint8_t a18				: 1;
+    } bits;
+    uint8_t all;
+}Choose_model_t;
 
 
 typedef union {
@@ -66,9 +155,10 @@ typedef union {
         uint8_t tray2_p1			: 1;
         uint8_t tray2_p2			: 1;
         uint8_t tray2_p3			: 1;
+        uint8_t move				: 1;
     } bits;
     uint16_t all;
-}Rubber_and_tray_t;
+}Rubber_and_tray_indicator_t;
 
 typedef union {
     struct {
@@ -81,38 +171,15 @@ typedef union {
         uint8_t tray2_p1			: 1;
         uint8_t tray2_p2			: 1;
         uint8_t tray2_p3			: 1;
-        uint8_t load				: 1;
-        uint8_t pick1				: 1;
-		uint8_t release1			: 1;
-		uint8_t pick2				: 1;
-		uint8_t release2			: 1;
+        uint8_t move				: 1;
     } bits;
     uint16_t all;
-}Rubber_and_tray_indicator_t;
+}Savepoint_and_picker_indicator_t;
 
 
 
-typedef union {
-    struct {
-    	uint8_t home                : 1;
-    	uint8_t motor               : 1;
-    	uint8_t setting             : 1;
-    	uint8_t RESERVER1           : 2;
-        uint8_t RESET				: 1;
-        uint8_t START				: 1;
-        uint8_t STOP				: 1;
-    } bits;
-    uint8_t all;
-}Taskbar_t;
 
-typedef union {
-    struct {
-        uint8_t reset				: 1;
-        uint8_t start				: 1;
-        uint8_t stop				: 1;
-    } bits;
-    uint8_t all;
-}Tab_main_t;
+
 
 typedef union {
     struct {
@@ -122,16 +189,7 @@ typedef union {
     uint8_t all;
 }Tab_popup_t;
 
-typedef union {
-    struct {
-    	uint8_t reserver            : 2;
-        uint8_t pick1				: 1;
-        uint8_t release1			: 1;
-        uint8_t pick2				: 1;
-        uint8_t release2			: 1;
-    } bits;
-    uint8_t all;
-} Control_Vacum_Indicator_t;
+
 
 
 typedef union {
@@ -154,16 +212,19 @@ typedef struct
     uint8_t reserved  : 4;   // Dự phòng (bắt buộc để đủ 1 byte)
 } SystemFlag_t;
 
+#define Set_item_rubber(f)      (SetBit(&Inputs_Database[3], f, 200 - f))
+#define Clear_item_rubber(f)    (ClearBit(&Inputs_Database[3], 0, f))
+
 #define Mark_all_rubber()  		(SetBit(&Inputs_Database[3], 0, 200))
 #define Mark_rubber(f) 			(SetBit(&Inputs_Database[3], f, 1))
 #define Clear_mark_rubber(f) 	(ClearBit(&Inputs_Database[3], f, 1))
+//#define Clear_mark_rubber_from2(x,y)	(ClearBit(&Inputs_Database[3], (x), (y-x)))
+//#define Mark_rubber_from2(x,y)	(SetBit(&Inputs_Database[3], (x), (y-x)))
+#define Clear_mark_rubber_from2(x,y) \
+    do{ if((y) > (x)) ClearBit(&Inputs_Database[3], (x), (y)-(x)); }while(0)
 
-#define Set_item_rubber(f)      (SetBit(&Inputs_Database[3], f, 200 - f))
-#define Clear_item_rubber(f)    (ClearBit(&Inputs_Database[3], 0, f - 1))
-
-#define Set_item_tray(f)      (SetBit(&Inputs_Database[4], f, 48 - f))
-#define Clear_item_tray(f)    (ClearBit(&Inputs_Database[4], 0, f - 1))
-
+#define Mark_rubber_from2(x,y) \
+    do{ if((y) > (x)) SetBit(&Inputs_Database[3], (x), (y)-(x)); }while(0)
 #define Clear_all_tray1() 	(ClearBit(&Inputs_Database[28], 0, 24))
 #define Mark_tray1(f) 			(SetBit(&Inputs_Database[28], f, 1))
 #define Clear_mark_tray1(f) 	(ClearBit(&Inputs_Database[28], f, 1))
@@ -208,16 +269,12 @@ void Handle_Y_Forward(void);
 void Handle_Y_Backward(void);
 void Handle_Z_Up(void);
 void Handle_Z_Down(void);
-void Handle_Set(void);
+void Handle_Origin(void);
 void Handle_Home(void);
-void Handle_pick_handler1(void);
-void Handle_release_handler1(void);
-void Handle_pick_handler2(void);
-void Handle_release_handler2(void);
-void Handle_save1(void);
-void Handle_save2(void);
-void Handle_save3(void);
-void Handle_load(void);
+void Handle_save_trayrubber(void);
+void Handle_save_tray1(void);
+void Handle_save_tray2(void);
+void Handle_move(void);
 void Handle_tray_rubber_p1(void);
 void Handle_tray_rubber_p2(void);
 void Handle_tray_rubber_p3(void);
@@ -227,6 +284,28 @@ void Handle_tray1_p3(void);
 void Handle_tray2_p1(void);
 void Handle_tray2_p2(void);
 void Handle_tray2_p3(void);
+void Handle_picker1(void);
+void Handle_picker2(void);
+void Handle_picker3(void);
+void Handle_picker4(void);
+void Handle_picker5(void);
+void Handle_picker6(void);
+
+void Handle_xilanh1(void);
+void Handle_xilanh2(void);
+void Handle_xilanh3(void);
+void Handle_xilanh4(void);
+void Handle_xilanh5(void);
+void Handle_xilanh6(void);
+
+void Handle_vacum1(void);
+void Handle_vacum2(void);
+void Handle_vacum3(void);
+void Handle_vacum4(void);
+void Handle_vacum5(void);
+void Handle_vacum6(void);
+
+
 void Move_tray_rubber_p1(void);
 void Move_tray_rubber_p2(void);
 void Move_tray_rubber_p3(void);
@@ -236,5 +315,9 @@ void Move_tray1_p3(void);
 void Move_tray2_p1(void);
 void Move_tray2_p2(void);
 void Move_tray2_p3(void);
+
+
+void Reset_xilanh(void);
+
 
 #endif /* INC_DRIVER_HMI_CONTROL_H_ */

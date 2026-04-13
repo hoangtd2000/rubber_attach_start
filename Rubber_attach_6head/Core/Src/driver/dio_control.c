@@ -16,6 +16,52 @@ volatile uint16_t TimeDelayBip = 0;
 Cylinder_Vacum_Init_t Handle_Pick[6];
 Cylinder_Vacum_Init_t Handle_Release[6];
 
+typedef struct
+{
+    GPIO_TypeDef *down_port;
+    uint16_t down_pin;
+
+    GPIO_TypeDef *pick_port;
+    uint16_t pick_pin;
+
+} HandlerIO;
+
+HandlerIO handler_io[6] =
+{
+	{O1_GPIO_Port, O1_Pin, O7_GPIO_Port, O7_Pin},
+	{O2_GPIO_Port, O2_Pin, O8_GPIO_Port, O8_Pin},
+	{O3_GPIO_Port, O3_Pin, O9_GPIO_Port, O9_Pin},
+	{O4_GPIO_Port, O4_Pin, O10_GPIO_Port, O10_Pin},
+	{O5_GPIO_Port, O5_Pin, O11_GPIO_Port, O11_Pin},
+	{O6_GPIO_Port, O6_Pin, O12_GPIO_Port, O12_Pin},
+};
+
+void Handler_picker(uint8_t id, uint16_t state)
+{
+    HandlerIO *io = &handler_io[id];
+
+    switch(state)
+    {
+        case 1: // down
+            HAL_GPIO_WritePin(io->down_port, io->down_pin, GPIO_PIN_RESET);
+            break;
+
+        case 2: // up
+        	 HAL_GPIO_WritePin(io->down_port, io->down_pin, GPIO_PIN_SET);
+          //  HAL_GPIO_WritePin(io->up_port, io->up_pin, GPIO_PIN_SET);
+            break;
+
+        case 4: // pick
+            HAL_GPIO_WritePin(io->pick_port, io->pick_pin, GPIO_PIN_RESET);
+            break;
+
+        case 8: // RELEASE
+           // HAL_GPIO_WritePin(io->release_port, io->release_pin, GPIO_PIN_SET);
+        	 HAL_GPIO_WritePin(io->pick_port, io->pick_pin, GPIO_PIN_SET);
+            break;
+    }
+}
+
 void SetBips(uint8_t numBips){
 	NumberBips = numBips - 1;
 }
@@ -107,11 +153,11 @@ void PickRubber1(uint8_t vacum_id)
             if (Handle_Pick[vacum_id].time_delay == 0)
             {
                 if (vacum_id == 0){
-                	Vacum1_Release_Off;
+                	//Vacum1_Release_Off;
                 	Vacum1_Pick_Off;
                 }
                 else if (vacum_id == 1){
-                	Vacum2_Release_Off;
+                	//Vacum2_Release_Off;
                 	Vacum2_Pick_Off;
                 }
                 else if (vacum_id == 2){
@@ -178,20 +224,20 @@ void PickRubber1(uint8_t vacum_id)
 		{
             if (Handle_Pick[vacum_id].time_delay == 0)
             {
-                uint8_t ok;
+                uint8_t ok = 0;
 
-                if (vacum_id == 0)
-                    ok = Is_Vacum1_Pick;
-                else if (vacum_id == 1)
-                    ok = Is_Vacum2_Pick;
-                else if (vacum_id == 2)
-                    ok = Is_Vacum3_Pick;
-                else if (vacum_id == 3)
-                    ok = Is_Vacum4_Pick;
-                else if (vacum_id == 4)
-                    ok = Is_Vacum5_Pick;
-                else if (vacum_id == 5)
-                    ok = Is_Vacum6_Pick;
+//                if (vacum_id == 0)
+//                    ok = Is_Vacum1_Pick;
+//                else if (vacum_id == 1)
+//                    ok = Is_Vacum2_Pick;
+//                else if (vacum_id == 2)
+//                    ok = Is_Vacum3_Pick;
+//                else if (vacum_id == 3)
+//                    ok = Is_Vacum4_Pick;
+//                else if (vacum_id == 4)
+//                    ok = Is_Vacum5_Pick;
+//                else if (vacum_id == 5)
+//                    ok = Is_Vacum6_Pick;
 
                 if (!ok)
                     Handle_Pick[vacum_id].state = DONE_OK;
@@ -254,11 +300,11 @@ void ReleaseRubber1(uint8_t vacum_id)
             {
                 if (vacum_id == 0){
                 	Vacum1_Pick_Off;
-                	Vacum1_Release_Off;
+                	//Vacum1_Release_Off;
                 }
                 else if (vacum_id == 1){
                 	Vacum2_Pick_Off;
-                	Vacum2_Release_Off;
+                	//Vacum2_Release_Off;
                 }
                 else if (vacum_id == 2){
                 	Vacum3_Pick_Off;
@@ -322,20 +368,20 @@ void ReleaseRubber1(uint8_t vacum_id)
 		{
             if (Handle_Release[vacum_id].time_delay == 0)
             {
-                uint8_t still_pick;
+                uint8_t still_pick = 0;
 
-                if (vacum_id == 0)
-                    still_pick = Is_Vacum1_Pick;
-                else if(vacum_id == 1)
-                    still_pick = Is_Vacum2_Pick;
-                else if(vacum_id == 2)
-                    still_pick = Is_Vacum3_Pick;
-                else if(vacum_id == 3)
-                    still_pick = Is_Vacum4_Pick;
-                else if(vacum_id == 4)
-                    still_pick = Is_Vacum5_Pick;
-                else if(vacum_id == 5)
-                    still_pick = Is_Vacum6_Pick;
+//                if (vacum_id == 0)
+//                    still_pick = Is_Vacum1_Pick;
+//                else if(vacum_id == 1)
+//                    still_pick = Is_Vacum2_Pick;
+//                else if(vacum_id == 2)
+//                    still_pick = Is_Vacum3_Pick;
+//                else if(vacum_id == 3)
+//                    still_pick = Is_Vacum4_Pick;
+//                else if(vacum_id == 4)
+//                    still_pick = Is_Vacum5_Pick;
+//                else if(vacum_id == 5)
+//                    still_pick = Is_Vacum6_Pick;
 
                 if (!still_pick)
                     Handle_Release[vacum_id].state = DONE_OK;
@@ -361,64 +407,4 @@ void ReleaseRubber1(uint8_t vacum_id)
     }
     if (Handle_Release[vacum_id].time_delay > 0)
         Handle_Release[vacum_id].time_delay--;
-}
-
-uint8_t PickRubber(uint8_t vacum_id)
-{
-    for(int retry = 0; retry < 2; retry++)
-    {
-        if(vacum_id == 1){
-        	Cylinder1_Go_Down;
-            delay_us(300); // Thời gian xi lanh hạ
-            Vacum1_Release_Off;
-            delay_us(50);
-            Vacum1_Pick_On;
-            delay_us(100); // Thời gian hút
-            Cylinder1_Go_Up;
-            delay_us(300); // Thời gian xi lanh nâng
-            if(Is_Vacum1_Pick) return 0;
-        }
-        else{
-            Cylinder2_Go_Down;
-            delay_us(300);  // Thời gian xi lanh hạ
-            Vacum2_Release_Off;
-            delay_us(50);
-            Vacum2_Pick_On;
-            delay_us(100);  // Thời gian hút
-            Cylinder2_Go_Up;
-            delay_us(300); // Thời gian xi lanh nâng
-            if(Is_Vacum2_Pick) return 0;
-        }
-    }
-    return 1;
-}
-
-uint8_t ReleaseRubber(uint8_t vacum_id)
-{
-    for(int retry = 0; retry < 2; retry++)
-    {
-        if(vacum_id == 1){
-            Cylinder1_Go_Down;
-            delay_us(300); // Thời gian xi lanh hạ
-            Vacum1_Pick_Off;
-            delay_us(50);
-            Vacum1_Release_On;
-            delay_us(100); // Thời gian nhả
-            Cylinder1_Go_Up;
-            delay_us(300); // Thời gian xi lanh nâng
-            if(Is_Vacum1_Pick == 0) return 0;
-        }
-        else{
-            Cylinder2_Go_Down;
-            delay_us(300); // Thời gian xi lanh hạ
-            Vacum2_Pick_Off;
-            delay_us(50);
-            Vacum2_Release_On;
-            delay_us(100); // Thời gian nhả
-            Cylinder2_Go_Up;
-            delay_us(300); // Thời gian xi lanh nâng
-            if(Is_Vacum2_Pick == 0) return 0;
-        }
-    }
-    return 1;
 }

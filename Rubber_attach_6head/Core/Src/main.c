@@ -135,7 +135,7 @@ int main(void)
 	  application_run_main();
 
 
-//  HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
+//    HAL_GPIO_TogglePin(O1_GPIO_Port, O1_Pin);
 //	  HAL_GPIO_TogglePin(O2_GPIO_Port, O2_Pin);
 //	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
 //	  HAL_GPIO_TogglePin(O4_GPIO_Port, O4_Pin);
@@ -429,7 +429,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 83;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 10000;
+  htim6.Init.Period = 1000;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -658,10 +658,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, O13_Pin|O11_Pin|O12_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, O14_Pin|O15_Pin|O16_Pin|O17_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, O13_Pin|O14_Pin|O15_Pin|O16_Pin
+                          |O17_Pin|O11_Pin|O12_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, O18_Pin|output_x_sig_Pin|output_z_sig_Pin, GPIO_PIN_RESET);
@@ -674,10 +672,8 @@ static void MX_GPIO_Init(void)
                           |O5_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, O6_Pin|O10_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, O7_Pin|O8_Pin|O9_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, O6_Pin|O7_Pin|O8_Pin|O9_Pin
+                          |O10_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : O13_Pin O14_Pin O15_Pin O16_Pin
                            O17_Pin O11_Pin O12_Pin */
@@ -696,23 +692,33 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : i1_home_x_Pin i2_home_y_Pin i3_home_z_Pin i4_start_Pin
-                           i5_stop_Pin i6_vacum3_Pin */
+                           i5_stop_Pin */
   GPIO_InitStruct.Pin = i1_home_x_Pin|i2_home_y_Pin|i3_home_z_Pin|i4_start_Pin
-                          |i5_stop_Pin|i6_vacum3_Pin;
+                          |i5_stop_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : i7_vacum4_Pin i8_vacum5_Pin */
-  GPIO_InitStruct.Pin = i7_vacum4_Pin|i8_vacum5_Pin;
+  /*Configure GPIO pin : i6_vacum1_Pin */
+  GPIO_InitStruct.Pin = i6_vacum1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(i6_vacum1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : i7_vacum2_Pin i8_vacum3_Pin */
+  GPIO_InitStruct.Pin = i7_vacum2_Pin|i8_vacum3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : i9_pressure_Pin i10_vacum6_Pin PE9 i12_vacum1_Pin
-                           i13_vacum2_Pin i15_Door_R_Pin i17_reset_Pin */
-  GPIO_InitStruct.Pin = i9_pressure_Pin|i10_vacum6_Pin|GPIO_PIN_9|i12_vacum1_Pin
-                          |i13_vacum2_Pin|i15_Door_R_Pin|i17_reset_Pin;
+  /*Configure GPIO pins : i9_vacum4_Pin i10_vacum5_Pin i11_vacum6_Pin */
+  GPIO_InitStruct.Pin = i9_vacum4_Pin|i10_vacum5_Pin|i11_vacum6_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : i12_vacum1_Pin i13_vacum2_Pin i15_Door_R_Pin i17_reset_Pin */
+  GPIO_InitStruct.Pin = i12_vacum1_Pin|i13_vacum2_Pin|i15_Door_R_Pin|i17_reset_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -749,23 +755,20 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 10, 0);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 10, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 10, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 3, 0);
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 
   HAL_NVIC_SetPriority(EXTI4_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 4, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);

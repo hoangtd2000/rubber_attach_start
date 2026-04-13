@@ -26,3 +26,8 @@ uint8_t Timer_Check(uint8_t id, uint32_t interval)
     }
     return 0;
 }
+
+uint32_t Timer_get(void)
+{
+	return Tick;
+}

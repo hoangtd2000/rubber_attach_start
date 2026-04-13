@@ -25,7 +25,7 @@ const Point3D* Tray_1 = Tray1;
 const Point3D* Tray_2 = Tray2;
 Point3D *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 
-extern uint32_t data[10];
+extern uint64_t data[10];
 extern const uint32_t FlashStart;
 
 extern Point3D Rubber_Mark[3];
@@ -49,22 +49,12 @@ volatile uint8_t  grip_id = 0;   // 0..5
 volatile uint8_t  slot       = 0;   // 0..7
 volatile uint8_t count_tray[MAX_TRAYS] = {0, 0};
 
-void Read_Index_Rubber(){
-	tray_index = Holding_Registers_Database[3];
-	Set_item_rubber(tray_index);
-	Clear_item_rubber(tray_index);
-}
-void Read_Index_Tray(){
-	slot = Holding_Registers_Database[4];
-	Clear_item_tray(slot);
-	Set_item_tray(slot);
-}
-void Set_Possition(){
-	//if(){ // kểm tra bit được set trên màn hình
-		Read_Index_Rubber();
-		Read_Index_Tray();
-	//}
-}
+uint32_t t_start = 0;
+uint32_t t_end = 0;
+double t_cycletime = 0;
+uint32_t total = 0;
+
+
 
 static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count)
 {
@@ -75,6 +65,19 @@ static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count)
         dst[i*3 + 2] = src[i].z;
     }
 }
+
+void LoadMarkFromFlash(Point3D *mark,
+                       uint32_t *flashData,
+                       uint8_t offset,
+                       uint8_t count)
+{
+    for(uint8_t i = 0; i < count; i++)
+
+    {
+        mark[i].raw = flashData[i + offset];
+    }
+}
+
 void Read_Tray_Data(){
 	Flash_Read_Data( FlashStart, data, 10);
 	// Gán raw
@@ -88,6 +91,7 @@ void Read_Tray_Data(){
 	CopyMarkToArray(&Mark[0],  Rubber_Mark, 3);
 	CopyMarkToArray(&Mark[9],  Tray1_Mark,  3);
 	CopyMarkToArray(&Mark[18], Tray2_Mark,  3);
+
 	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
 	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
 	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
@@ -152,13 +156,6 @@ void Calculate_Tray_Point(Point3D* tray,
             float y = point[0].y + i * dy_row + j * dy_col;
             float z = point[0].z + i * dz_row + j * dz_col;
 
-//            if (i % 2 != 0)
-//            {
-//                x -= X_Calibrator;
-//                y -= Y_Calibrator;
-//                z -= Z_Calibrator;
-//            }
-
             tray[index].x = (uint16_t)x;
             tray[index].y = (uint16_t)y;
             tray[index].z = (uint16_t)z;
@@ -173,8 +170,6 @@ void Handle(void)
 	Tab_main->bits.start = 0;
 
 	Tab_main_indicator->bits.start =  1 ;
-	Input_Registers_Database[3] = count_tray[0];
-	Input_Registers_Database[4] = count_tray[1];
 	if(slot == 0){
 		if(!Tab_main_indicator->bits.stop){
 		Clear_all_tray1();
@@ -186,6 +181,7 @@ void Handle(void)
 		Mark_all_rubber();
 		}
 	}
+	t_start = Timer_get();
 	Tab_main_indicator->bits.stop =  0 ;
 	while(tray_index < TOTAL_SLOTS_RUBBER  && slot < TOTAL_SLOTS)
     {
@@ -214,10 +210,14 @@ void Handle(void)
 				int row = tray_index / RUBBER_COLS;
 				int col = tray_index % RUBBER_COLS;
 
-				int rx = (row & 1) ? (RUBBER_COLS - 1 - col) : col;
+//				int rx = (row & 1) ? (RUBBER_COLS - 1 - col) : col;
+//				int ry = row;
+
+				int rx = col;
 				int ry = row;
 
 			    MoveToRubber(ry * RUBBER_COLS + rx, grip_id);
+			    //t_start = Timer_get();
 				machine_state = ST_PICK;
 				break;
 			}
@@ -230,7 +230,6 @@ void Handle(void)
 			}
 			case ST_WAIT_PICK:
 			{
-				//delay_us(500);
 			    if (Handle_Pick[grip_id].result == OK)
 			    {
 			    	Clear_mark_rubber(tray_index);
@@ -260,7 +259,7 @@ void Handle(void)
 			}
 			case ST_CHECK_FULL:
 			{
-				delay_us(500);
+				//delay_us(500);
 				machine_state = ST_MOVE_TO_TRAY;
 				break;
 			}
@@ -280,8 +279,19 @@ void Handle(void)
 			    MoveToTray(tray, tray_id, ty * TRAY_COLS + tx);
 			    machine_state = ST_RELEASE_ALL;
 			}
-
 			case ST_RELEASE_ALL:
+			{
+				delay_us(300);
+				SetReleaseRubber(0);
+				SetReleaseRubber(1);
+				SetReleaseRubber(2);
+				SetReleaseRubber(3);
+				SetReleaseRubber(4);
+				SetReleaseRubber(5);
+				machine_state = ST_CHECK_RELEASE_ALL;
+				break;
+			}
+			case ST_CHECK_RELEASE_ALL:
 			{
 			    if(Handle_Release[0].result == OK &&
 			       Handle_Release[1].result == OK &&
@@ -290,6 +300,10 @@ void Handle(void)
 			       Handle_Release[4].result == OK &&
 			       Handle_Release[5].result == OK)
 			    {
+//			    	t_end = Timer_get();
+//			    	t_cycletime = (double)(t_end - t_start) / 10.0;
+//			    	Holding_Registers_Database[41] = t_cycletime;
+			    	Holding_Registers_Database[42] += 6;
 			        grip_id = 0;
 			        machine_state = ST_NEXT_SLOT;
 			    }
@@ -299,7 +313,7 @@ void Handle(void)
 			case ST_NEXT_SLOT:
 			{
 				slot++;
-				delay_us(500);
+				delay_us(200);
 				machine_state = ST_PICK_MOVE;
 				break;
 			}
@@ -324,10 +338,6 @@ void Handle(void)
 			case ST_PAUSE:
 			{
 				wait_handler_stop();
-				Vacum1_Pick_Off;
-				Vacum1_Release_Off;
-				Vacum2_Pick_Off;
-				Vacum2_Release_Off;
 				Tab_main_indicator->bits.start = 0;
 			    if(Timer_Check(1, 500))
 			    {
@@ -355,7 +365,9 @@ void Handle(void)
 		}
     }
 	SystemFlag.is_stop = 0 ;
-
+	t_end = Timer_get();
+	t_cycletime = (double)(t_end - t_start) / 10.0;
+	Holding_Registers_Database[41] = t_cycletime;
 	SetBips(5);
 	ON_LED_GREEN;
 	wait_handler_stop();
@@ -386,7 +398,7 @@ void MoveToTray(Point3D *tray, uint8_t tray_id, int index)
         Mark_tray1(index+5);
         Mark_tray1(index+8);
         Mark_tray1(index+9);
-        Input_Registers_Database[3] = count_tray[0];
+        //Input_Registers_Database[3] = count_tray[0];
     } else {
         Mark_tray2(index);
         Mark_tray2(index+1);
@@ -394,7 +406,7 @@ void MoveToTray(Point3D *tray, uint8_t tray_id, int index)
         Mark_tray2(index+5);
         Mark_tray2(index+8);
         Mark_tray2(index+9);
-        Input_Registers_Database[4] = count_tray[1];
+        //Input_Registers_Database[4] = count_tray[1];
     }
     move_axis1(tray[index].x, tray[index].y, max_z_tray);
     wait_handler_stop();
@@ -415,10 +427,12 @@ void MoveToRubber(int rubber_index, int grip_id)
 }
 
 void application_init(){
-	HAL_Delay(6000);
+
+	HAL_Delay(7000);
 	Mark_all_rubber();
+
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
-	Taskbar->bits.home = 1 ;
+	Taskbar->bits.main = 1 ;
 	Read_Tray_Data();
 	HAL_TIM_Base_Start_IT(&htim5); //x
 	HAL_TIM_Base_Start_IT(&htim9); //y
@@ -434,7 +448,13 @@ void application_init(){
 	reset_counter_timer_slave_y();
 	reset_counter_timer_z();
 	reset_counter_timer_slave_z();
+
 	Try_go_home();
+	//		  SystemFlag.is_homing = 0 ;
+	//		  SystemFlag.is_err = 0 ;
+	//		  SystemFlag.is_start = 0 ;
+	//		  SystemFlag.is_stop = 0;
+
 }
 void Try_go_home(){
 		SystemFlag.is_homing = 1 ;
@@ -445,18 +465,21 @@ void Try_go_home(){
 	  }else {
 		  AxisZ.mode = MOVE_HOME1;
 	  }
+	  Home_process_z();
 		while((AxisZ.mode != MOVE_HOME3));
-
+		while((AxisZ.mode != STOP));
 	  if(get_home_x() == home_x){
 		  AxisX.mode = MOVE_HOME2;
 	  }else{
 		  AxisX.mode = MOVE_HOME1;
 	  }
+	  Home_process_x();
 	  if(get_home_y() == home_y){
 		  AxisY.mode = MOVE_HOME2;
 	  }else{
 		  AxisY.mode = MOVE_HOME1;
 	  }
+	  Home_process_y();
 	  wait_handler_stop();
 	  Close_Popup(popup_home);
 	  SystemFlag.is_homing = 0 ;
@@ -466,22 +489,24 @@ void Try_go_home(){
 }
 
 void application_run_main(void){
-	if(Taskbar->bits.home){
-		Handle_main();
-	}else if(Taskbar->bits.motor){
-		Handle_motor();
-	}
-	if(Timer_Check(0, 500)){
-	  OFF_LED_RED;
-	//	  OFF_BUZZ;
-	  TOGGLE_LED_GREEN;
-	}
-	else if(Timer_Check(2, 500)  && SystemFlag.is_err){
-	  OFF_LED_GREEN;
-	  TOGGLE_LED_RED;
-	//  TOGGLE_BUZZ;
-	}
+	  if(Timer_Check(0, 500)){
+		  OFF_LED_RED;
+		  TOGGLE_LED_GREEN;
+	  }
+	  else if(Timer_Check(2, 500)  && SystemFlag.is_err){
+		  OFF_LED_GREEN;
+		  TOGGLE_LED_RED;
+	  }
+		if(Taskbar->bits.main){
+			Handle_main();
+		}else if(Taskbar->bits.motor){
+			Handle_motor();
+		}else if(Taskbar->bits.setting){
+			Handle_setting();
+		}
+
 }
+
 
 void task_timer6(){
 
@@ -490,6 +515,7 @@ void task_timer7(){
 	Control_motor_y();
 	Control_motor_x();
 	Control_motor_z();
+
 	BipControl();
 	PickRubber1(0);
 	PickRubber1(1);

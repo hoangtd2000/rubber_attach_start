@@ -35,7 +35,7 @@ uint16_t* Mark = &Holding_Registers_Database[6];
 // [1..] = model blocks, each BLOCK_SIZE = 28 words
 //    [block+0] = row_col (row<<8 | col)
 //    [block+1..block+27] = 9*3 points: Rubber p1,p2,p3 + Tray1 p1,p2,p3 + Tray2 p1,p2,p3
-uint16_t data[FLASH_MODEL_WORDS];
+uint16_t data[FLASH_MODEL_WORDS] ;
 const uint32_t FlashStart = 0x08010000;
 
 extern Axis_t AxisX, AxisY, AxisZ;
@@ -61,6 +61,7 @@ static inline uint16_t GetCurrentModel(void)
 static inline void SetCurrentModel(uint16_t model)
 {
     data[0] = (model < MAX_MODELS ? model : 0);
+    Holding_Registers_Database[39] = (model < MAX_MODELS ? model : 0);
 }
 
 static inline void GetModelRowCol(uint8_t *row, uint8_t *col)
@@ -189,21 +190,22 @@ void Handle_setting(void){
 	if(Tab_setting->bits.set_model){
 		Tab_setting->bits.set_model = 0;
 		if(Choose_model->bits.a16){
-			SetCurrentModel(1);
+			SetCurrentModel(A16_LTE);
 		} else if(Choose_model->bits.a17){
-			SetCurrentModel(2);
+			SetCurrentModel(A17_LTE_5G);
 		} else if(Choose_model->bits.a18){
 			SetCurrentModel(3);
 		} else {
 			SetCurrentModel(0);
 		}
+		Flash_Write_Data(FlashStart, data, FLASH_MODEL_WORDS);
 		Read_Tray_Data();
 	}
 
-	if(Tab_setting->bits.reset_total){
-		Tab_setting->bits.reset_total = 0;
-		Holding_Registers_Database[42] = 0;
-	}
+//	if(Tab_setting->bits.reset_total){
+//		Tab_setting->bits.reset_total = 0;
+//		Holding_Registers_Database[42] = 0;
+//	}
 
 }
 
@@ -536,7 +538,9 @@ void Handle_save_tray1(void){
 	            return;
 	    }
 
-	Calculate_Tray_Point(Tray1, Tray1_Mark, GetCurrentModelRows(), GetCurrentModelCols());
+	//Calculate_Tray_Point(Tray1, Tray1_Mark, GetCurrentModelRows(), GetCurrentModelCols());
+	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
+
 }
 void Handle_save_tray2(void){
 	Savepoint_and_picker->bits.save_tray2 = 0;
@@ -555,7 +559,7 @@ void Handle_save_tray2(void){
 	            return;
 	    }
 
-	Calculate_Tray_Point(Tray2, Tray2_Mark, GetCurrentModelRows(), GetCurrentModelCols());
+	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
 }
 /**
  * @brief Nhóm hàm chọn điểm chuẩn Tray/Rubber từ HMI
@@ -823,12 +827,12 @@ void Reset_xilanh(void){
 		HAL_GPIO_WritePin(O1_GPIO_Port, O1_Pin, !xilanh_and_vacum_indicator->bits.xilanh1);
 		xilanh_and_vacum_indicator->bits.xilanh2 = 0;
 		HAL_GPIO_WritePin(O2_GPIO_Port, O2_Pin, !xilanh_and_vacum_indicator->bits.xilanh2);
-//		xilanh_and_vacum_indicator->bits.xilanh3 = 0;
-//		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, !xilanh_and_vacum_indicator->bits.xilanh3);
-//		xilanh_and_vacum_indicator->bits.xilanh4 = 0;
-//		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, !xilanh_and_vacum_indicator->bits.xilanh4);
-//		xilanh_and_vacum_indicator->bits.xilanh5 = 0;
-//		HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, !xilanh_and_vacum_indicator->bits.xilanh5);
-//		xilanh_and_vacum_indicator->bits.xilanh6 = 0;
-//		HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, !xilanh_and_vacum_indicator->bits.xilanh6);
+		xilanh_and_vacum_indicator->bits.xilanh3 = 0;
+		HAL_GPIO_WritePin(O3_GPIO_Port, O3_Pin, !xilanh_and_vacum_indicator->bits.xilanh3);
+		xilanh_and_vacum_indicator->bits.xilanh4 = 0;
+		HAL_GPIO_WritePin(O4_GPIO_Port, O4_Pin, !xilanh_and_vacum_indicator->bits.xilanh4);
+		xilanh_and_vacum_indicator->bits.xilanh5 = 0;
+		HAL_GPIO_WritePin(O5_GPIO_Port, O5_Pin, !xilanh_and_vacum_indicator->bits.xilanh5);
+		xilanh_and_vacum_indicator->bits.xilanh6 = 0;
+		HAL_GPIO_WritePin(O6_GPIO_Port, O6_Pin, !xilanh_and_vacum_indicator->bits.xilanh6);
 }

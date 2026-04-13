@@ -25,7 +25,7 @@
 #define MODEL_DATA_WORDS   28   // 1 row/col + 9*3 (Rubber + Tray1 + Tray2)
 #define MODEL_META_WORDS   1
 #define MAX_MODELS         4    // số model có thể lưu trong flash
-#define FLASH_MODEL_WORDS  (MODEL_META_WORDS + MAX_MODELS * MODEL_DATA_WORDS)
+#define FLASH_MODEL_WORDS  (MODEL_META_WORDS + (MAX_MODELS * MODEL_DATA_WORDS))
 
 #define PAIRS_PER_TRAY  12
 

@@ -33,10 +33,10 @@ extern Point3D Tray1_Mark[3];
 extern Point3D Tray2_Mark[3];
 
 ModelConfig_t ModelConfigs[MAX_MODELS] = {
-    {0, 10, 20},  // Model 0: 10 rows, 20 cols
-    {1, 8, 16},   // Model 1: 8 rows, 16 cols
-    {2, 12, 24},  // Model 2: 12 rows, 24 cols
-    {3, 6, 12}    // Model 3: 6 rows, 12 cols
+    {0, 10, 20},  	// Model 0: 10 rows, 20 cols
+    {1, 10, 20},   	// Model 1: 10 rows, 20 cols
+    {2, 10, 20},  	// Model 2: 10 rows, 20 cols
+    {3, 6, 12}    	// Model 3: 6 rows, 12 cols
 };
 
 uint8_t GetCurrentModelRows(void) {
@@ -89,20 +89,20 @@ void LoadMarkFromFlash(Point3D *mark,
 
 void Read_Tray_Data(void)
 {
-    Flash_Read_Data(FlashStart, data, FLASH_MODEL_WORDS);
+    Flash_Read_Data(FlashStart, data, (uint16_t)FLASH_MODEL_WORDS);
 
     uint16_t model = data[0];
     if (model >= MAX_MODELS) {
         model = 0;
         data[0] = 0;
     }
-
+    Holding_Registers_Database[39] = model;
     uint16_t blockStart = 1 + model * MODEL_DATA_WORDS;
     uint16_t rowCol = data[blockStart];
     uint8_t rows = (uint8_t)(rowCol >> 8);
     uint8_t cols = (uint8_t)(rowCol & 0xFF);
 
-    if (rows < 2 || cols < 2 || rows == 0xFF || cols == 0xFF) {
+    if (rows < 2 || cols < 2 || rows > 10 || cols > 20) {
         rows = ModelConfigs[model].rows;
         cols = ModelConfigs[model].cols;
         data[blockStart] = ((uint16_t)rows << 8) | cols;
@@ -134,8 +134,10 @@ void Read_Tray_Data(void)
     CopyMarkToArray(&Mark[18], Tray2_Mark, 3);
 
     Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, rows, cols);
-    Calculate_Tray_Point(Tray1, Tray1_Mark, rows, cols);
-    Calculate_Tray_Point(Tray2, Tray2_Mark, rows, cols);
+//    Calculate_Tray_Point(Tray1, Tray1_Mark, rows, cols);
+//    Calculate_Tray_Point(Tray2, Tray2_Mark, rows, cols);
+	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
+	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
 }
 
 //void Calculate_TrayRubber_Point(Point3D* tray, const Point3D* point,uint8_t row, uint8_t col)
@@ -649,6 +651,7 @@ void application_init(){
 		HAL_TIM_Base_Start_IT(&htim2); //z
 		HAL_TIM_Base_Start_IT(&htim6); // kiem tra hmi
 		HAL_TIM_Base_Start_IT(&htim7); // kiem tra trang thai x, y, z
+
 		Set_Speed_Motor_x( speed_default, speed_x_max);
 		Set_Speed_Motor_y( speed_default, speed_y_max);
 		Set_Speed_Motor_z( speed_default, speed_z_max);
@@ -660,6 +663,7 @@ void application_init(){
 		reset_counter_timer_slave_z();
 
 		Try_go_home();
+
 //		  SystemFlag.is_homing = 0 ;
 //		  SystemFlag.is_err = 0 ;
 //		  SystemFlag.is_start = 0 ;

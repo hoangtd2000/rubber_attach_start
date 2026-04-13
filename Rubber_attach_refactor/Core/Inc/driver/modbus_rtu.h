@@ -22,7 +22,7 @@
 
 extern UART_HandleTypeDef huart2;
 extern uint8_t Coils_Database[25];
-extern uint16_t Holding_Registers_Database[300];
+extern uint16_t Holding_Registers_Database[50];
 extern uint8_t Inputs_Database[50];
 extern uint16_t Input_Registers_Database[50];
 

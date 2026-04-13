@@ -36,9 +36,24 @@ uint32_t GetSector(uint32_t Address)
 //}
 
 /* =========================
-   2. READ 64-bit CORRECT
+   2. READ 16-bit VERSION
    ========================= */
 void Flash_Read_Data(uint32_t StartAddress,
+                     uint16_t *RxBuf,
+                     uint16_t NumberOfWords)
+{
+    for(uint16_t i = 0; i < NumberOfWords; i++)
+    {
+        RxBuf[i] = *(__IO uint16_t*)StartAddress;
+        StartAddress += 2;
+    }
+}
+
+/* =========================
+   READ 64-bit CORRECT (COMMENTED)
+   ========================= */
+/*
+void Flash_Read_Data_64bit(uint32_t StartAddress,
                      uint64_t *RxBuf,
                      uint16_t NumberOfDoubleWords)
 {
@@ -53,6 +68,7 @@ void Flash_Read_Data(uint32_t StartAddress,
         RxBuf[i] = ((uint64_t)high << 32) | low;
     }
 }
+*/
 //uint32_t Flash_Write_Data(uint32_t StartAddress,
 //                          uint64_t *Data,
 //                          uint16_t NumberOfWords)
@@ -114,18 +130,18 @@ void Flash_Read_Data(uint32_t StartAddress,
 //    return 0;
 //}
 /* =========================
-   3. WRITE 64-bit SAFE
+   3. WRITE 16-bit VERSION
    ========================= */
 uint32_t Flash_Write_Data(uint32_t StartAddress,
-                          uint64_t *Data,
-                          uint16_t NumberOfDoubleWords)
+                          uint16_t *Data,
+                          uint16_t NumberOfWords)
 {
     FLASH_EraseInitTypeDef EraseInitStruct;
     uint32_t SectorError = 0;
     uint32_t addr = StartAddress;
 
-    /* 0. Bắt buộc align 8 byte */
-    if (addr % 8 != 0)
+    /* 0. Bắt buộc align 2 byte */
+    if (addr % 2 != 0)
         return HAL_ERROR;
 
     __disable_irq();
@@ -146,26 +162,17 @@ uint32_t Flash_Write_Data(uint32_t StartAddress,
         return HAL_FLASH_GetError();
     }
 
-    /* 2. Ghi từng double word */
-    for (uint16_t i = 0; i < NumberOfDoubleWords; i++)
+    /* 2. Ghi từng half word (16-bit) */
+    for (uint16_t i = 0; i < NumberOfWords; i++)
     {
-        uint32_t low  = (uint32_t)(Data[i] & 0xFFFFFFFF);
-        uint32_t high = (uint32_t)((Data[i] >> 32) & 0xFFFFFFFF);
-
-        /* Ghi 32-bit thấp */
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, low) != HAL_OK)
+        /* Ghi 16-bit */
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, addr, Data[i]) != HAL_OK)
             goto error;
 
-        addr += 4;
-
-        /* Ghi 32-bit cao */
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, high) != HAL_OK)
-            goto error;
-
-        addr += 4;
+        addr += 2;
 
         /* Verify */
-        if (*(uint64_t*)(addr - 8) != Data[i])
+        if (*(uint16_t*)(addr - 2) != Data[i])
             goto error;
     }
 
@@ -189,3 +196,82 @@ error:
     __enable_irq();
     return HAL_FLASH_GetError();
 }
+
+/* =========================
+   WRITE 64-bit SAFE (COMMENTED)
+   ========================= */
+/*
+uint32_t Flash_Write_Data_64bit(uint32_t StartAddress,
+                          uint64_t *Data,
+                          uint16_t NumberOfDoubleWords)
+{
+    FLASH_EraseInitTypeDef EraseInitStruct;
+    uint32_t SectorError = 0;
+    uint32_t addr = StartAddress;
+
+    // 0. Bắt buộc align 8 byte
+    if (addr % 8 != 0)
+        return HAL_ERROR;
+
+    __disable_irq();
+    HAL_FLASH_Unlock();
+
+    // 1. Erase đúng sector
+    uint32_t StartSector = GetSector(StartAddress);
+
+    EraseInitStruct.TypeErase    = FLASH_TYPEERASE_SECTORS;
+    EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
+    EraseInitStruct.Sector       = StartSector;
+    EraseInitStruct.NbSectors    = 1;
+
+    if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
+    {
+        HAL_FLASH_Lock();
+        __enable_irq();
+        return HAL_FLASH_GetError();
+    }
+
+    // 2. Ghi từng double word
+    for (uint16_t i = 0; i < NumberOfDoubleWords; i++)
+    {
+        uint32_t low  = (uint32_t)(Data[i] & 0xFFFFFFFF);
+        uint32_t high = (uint32_t)((Data[i] >> 32) & 0xFFFFFFFF);
+
+        // Ghi 32-bit thấp
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, low) != HAL_OK)
+            goto error;
+
+        addr += 4;
+
+        // Ghi 32-bit cao
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, high) != HAL_OK)
+            goto error;
+
+        addr += 4;
+
+        // Verify
+        if (*(uint64_t*)(addr - 8) != Data[i])
+            goto error;
+    }
+
+    HAL_FLASH_Lock();
+
+    // Flush cache
+    __HAL_FLASH_DATA_CACHE_DISABLE();
+    __HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
+
+    __HAL_FLASH_DATA_CACHE_RESET();
+    __HAL_FLASH_INSTRUCTION_CACHE_RESET();
+
+    __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
+    __HAL_FLASH_DATA_CACHE_ENABLE();
+
+    __enable_irq();
+    return 0;
+
+error:
+    HAL_FLASH_Lock();
+    __enable_irq();
+    return HAL_FLASH_GetError();
+}
+*/

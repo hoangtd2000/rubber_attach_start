@@ -22,7 +22,20 @@
 #define TRAY_COLS   4
 #define TRAY_ROWS   6
 
+#define MODEL_DATA_WORDS   28   // 1 row/col + 9*3 (Rubber + Tray1 + Tray2)
+#define MODEL_META_WORDS   1
+#define MAX_MODELS         4    // số model có thể lưu trong flash
+#define FLASH_MODEL_WORDS  (MODEL_META_WORDS + MAX_MODELS * MODEL_DATA_WORDS)
+
 #define PAIRS_PER_TRAY  12
+
+typedef struct {
+    uint8_t modelIndex;
+    uint8_t rows;
+    uint8_t cols;
+} ModelConfig_t;
+
+extern ModelConfig_t ModelConfigs[MAX_MODELS];
 #define MAX_TRAYS       2
 #define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
@@ -69,19 +82,21 @@ typedef union {
         uint16_t x;
         uint16_t y;
         uint16_t z;
-        uint16_t reserve;
     };
     uint64_t raw;
 } Point3D;
 
 void Handle(void);
 void wait_handler_stop();
-static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count);
+void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count);
 void Read_Tray_Data();
 
 void Calculate_Tray_Point(Point3D* tray, const Point3D* point, uint8_t row, uint8_t col);
 void Calculate_TrayRubber_Point(Point3D* tray, const Point3D* point,uint8_t row, uint8_t col);
 void PlaceToTray(Point3D *tray, uint8_t tray_id, int index);
+
+uint8_t GetCurrentModelRows(void);
+uint8_t GetCurrentModelCols(void);
 
 
 void application_init(void);

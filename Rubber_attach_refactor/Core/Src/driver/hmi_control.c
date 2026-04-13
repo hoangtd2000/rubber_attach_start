@@ -29,13 +29,22 @@ Point3D Rubber_Mark[3];
 Point3D Tray1_Mark[3];
 Point3D Tray2_Mark[3];
 uint16_t* Mark = &Holding_Registers_Database[6];
-uint64_t data[10];
+
+// Data layout in flash (16-bit halfword):
+// [0] = current model index
+// [1..] = model blocks, each BLOCK_SIZE = 28 words
+//    [block+0] = row_col (row<<8 | col)
+//    [block+1..block+27] = 9*3 points: Rubber p1,p2,p3 + Tray1 p1,p2,p3 + Tray2 p1,p2,p3
+uint16_t data[FLASH_MODEL_WORDS];
 const uint32_t FlashStart = 0x08010000;
 
 extern Axis_t AxisX, AxisY, AxisZ;
 extern Point3D Rubber_Tray[200];
 extern Point3D Tray1[30];
 extern Point3D Tray2[30];
+
+extern uint8_t GetCurrentModelRows(void);
+extern uint8_t GetCurrentModelCols(void);
 
 volatile SystemFlag_t SystemFlag={
 		.is_homing = 0 ,
@@ -44,6 +53,32 @@ volatile SystemFlag_t SystemFlag={
 		.is_err = 0,
 };
 
+static inline uint16_t GetCurrentModel(void)
+{
+    return (data[0] < MAX_MODELS ? data[0] : 0);
+}
+
+static inline void SetCurrentModel(uint16_t model)
+{
+    data[0] = (model < MAX_MODELS ? model : 0);
+}
+
+static inline void GetModelRowCol(uint8_t *row, uint8_t *col)
+{
+    uint16_t rc = data[1 + GetCurrentModel() * MODEL_DATA_WORDS];
+    *row = (uint8_t)(rc >> 8);
+    *col = (uint8_t)(rc & 0xFF);
+}
+
+static inline void SetModelRowCol(uint8_t row, uint8_t col)
+{
+    data[1 + GetCurrentModel() * MODEL_DATA_WORDS] = ((uint16_t)row << 8) | (uint16_t)col;
+}
+
+static inline uint16_t *GetCurrentModelBlock(void)
+{
+    return &data[1 + GetCurrentModel() * MODEL_DATA_WORDS];
+}
 
 ActionHandler_t Tab_main_table[] =  {
 		 Handle_set,
@@ -151,20 +186,24 @@ void Handle_motor(void){
 			}
 }
 void Handle_setting(void){
-//	if(Tab_setting->bits.set_model){
-//		Tab_setting->bits.set_model = 0;
-//		if(Choose_model->bits.a16){
-//		Holding_Registers_Database[39]= 1;
-//		}
-//		if(Choose_model->bits.a17){
-//		Holding_Registers_Database[39]= 2;
-//		}
-//	}
+	if(Tab_setting->bits.set_model){
+		Tab_setting->bits.set_model = 0;
+		if(Choose_model->bits.a16){
+			SetCurrentModel(1);
+		} else if(Choose_model->bits.a17){
+			SetCurrentModel(2);
+		} else if(Choose_model->bits.a18){
+			SetCurrentModel(3);
+		} else {
+			SetCurrentModel(0);
+		}
+		Read_Tray_Data();
+	}
 
-//	if(Tab_setting->bits.reset_total){
-//		Tab_setting->bits.reset_total = 0;
-//		Holding_Registers_Database[42] = 0;
-//	}
+	if(Tab_setting->bits.reset_total){
+		Tab_setting->bits.reset_total = 0;
+		Holding_Registers_Database[42] = 0;
+	}
 
 }
 
@@ -175,23 +214,25 @@ extern uint16_t rubber_pair;
 
 uint16_t GetRubberPairIndex(int index)
 {
-    if(index < 0 || index >= 200)
-        return RUBBER_TOTAL;
+    uint16_t total = GetCurrentModelRows() * GetCurrentModelCols();
+    if(index < 0 || index >= total)
+        return total;
 
-    int row = index / RUBBER_COLS;
-    int col = index % RUBBER_COLS;
+    uint8_t cols = GetCurrentModelCols();
+    int row = index / cols;
+    int col = index % cols;
     if(row % 2 != 0)
-    return RUBBER_TOTAL;
+    return total;
     int pair_row = row / 2;
 
-    return pair_row * RUBBER_COLS + col+1;
+    return pair_row * cols + col + 1;
 }
 
 void Handle_set(void){
 	Tab_main->bits.set = 0;
 	uint16_t index = Holding_Registers_Database[3] - 1;
 	uint16_t getrubberpair = GetRubberPairIndex(index);
-	if(getrubberpair >= RUBBER_TOTAL_PAIRS)
+	if(getrubberpair >= GetCurrentModelCols() * (GetCurrentModelRows() / 2))
 	{
 	    Holding_Registers_Database[3] = 0;
 	    return;
@@ -199,18 +240,18 @@ void Handle_set(void){
 	else
 	{
 	    uint16_t tmp = index;
-	    uint16_t tmp1 = index + RUBBER_COLS;
+	    uint16_t tmp1 = index + GetCurrentModelCols();
 
-	    uint16_t row = tmp / RUBBER_COLS;
-	    uint16_t col = tmp % RUBBER_COLS;
+	    uint16_t row = tmp / GetCurrentModelCols();
+	    uint16_t col = tmp % GetCurrentModelCols();
 
 	    uint16_t pair_row = row / 2;
 
-	    uint16_t row0_start = (row * RUBBER_COLS);
-	    uint16_t row0_end   = row0_start + RUBBER_COLS;
+	    uint16_t row0_start = (row * GetCurrentModelCols());
+	    uint16_t row0_end   = row0_start + GetCurrentModelCols();
 
-	    uint16_t row1_start = (row + 1) * RUBBER_COLS;
-	    uint16_t row1_end   = row1_start + RUBBER_COLS;
+	    uint16_t row1_start = (row + 1) * GetCurrentModelCols();
+	    uint16_t row1_end   = row1_start + GetCurrentModelCols();
 
 	    Holding_Registers_Database[3] = 0;
 
@@ -430,9 +471,32 @@ static uint8_t SaveMark(Point3D *markArray,
     Mark[markOffset + 1] = markArray[markIndex].y;
     Mark[markOffset + 2] = markArray[markIndex].z;
 
-    data[dataIndex] = markArray[markIndex].raw;
+    uint16_t model = GetCurrentModel();
+    uint16_t blockStart = 1 + model * MODEL_DATA_WORDS;
+    uint16_t rowcol = data[blockStart];
 
-    return Flash_Write_Data(FlashStart, (uint64_t*)data, 10);
+    extern ModelConfig_t ModelConfigs[MAX_MODELS];
+
+    // Nếu chưa có row/col hợp lệ thì gán theo cấu hình model mặc định
+    uint8_t row = (uint8_t)(rowcol >> 8);
+    uint8_t col = (uint8_t)(rowcol & 0xFF);
+    if (row < 2 || col < 2 || rowcol == 0 || rowcol == 0xFFFF) {
+        row = ModelConfigs[model].rows;
+        col = ModelConfigs[model].cols;
+        data[blockStart] = ((uint16_t)row << 8) | (uint16_t)col;
+    }
+
+    // Lưu điểm mark vào dữ liệu của model hiện tại
+    uint16_t pointOffset = blockStart + 1 + (uint16_t)dataIndex * 3;
+    if (pointOffset + 2 < 1 + model * MODEL_DATA_WORDS + MODEL_DATA_WORDS) {
+        data[pointOffset + 0] = markArray[markIndex].x;
+        data[pointOffset + 1] = markArray[markIndex].y;
+        data[pointOffset + 2] = markArray[markIndex].z;
+    }
+
+    data[0] = model;
+
+    return Flash_Write_Data(FlashStart, data, FLASH_MODEL_WORDS);
 }
 
 void Handle_save_trayrubber(void){
@@ -453,7 +517,7 @@ void Handle_save_trayrubber(void){
 	    }
 
 	    Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark,
-	                               RUBBER_ROWS, RUBBER_COLS);
+	                               GetCurrentModelRows(), GetCurrentModelCols());
 }
 void Handle_save_tray1(void){
 	Savepoint_and_picker->bits.save_tray1 = 0;
@@ -472,7 +536,7 @@ void Handle_save_tray1(void){
 	            return;
 	    }
 
-	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
+	Calculate_Tray_Point(Tray1, Tray1_Mark, GetCurrentModelRows(), GetCurrentModelCols());
 }
 void Handle_save_tray2(void){
 	Savepoint_and_picker->bits.save_tray2 = 0;
@@ -491,7 +555,7 @@ void Handle_save_tray2(void){
 	            return;
 	    }
 
-	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
+	Calculate_Tray_Point(Tray2, Tray2_Mark, GetCurrentModelRows(), GetCurrentModelCols());
 }
 /**
  * @brief Nhóm hàm chọn điểm chuẩn Tray/Rubber từ HMI

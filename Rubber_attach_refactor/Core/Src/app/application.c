@@ -25,12 +25,31 @@ const Point3D* Tray_1 = Tray1;
 const Point3D* Tray_2 = Tray2;
 Point3D *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 
-extern uint64_t data[10];
+extern uint16_t data[FLASH_MODEL_WORDS];
 extern const uint32_t FlashStart;
 
 extern Point3D Rubber_Mark[3];
 extern Point3D Tray1_Mark[3];
 extern Point3D Tray2_Mark[3];
+
+ModelConfig_t ModelConfigs[MAX_MODELS] = {
+    {0, 10, 20},  // Model 0: 10 rows, 20 cols
+    {1, 8, 16},   // Model 1: 8 rows, 16 cols
+    {2, 12, 24},  // Model 2: 12 rows, 24 cols
+    {3, 6, 12}    // Model 3: 6 rows, 12 cols
+};
+
+uint8_t GetCurrentModelRows(void) {
+    uint16_t model = data[0];
+    if (model >= MAX_MODELS) model = 0;
+    return ModelConfigs[model].rows;
+}
+
+uint8_t GetCurrentModelCols(void) {
+    uint16_t model = data[0];
+    if (model >= MAX_MODELS) model = 0;
+    return ModelConfigs[model].cols;
+}
 
 PickState_t machine_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
@@ -46,7 +65,7 @@ uint32_t total = 0;
 
 
 
-static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count)
+void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count)
 {
     for(uint8_t i = 0; i < count; i++)
     {
@@ -68,61 +87,55 @@ void LoadMarkFromFlash(Point3D *mark,
     }
 }
 
-void Read_Tray_Data(){
-	Flash_Read_Data( FlashStart, data, 10);
-	// Gán raw
-	    for(uint8_t i = 0; i < 3; i++)
-	    {
-	        Rubber_Mark[i].raw = data[i];
-	        Tray1_Mark[i].raw  = data[i + 3];
-	        Tray2_Mark[i].raw  = data[i + 6];
-	    }
-	    // Copy ra mảng Mark
-	      CopyMarkToArray(&Mark[0],  Rubber_Mark, 3);
-	      CopyMarkToArray(&Mark[9],  Tray1_Mark,  3);
-	      CopyMarkToArray(&Mark[18], Tray2_Mark,  3);
+void Read_Tray_Data(void)
+{
+    Flash_Read_Data(FlashStart, data, FLASH_MODEL_WORDS);
 
-//	Rubber_Mark[0].raw = data[0];
-//	Rubber_Mark[1].raw = data[1];
-//	Rubber_Mark[2].raw = data[2];
-//	Mark[0] = Rubber_Mark[0].x;
-//	Mark[1] = Rubber_Mark[0].y;
-//	Mark[2] = Rubber_Mark[0].z;
-//	Mark[3] = Rubber_Mark[1].x;
-//	Mark[4] = Rubber_Mark[1].y;
-//	Mark[5] = Rubber_Mark[1].z;
-//	Mark[6] = Rubber_Mark[2].x;
-//	Mark[7]	= Rubber_Mark[2].y;
-//	Mark[8] = Rubber_Mark[2].z;
-//
-//
-//	Tray1_Mark[0].raw = data[3];
-//	Tray1_Mark[1].raw = data[4];
-//	Tray1_Mark[2].raw = data[5];
-//	Mark[9] = Tray1_Mark[0].x;
-//	Mark[10] = Tray1_Mark[0].y;
-//	Mark[11] = Tray1_Mark[0].y;
-//	Mark[12] = Tray1_Mark[1].x;
-//	Mark[13] = Tray1_Mark[1].y;
-//	Mark[14] = Tray1_Mark[1].y;
-//	Mark[15] = Tray1_Mark[2].x;
-//	Mark[16] = Tray1_Mark[2].y;
-//	Mark[17] = Tray1_Mark[2].y;
-//
-//	Tray2_Mark[0].raw = data[6];
-//	Tray2_Mark[1].raw = data[7];
-//	Tray2_Mark[2].raw = data[8];
-//	Mark[18] = Tray2_Mark[0].x;
-//	Mark[19] = Tray2_Mark[0].y;
-//	Mark[20] = Tray2_Mark[1].x;
-//	Mark[21] = Tray2_Mark[1].y;
-//	Mark[22] = Tray2_Mark[1].y;
-//	Mark[23] = Tray2_Mark[2].x;
-//	Mark[24] = Tray2_Mark[2].y;
-//	Mark[25] = Tray2_Mark[2].y;
-	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
-	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
-	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
+    uint16_t model = data[0];
+    if (model >= MAX_MODELS) {
+        model = 0;
+        data[0] = 0;
+    }
+
+    uint16_t blockStart = 1 + model * MODEL_DATA_WORDS;
+    uint16_t rowCol = data[blockStart];
+    uint8_t rows = (uint8_t)(rowCol >> 8);
+    uint8_t cols = (uint8_t)(rowCol & 0xFF);
+
+    if (rows < 2 || cols < 2 || rows == 0xFF || cols == 0xFF) {
+        rows = ModelConfigs[model].rows;
+        cols = ModelConfigs[model].cols;
+        data[blockStart] = ((uint16_t)rows << 8) | cols;
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+        uint16_t base = blockStart + 1 + i * 3;
+        Rubber_Mark[i].x = data[base + 0];
+        Rubber_Mark[i].y = data[base + 1];
+        Rubber_Mark[i].z = data[base + 2];
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+        uint16_t base = blockStart + 10 + i * 3;
+        Tray1_Mark[i].x = data[base + 0];
+        Tray1_Mark[i].y = data[base + 1];
+        Tray1_Mark[i].z = data[base + 2];
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+        uint16_t base = blockStart + 19 + i * 3;
+        Tray2_Mark[i].x = data[base + 0];
+        Tray2_Mark[i].y = data[base + 1];
+        Tray2_Mark[i].z = data[base + 2];
+    }
+
+    CopyMarkToArray(&Mark[0], Rubber_Mark, 3);
+    CopyMarkToArray(&Mark[9], Tray1_Mark, 3);
+    CopyMarkToArray(&Mark[18], Tray2_Mark, 3);
+
+    Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, rows, cols);
+    Calculate_Tray_Point(Tray1, Tray1_Mark, rows, cols);
+    Calculate_Tray_Point(Tray2, Tray2_Mark, rows, cols);
 }
 
 //void Calculate_TrayRubber_Point(Point3D* tray, const Point3D* point,uint8_t row, uint8_t col)
@@ -263,7 +276,10 @@ void Handle(void)
 		}
 	}
 	Tab_main_indicator->bits.stop =  0 ;
-	while(tray_index < MAX_PAIRS && rubber_pair < RUBBER_TOTAL_PAIRS) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
+	uint8_t rows = GetCurrentModelRows();
+	uint8_t cols = GetCurrentModelCols();
+	uint16_t total_pairs = cols * (rows / 2);
+	while(tray_index < MAX_PAIRS && rubber_pair < total_pairs) // Dừng khi đầy tray1,2 và hết hàng ở tray rubber
     {
 		Tab_main->bits.start = 0;
 		if(SystemFlag.is_stop && machine_state != ST_PAUSE){
@@ -284,16 +300,16 @@ void Handle(void)
 				OFF_LED_RED;
 				ON_LED_GREEN;
 				Tab_main_indicator->bits.start =  1 ;
-				if(tray_index >= MAX_PAIRS || rubber_pair >= RUBBER_TOTAL_PAIRS)
+				if(tray_index >= MAX_PAIRS || rubber_pair >= total_pairs)
 				{
 					machine_state = ST_STOP;
 					break;
 				}
 
-				int pair_row = rubber_pair / RUBBER_COLS;
-				int pair_col = rubber_pair % RUBBER_COLS;
+				int pair_row = rubber_pair / cols;
+				int pair_col = rubber_pair % cols;
 
-				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+				int rx = (pair_row & 1) ? (cols - 1 - pair_col) : pair_col;
 				int ry = pair_row * 2;
 
 				// ===== Pick Rubber =====
@@ -304,7 +320,7 @@ void Handle(void)
 //				wait_handler_stop();
 //
 //				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, max_z_rubber);
-				move_axis1(Rubber[ry * RUBBER_COLS + rx].x, Rubber[ry * RUBBER_COLS + rx].y, Rubber[ry * RUBBER_COLS + rx].z);
+				move_axis1(Rubber[ry * cols + rx].x, Rubber[ry * cols + rx].y, Rubber[ry * cols + rx].z);
 				wait_handler_stop();
 			//	delay_us(1000);
 				t_start = Timer_get();
@@ -349,20 +365,20 @@ void Handle(void)
 			}
 			case ST_WAIT_PICK2:
 			{
-				int pair_row = rubber_pair / RUBBER_COLS;
-				int pair_col = rubber_pair % RUBBER_COLS;
+				int pair_row = rubber_pair / cols;
+				int pair_col = rubber_pair % cols;
 
-				int rx = (pair_row & 1) ? (RUBBER_COLS - 1 - pair_col) : pair_col;
+				int rx = (pair_row & 1) ? (cols - 1 - pair_col) : pair_col;
 				int ry = pair_row * 2;
 			    if (Handle_Pick[1].result == OK)
 			    {
-				    Clear_mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
+				    Clear_mark_rubber(ry * cols + rx + cols );
 				    machine_state = ST_PLACE1;
 			    }
 			    else if(Handle_Pick[1].result == NG){
 			    	SystemFlag.is_err = 1 ;
-			    	Mark_rubber(ry * RUBBER_COLS + rx);
-			    	Mark_rubber(ry * RUBBER_COLS + rx + RUBBER_COLS );
+			    	Mark_rubber(ry * cols + rx);
+			    	Mark_rubber(ry * cols + rx + cols );
 //			    	SetReleaseRubber(0);
 //			    	SetReleaseRubber(1);
 

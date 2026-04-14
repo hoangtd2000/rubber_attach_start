@@ -48,11 +48,11 @@
 #define Vacum2_Release_On	HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, 0)
 #define Vacum2_Release_Off	HAL_GPIO_WritePin(O10_GPIO_Port, O10_Pin, 1)
 
-#define Is_Vacum1_Pick		HAL_GPIO_ReadPin(i6_vacum1_GPIO_Port, i6_vacum1_Pin)
-#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(i7_vacum2_GPIO_Port, i7_vacum2_Pin)
+#define Is_Vacum1_Pick		HAL_GPIO_ReadPin(i4_vacum1_GPIO_Port, i4_vacum1_Pin)
+#define Is_Vacum2_Pick		HAL_GPIO_ReadPin(i5_vacum2_GPIO_Port, i5_vacum2_Pin)
 
 //#define DOOR_OPEN()         (!HAL_GPIO_ReadPin(I14_Door_L_GPIO_Port, I14_Door_L_Pin) || !HAL_GPIO_ReadPin(I15_Door_R_GPIO_Port, I15_Door_R_Pin))
-#define DOOR_OPEN()         (!HAL_GPIO_ReadPin(i14_Door_L_GPIO_Port, i14_Door_L_Pin))
+//#define DOOR_OPEN()         (!HAL_GPIO_ReadPin(i14_Door_L_GPIO_Port, i14_Door_L_Pin))
 
 enum {
 	LED_RED,

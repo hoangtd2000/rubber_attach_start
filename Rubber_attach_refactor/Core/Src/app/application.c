@@ -568,7 +568,7 @@ void Handle(void)
 			        TOGGLE_LED_RED;
 			        TOGGLE_BUZZ;
 			    }
-			    if (!DOOR_OPEN())
+			    if (1==1)//!DOOR_OPEN())
 			    {
 			        OFF_BUZZ;
 			        if (prev_state == ST_WAIT_POPUP)

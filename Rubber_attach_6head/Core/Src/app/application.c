@@ -25,7 +25,7 @@ const Point3D* Tray_1 = Tray1;
 const Point3D* Tray_2 = Tray2;
 Point3D *TrayList[MAX_TRAYS] = { Tray1, Tray2 };
 
-extern uint64_t data[10];
+extern uint16_t data[FLASH_MODEL_WORDS];
 extern const uint32_t FlashStart;
 
 extern Point3D Rubber_Mark[3];
@@ -55,6 +55,24 @@ double t_cycletime = 0;
 uint32_t total = 0;
 
 
+ModelConfig_t ModelConfigs[MAX_MODELS] = {
+    {0, 10, 20},  	// Model 0: 10 rows, 20 cols
+    {1, 10, 20},   	// Model 1: 10 rows, 20 cols
+    {2, 10, 20},  	// Model 2: 10 rows, 20 cols
+    {3, 6, 12}    	// Model 3: 6 rows, 12 cols
+};
+
+uint8_t GetCurrentModelRows(void) {
+    uint16_t model = data[0];
+    if (model >= MAX_MODELS) model = 0;
+    return ModelConfigs[model].rows;
+}
+
+uint8_t GetCurrentModelCols(void) {
+    uint16_t model = data[0];
+    if (model >= MAX_MODELS) model = 0;
+    return ModelConfigs[model].cols;
+}
 
 static void CopyMarkToArray(uint16_t *dst, Point3D *src, uint8_t count)
 {
@@ -78,21 +96,55 @@ void LoadMarkFromFlash(Point3D *mark,
     }
 }
 
-void Read_Tray_Data(){
-	Flash_Read_Data( FlashStart, data, 10);
-	// Gán raw
-	for(uint8_t i = 0; i < 3; i++)
-	{
-		Rubber_Mark[i].raw = data[i];
-		Tray1_Mark[i].raw  = data[i + 3];
-		Tray2_Mark[i].raw  = data[i + 6];
-	}
-	// Copy ra mảng Mark
-	CopyMarkToArray(&Mark[0],  Rubber_Mark, 3);
-	CopyMarkToArray(&Mark[9],  Tray1_Mark,  3);
-	CopyMarkToArray(&Mark[18], Tray2_Mark,  3);
+void Read_Tray_Data(void)
+{
+    Flash_Read_Data(FlashStart, data, (uint16_t)FLASH_MODEL_WORDS);
 
-	Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, RUBBER_ROWS, RUBBER_COLS);
+    uint16_t model = data[0];
+    if (model >= MAX_MODELS) {
+        model = 0;
+        data[0] = 0;
+    }
+    Holding_Registers_Database[39] = model;
+    uint16_t blockStart = 1 + model * MODEL_DATA_WORDS;
+    uint16_t rowCol = data[blockStart];
+    uint8_t rows = (uint8_t)(rowCol >> 8);
+    uint8_t cols = (uint8_t)(rowCol & 0xFF);
+
+    if (rows < 2 || cols < 2 || rows > 10 || cols > 20) {
+        rows = ModelConfigs[model].rows;
+        cols = ModelConfigs[model].cols;
+        data[blockStart] = ((uint16_t)rows << 8) | cols;
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+        uint16_t base = blockStart + 1 + i * 3;
+        Rubber_Mark[i].x = data[base + 0];
+        Rubber_Mark[i].y = data[base + 1];
+        Rubber_Mark[i].z = data[base + 2];
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+        uint16_t base = blockStart + 10 + i * 3;
+        Tray1_Mark[i].x = data[base + 0];
+        Tray1_Mark[i].y = data[base + 1];
+        Tray1_Mark[i].z = data[base + 2];
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+        uint16_t base = blockStart + 19 + i * 3;
+        Tray2_Mark[i].x = data[base + 0];
+        Tray2_Mark[i].y = data[base + 1];
+        Tray2_Mark[i].z = data[base + 2];
+    }
+
+    CopyMarkToArray(&Mark[0], Rubber_Mark, 3);
+    CopyMarkToArray(&Mark[9], Tray1_Mark, 3);
+    CopyMarkToArray(&Mark[18], Tray2_Mark, 3);
+
+    Calculate_TrayRubber_Point(Rubber_Tray, Rubber_Mark, rows, cols);
+//    Calculate_Tray_Point(Tray1, Tray1_Mark, rows, cols);
+//    Calculate_Tray_Point(Tray2, Tray2_Mark, rows, cols);
 	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
 	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
 }
@@ -387,8 +439,8 @@ void Handle(void)
 void MoveToTray(Point3D *tray, uint8_t tray_id, int index)
 {
     wait_handler_stop();
-    move_axis(tray[index].x, tray[index].y, max_z_tray - z_up);
-
+    //move_axis(tray[index].x, tray[index].y, max_z_tray - z_up);
+    move_axis(tray[index].x, tray[index].y, tray[index].z);
     wait_handler_stop();
     count_tray[tray_id]++;
     if(tray_id == 0){
@@ -408,7 +460,8 @@ void MoveToTray(Point3D *tray, uint8_t tray_id, int index)
         Mark_tray2(index+9);
         //Input_Registers_Database[4] = count_tray[1];
     }
-    move_axis1(tray[index].x, tray[index].y, max_z_tray);
+    //move_axis1(tray[index].x, tray[index].y, max_z_tray);
+    move_axis1(tray[index].x, tray[index].y, tray[index].z);
     wait_handler_stop();
 }
 
@@ -418,11 +471,14 @@ void MoveToRubber(int rubber_index, int grip_id)
 
     int x = Rubber_Tray[rubber_index].x + GripOffset[grip_id].dx;
     int y = Rubber_Tray[rubber_index].y + GripOffset[grip_id].dy;
+    int z = Rubber_Tray[rubber_index].z + GripOffset[grip_id].dz;
 
-    move_axis(x, y, max_z_rubber - z_up);
+    //move_axis(x, y, max_z_rubber - z_up);
+    move_axis(x, y, z);
     wait_handler_stop();
 
-    move_axis1(x, y, max_z_rubber);
+    //move_axis1(x, y, max_z_rubber);
+    move_axis1(x, y, z);
     wait_handler_stop();
 }
 

@@ -248,70 +248,35 @@ void EXTI0_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI line1 interrupt.
-  */
-void EXTI1_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI1_IRQn 0 */
-	if(get_home_y() == home_y){
-	//	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
-		switch(AxisY.mode){
-		case MOVE_HOME1:
-			output_y_pull_stop();
-			reset_counter_timer_slave_y();
-			AxisY.mode = MOVE_HOME2;
-			Home_process_y();
-			AxisY.current_pos = 0;
-			Set_HMI_Y_Axis(AxisY.current_pos);
-			AxisY.old_pos = 0;
-			break;
-		case MOVE_HOME3:
-			output_y_pull_stop();
-			reset_counter_timer_slave_y();
-			AxisY.current_pos = 0;
-			Set_HMI_Y_Axis(AxisY.current_pos);
-			AxisY.mode  = STOP;
-			AxisY.old_pos = 0;
-			break;
-	  }
-  }
-  /* USER CODE END EXTI1_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(i2_home_y_Pin);
-  /* USER CODE BEGIN EXTI1_IRQn 1 */
-
-  /* USER CODE END EXTI1_IRQn 1 */
-}
-
-/**
   * @brief This function handles EXTI line2 interrupt.
   */
 void EXTI2_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI2_IRQn 0 */
-	 if(get_home_z() == home_z){
-//	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
-		switch(AxisZ.mode){
-		case MOVE_HOME1:
-			output_z_pull_stop();
-			reset_counter_timer_slave_z();
-			AxisZ.mode = MOVE_HOME2;
-			Home_process_z();
-			AxisZ.current_pos = 0;
-			Set_HMI_Z_Axis(AxisZ.current_pos);
-			AxisZ.old_pos = 0;
-		  break;
-	  case MOVE_HOME3:
-			output_z_pull_stop();
-			reset_counter_timer_slave_z();
-			AxisZ.current_pos = 0;
-			Set_HMI_Z_Axis(AxisZ.current_pos);
-			AxisZ.mode  = STOP;
-			AxisZ.old_pos = 0;
-		  break;
+	if(get_home_y() == home_y){
+		//	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
+			switch(AxisY.mode){
+			case MOVE_HOME1:
+				output_y_pull_stop();
+				reset_counter_timer_slave_y();
+				AxisY.mode = MOVE_HOME2;
+				Home_process_y();
+				AxisY.current_pos = 0;
+				Set_HMI_Y_Axis(AxisY.current_pos);
+				AxisY.old_pos = 0;
+				break;
+			case MOVE_HOME3:
+				output_y_pull_stop();
+				reset_counter_timer_slave_y();
+				AxisY.current_pos = 0;
+				Set_HMI_Y_Axis(AxisY.current_pos);
+				AxisY.mode  = STOP;
+				AxisY.old_pos = 0;
+				break;
+		  }
 	  }
-  }
   /* USER CODE END EXTI2_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(i3_home_z_Pin);
+  HAL_GPIO_EXTI_IRQHandler(i2_home_y_Pin);
   /* USER CODE BEGIN EXTI2_IRQn 1 */
 
   /* USER CODE END EXTI2_IRQn 1 */
@@ -323,40 +288,33 @@ void EXTI2_IRQHandler(void)
 void EXTI3_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI3_IRQn 0 */
-	if(HAL_GPIO_ReadPin(i4_start_GPIO_Port, i4_start_Pin)){
-//		if(!SystemFlag.is_homing){
-//			SystemFlag.is_err = 0 ;
-			if(Taskbar->bits.motor || Tab_main_indicator->bits.start ){
-				Tab_main->bits.start = 0;
-			}else{
-			Tab_main->bits.start = 1;
-			}
-//		}
-	}
+	 if(get_home_z() == home_z){
+	//	  HAL_GPIO_TogglePin(O3_GPIO_Port, O3_Pin);
+			switch(AxisZ.mode){
+			case MOVE_HOME1:
+				output_z_pull_stop();
+				reset_counter_timer_slave_z();
+				AxisZ.mode = MOVE_HOME2;
+				Home_process_z();
+				AxisZ.current_pos = 0;
+				Set_HMI_Z_Axis(AxisZ.current_pos);
+				AxisZ.old_pos = 0;
+			  break;
+		  case MOVE_HOME3:
+				output_z_pull_stop();
+				reset_counter_timer_slave_z();
+				AxisZ.current_pos = 0;
+				Set_HMI_Z_Axis(AxisZ.current_pos);
+				AxisZ.mode  = STOP;
+				AxisZ.old_pos = 0;
+			  break;
+		  }
+	  }
   /* USER CODE END EXTI3_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(i4_start_Pin);
+  HAL_GPIO_EXTI_IRQHandler(i3_home_z_Pin);
   /* USER CODE BEGIN EXTI3_IRQn 1 */
 
   /* USER CODE END EXTI3_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line4 interrupt.
-  */
-void EXTI4_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI4_IRQn 0 */
-	if(HAL_GPIO_ReadPin(i5_stop_GPIO_Port, i5_stop_Pin)){
-		if(!SystemFlag.is_err && !Tab_main_indicator->bits.stop && Tab_main_indicator->bits.start){
-			SystemFlag.is_stop = 1 ;
-			Tab_main_indicator->bits.stop =  1 ;
-		}
-	}
-  /* USER CODE END EXTI4_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(i5_stop_Pin);
-  /* USER CODE BEGIN EXTI4_IRQn 1 */
-
-  /* USER CODE END EXTI4_IRQn 1 */
 }
 
 /**
@@ -371,6 +329,34 @@ void DMA1_Stream5_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */
 
   /* USER CODE END DMA1_Stream5_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI line[9:5] interrupts.
+  */
+void EXTI9_5_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
+	if(HAL_GPIO_ReadPin(i10_start_GPIO_Port, i10_start_Pin)){
+			if(Taskbar->bits.motor || Tab_main_indicator->bits.start ){
+				Tab_main->bits.start = 0;
+			}else{
+			Tab_main->bits.start = 1;
+			}
+	}
+
+	if(HAL_GPIO_ReadPin(i11_stop_GPIO_Port, i11_stop_Pin)){
+			if(!SystemFlag.is_err && !Tab_main_indicator->bits.stop && Tab_main_indicator->bits.start){
+				SystemFlag.is_stop = 1 ;
+				Tab_main_indicator->bits.stop =  1 ;
+			}
+		}
+  /* USER CODE END EXTI9_5_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(i10_start_Pin);
+  HAL_GPIO_EXTI_IRQHandler(i11_stop_Pin);
+  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
+
+  /* USER CODE END EXTI9_5_IRQn 1 */
 }
 
 /**
@@ -418,24 +404,6 @@ void USART2_IRQHandler(void)
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line[15:10] interrupts.
-  */
-void EXTI15_10_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-
-  /* USER CODE END EXTI15_10_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(i12_vacum1_Pin);
-  HAL_GPIO_EXTI_IRQHandler(i13_vacum2_Pin);
-  HAL_GPIO_EXTI_IRQHandler(i14_Door_L_Pin);
-  HAL_GPIO_EXTI_IRQHandler(i15_Door_R_Pin);
-  HAL_GPIO_EXTI_IRQHandler(i17_reset_Pin);
-  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
-
-  /* USER CODE END EXTI15_10_IRQn 1 */
 }
 
 /**
@@ -523,5 +491,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 		}
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, RxData, 256);
 	}
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+
 }
 /* USER CODE END 1 */

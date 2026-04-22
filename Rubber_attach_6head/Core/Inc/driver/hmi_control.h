@@ -176,11 +176,6 @@ typedef union {
     uint16_t all;
 }Savepoint_and_picker_indicator_t;
 
-
-
-
-
-
 typedef union {
     struct {
         uint8_t stop				: 1;
@@ -246,6 +241,9 @@ typedef struct
 #define popup_home 2
 
 #define Clear_Rubber_and_tray_indicator() Rubber_and_tray_indicator->all &= (~0x1ff)
+
+#define A16_LTE 1U
+#define A17_LTE_5G 2U
 
 void Set_HMI_X_Axis(uint16_t value);
 void Set_HMI_Y_Axis(uint16_t value);

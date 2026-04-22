@@ -20,6 +20,11 @@
 #define RUBBER_ROWS 10 // 10
 #define TOTAL_SLOTS_RUBBER  (RUBBER_COLS * RUBBER_ROWS)  // 200 item
 
+#define MODEL_DATA_WORDS   28   // 1 row/col + 9*3 (Rubber + Tray1 + Tray2)
+#define MODEL_META_WORDS   1
+#define MAX_MODELS         4    // số model có thể lưu trong flash
+#define FLASH_MODEL_WORDS  (MODEL_META_WORDS + (MAX_MODELS * MODEL_DATA_WORDS))
+
 #define TRAY_COLS   4
 #define TRAY_ROWS   6
 
@@ -41,8 +46,17 @@
 #define TIME_SWITCH_STATE 40U
 
 typedef struct {
+    uint8_t modelIndex;
+    uint8_t rows;
+    uint8_t cols;
+} ModelConfig_t;
+
+extern ModelConfig_t ModelConfigs[MAX_MODELS];
+
+typedef struct {
     int dx;
     int dy;
+    int dz;
 } GripOffset_t;
 
 extern GripOffset_t GripOffset[ITEMS_PER_PICK];

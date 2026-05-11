@@ -226,20 +226,20 @@ void PickRubber1(uint8_t vacum_id)
             {
                 uint8_t ok = 0;
 
-//                if (vacum_id == 0)
-//                    ok = Is_Vacum1_Pick;
-//                else if (vacum_id == 1)
-//                    ok = Is_Vacum2_Pick;
-//                else if (vacum_id == 2)
-//                    ok = Is_Vacum3_Pick;
-//                else if (vacum_id == 3)
-//                    ok = Is_Vacum4_Pick;
-//                else if (vacum_id == 4)
-//                    ok = Is_Vacum5_Pick;
-//                else if (vacum_id == 5)
-//                    ok = Is_Vacum6_Pick;
+                if (vacum_id == 0)
+                    ok = Is_Vacum1_Pick;
+                else if (vacum_id == 1)
+                    ok = Is_Vacum2_Pick;
+                else if (vacum_id == 2)
+                    ok = Is_Vacum3_Pick;
+                else if (vacum_id == 3)
+                    ok = Is_Vacum4_Pick;
+                else if (vacum_id == 4)
+                    ok = Is_Vacum5_Pick;
+                else if (vacum_id == 5)
+                    ok = Is_Vacum6_Pick;
 
-                if (!ok)
+                if (ok)
                     Handle_Pick[vacum_id].state = DONE_OK;
                 else if (++Handle_Pick[vacum_id].retry < 2)
                     Handle_Pick[vacum_id].state = CYLINDER_GO_DOWN;
@@ -370,18 +370,18 @@ void ReleaseRubber1(uint8_t vacum_id)
             {
                 uint8_t still_pick = 0;
 
-//                if (vacum_id == 0)
-//                    still_pick = Is_Vacum1_Pick;
-//                else if(vacum_id == 1)
-//                    still_pick = Is_Vacum2_Pick;
-//                else if(vacum_id == 2)
-//                    still_pick = Is_Vacum3_Pick;
-//                else if(vacum_id == 3)
-//                    still_pick = Is_Vacum4_Pick;
-//                else if(vacum_id == 4)
-//                    still_pick = Is_Vacum5_Pick;
-//                else if(vacum_id == 5)
-//                    still_pick = Is_Vacum6_Pick;
+                if (vacum_id == 0)
+                    still_pick = Is_Vacum1_Pick;
+                else if(vacum_id == 1)
+                    still_pick = Is_Vacum2_Pick;
+                else if(vacum_id == 2)
+                    still_pick = Is_Vacum3_Pick;
+                else if(vacum_id == 3)
+                    still_pick = Is_Vacum4_Pick;
+                else if(vacum_id == 4)
+                    still_pick = Is_Vacum5_Pick;
+                else if(vacum_id == 5)
+                    still_pick = Is_Vacum6_Pick;
 
                 if (!still_pick)
                     Handle_Release[vacum_id].state = DONE_OK;

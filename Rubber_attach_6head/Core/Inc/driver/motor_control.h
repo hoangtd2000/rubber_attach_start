@@ -99,7 +99,7 @@
 #define speed_z_max (5000U)
 
 #define speed_default (50U)
-#define speed_run     (10000U)
+#define speed_run     (30000U)
 #define speed_run_z 	(5000U)
 
 #define speed_home1 	(4000U)

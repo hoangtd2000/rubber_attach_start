@@ -35,13 +35,22 @@ extern Point3D Tray2_Mark[3];
 PickState_t machine_state = ST_IDLE;
 PickState_t prev_state = ST_IDLE;
 
+//GripOffset_t GripOffset[ITEMS_PER_PICK] = {
+//    {  0,   	0 },    // 1
+//    { -4000,   	0 },    // 2
+//    { -4000,-3500 },  // 3
+//    { 0,  	-3500 },   // 4
+//    { 0,    -7000 },   // 5
+//    { -4000,-7000 }   // 6
+//};
+
 GripOffset_t GripOffset[ITEMS_PER_PICK] = {
     {  0,   	0 },    // 1
-    { -4000,   	0 },    // 2
-    { -4000,-3500 },  // 3
-    { 0,  	-3500 },   // 4
-    { 0,    -7000 },   // 5
-    { -4000,-7000 }   // 6
+    { -3980,   	0 },    // 2   >4000 trai
+    { -3990,-3490 },  // 3
+    { 0,  	-3490 },   // 4
+    { -30,    -7000 },   // 5
+    { -3950,-7000 }   // 6
 };
 
 volatile uint16_t tray_index     = 0;   // 0..199
@@ -291,6 +300,8 @@ void Handle(void)
 			    }
 			    else if(Handle_Pick[grip_id].result == NG)
 			    {
+			    	SetReleaseRubber(grip_id);
+			    	delay_us(1000);
 			    	Mark_rubber(tray_index);
 			    	tray_index++;
 			    	machine_state = ST_PICK_MOVE;

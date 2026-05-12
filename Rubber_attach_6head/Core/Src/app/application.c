@@ -242,7 +242,7 @@ void Handle(void)
 		Mark_all_rubber();
 		}
 	}
-	//t_start = Timer_get();
+	t_start = Timer_get();
 	Tab_main_indicator->bits.stop =  0 ;
 	while(tray_index < TOTAL_SLOTS_RUBBER  && slot < TOTAL_SLOTS)
     {
@@ -278,7 +278,7 @@ void Handle(void)
 				int ry = row;
 
 			    MoveToRubber(ry * RUBBER_COLS + rx, grip_id);
-			    t_start = Timer_get();
+			    //t_start = Timer_get();
 				machine_state = ST_PICK;
 				break;
 			}
@@ -363,9 +363,9 @@ void Handle(void)
 			       Handle_Release[4].result == OK &&
 			       Handle_Release[5].result == OK)
 			    {
-			    	t_end = Timer_get();
-			    	t_cycletime = (double)(t_end - t_start) / 10.0;
-			    	Holding_Registers_Database[41] = t_cycletime;
+//			    	t_end = Timer_get();
+//			    	t_cycletime = (double)(t_end - t_start) / 10.0;
+//			    	Holding_Registers_Database[41] = t_cycletime;
 			    	Holding_Registers_Database[42] += 6;
 			        grip_id = 0;
 			        machine_state = ST_NEXT_SLOT;
@@ -428,9 +428,9 @@ void Handle(void)
 		}
     }
 	SystemFlag.is_stop = 0 ;
-//	t_end = Timer_get();
-//	t_cycletime = (double)(t_end - t_start) / 10.0;
-//	Holding_Registers_Database[41] = t_cycletime;
+	t_end = Timer_get();
+	t_cycletime = (double)(t_end - t_start) / 10.0;
+	Holding_Registers_Database[41] = t_cycletime / 48;
 	SetBips(5);
 	ON_LED_GREEN;
 	wait_handler_stop();

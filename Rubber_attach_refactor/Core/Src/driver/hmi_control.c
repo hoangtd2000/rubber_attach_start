@@ -194,7 +194,7 @@ void Handle_setting(void){
 		} else if(Choose_model->bits.a17){
 			SetCurrentModel(A17_LTE_5G);
 		} else if(Choose_model->bits.a18){
-			SetCurrentModel(3);
+			SetCurrentModel(A18);
 		} else {
 			SetCurrentModel(0);
 		}
@@ -476,20 +476,30 @@ static uint8_t SaveMark(Point3D *markArray,
     uint16_t model = GetCurrentModel();
     uint16_t blockStart = 1 + model * MODEL_DATA_WORDS;
     uint16_t rowcol = data[blockStart];
+    uint16_t zig_rowcol = data[blockStart+1];
 
     extern ModelConfig_t ModelConfigs[MAX_MODELS];
 
     // Nếu chưa có row/col hợp lệ thì gán theo cấu hình model mặc định
     uint8_t row = (uint8_t)(rowcol >> 8);
     uint8_t col = (uint8_t)(rowcol & 0xFF);
-    if (row < 2 || col < 2 || rowcol == 0 || rowcol == 0xFFFF) {
+
+    uint8_t zig_row = (uint8_t)(zig_rowcol >> 8);
+    uint8_t zig_col = (uint8_t)(zig_rowcol & 0xFF);
+
+    if (row < 2 || col < 2 || zig_row < 1 || zig_col < 1 || rowcol == 0 || rowcol == 0xFFFF) {
         row = ModelConfigs[model].rows;
         col = ModelConfigs[model].cols;
+
+        zig_row = ModelConfigs[model].zig_rows;
+        zig_col = ModelConfigs[model].zig_cols;
+
         data[blockStart] = ((uint16_t)row << 8) | (uint16_t)col;
+        data[blockStart + 1] = ((uint16_t)zig_row << 8) | zig_col;
     }
 
     // Lưu điểm mark vào dữ liệu của model hiện tại
-    uint16_t pointOffset = blockStart + 1 + (uint16_t)dataIndex * 3;
+    uint16_t pointOffset = blockStart + 2 + (uint16_t)dataIndex * 3;
     if (pointOffset + 2 < 1 + model * MODEL_DATA_WORDS + MODEL_DATA_WORDS) {
         data[pointOffset + 0] = markArray[markIndex].x;
         data[pointOffset + 1] = markArray[markIndex].y;
@@ -539,7 +549,7 @@ void Handle_save_tray1(void){
 	    }
 
 	//Calculate_Tray_Point(Tray1, Tray1_Mark, GetCurrentModelRows(), GetCurrentModelCols());
-	Calculate_Tray_Point(Tray1, Tray1_Mark, TRAY_ROWS, TRAY_COLS);
+	Calculate_Tray_Point(Tray1, Tray1_Mark, GetCurrentModelZigRow(), GetCurrentModelZigCol());
 
 }
 void Handle_save_tray2(void){
@@ -559,7 +569,7 @@ void Handle_save_tray2(void){
 	            return;
 	    }
 
-	Calculate_Tray_Point(Tray2, Tray2_Mark, TRAY_ROWS, TRAY_COLS);
+	Calculate_Tray_Point(Tray2, Tray2_Mark, GetCurrentModelZigRow(), GetCurrentModelZigCol());
 }
 /**
  * @brief Nhóm hàm chọn điểm chuẩn Tray/Rubber từ HMI

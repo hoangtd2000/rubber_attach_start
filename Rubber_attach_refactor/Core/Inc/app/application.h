@@ -18,26 +18,28 @@
 
 #define RUBBER_COLS 20
 #define RUBBER_ROWS 10 // luôn là số chẵn
-#define RUBBER_TOTAL 200
-#define TRAY_COLS   4
-#define TRAY_ROWS   6
+#define RUBBER_TOTAL RUBBER_COLS * RUBBER_ROWS
+//#define ZIG_COLS   4
+//#define ZIG_ROWS   6
 
-#define MODEL_DATA_WORDS   28   // 1 row/col + 9*3 (Rubber + Tray1 + Tray2)
+#define MODEL_DATA_WORDS   29   // 1 row/col + 1 zigrow/zigcol+ 9*3 (Rubber + Tray1 + Tray2)
 #define MODEL_META_WORDS   1
 #define MAX_MODELS         4    // số model có thể lưu trong flash
 #define FLASH_MODEL_WORDS  (MODEL_META_WORDS + (MAX_MODELS * MODEL_DATA_WORDS))
 
-#define PAIRS_PER_TRAY  12
+//#define PAIRS_PER_TRAY  12
 
 typedef struct {
     uint8_t modelIndex;
     uint8_t rows;
     uint8_t cols;
+	uint8_t zig_cols;
+	uint8_t zig_rows;
 } ModelConfig_t;
 
 extern ModelConfig_t ModelConfigs[MAX_MODELS];
 #define MAX_TRAYS       2
-#define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
+//#define MAX_PAIRS       (PAIRS_PER_TRAY * MAX_TRAYS)   // 24 cặp
 #define RUBBER_TOTAL_PAIRS (RUBBER_COLS * (RUBBER_ROWS / 2))  // 100 cặp
 
 

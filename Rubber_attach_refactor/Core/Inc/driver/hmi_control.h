@@ -246,6 +246,7 @@ typedef struct
 
 #define A16_LTE 1U
 #define A17_LTE_5G 2U
+#define A18 3U
 
 void Set_HMI_X_Axis(uint16_t value);
 void Set_HMI_Y_Axis(uint16_t value);
